@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <ImageView
+        android:id="@+id/iv_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/il_undraw_barista_re_fm8w"
+        android:layout_marginTop="130dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/et_username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/iv_header"
+        android:layout_marginLeft="45dp"
+        android:layout_marginRight="45dp"
+        android:layout_marginTop="35dp"
+        android:padding="15dp"
+        android:background="@drawable/bg_round_edit"
+        android:textCursorDrawable="@drawable/cs_edit"
+        android:textColor="@color/black"
+        android:textSize="14dp"
+        android:textColorHint="@color/hint"
+        android:hint="Please input username"/>
+
+
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/et_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        android:layout_marginLeft="45dp"
+        android:layout_marginRight="45dp"
+        android:padding="15dp"
+        android:background="@drawable/bg_round_edit"
+        android:textCursorDrawable="@drawable/cs_edit"
+        android:textColor="@color/black"
+        android:textSize="14dp"
+        android:textColorHint="@color/hint"
+        android:hint="Please input password"
+        app:layout_constraintTop_toBottomOf="@id/et_username"/>
+
+
+    <com.flod.loadingbutton.LoadingButton
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:background="@android:color/holo_red_light"
+        android:drawablePadding="10dp"
+        android:gravity="center"
+        android:text="Submit"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp"
+        android:layout_marginTop="35dp"
+        android:layout_marginLeft="45dp"
+        android:layout_marginRight="45dp"
+        app:radius="20dp"
+        app:enableShrink="true"
+        app:enableRestore="true"
+        app:shrinkShape="Oval"
+        app:loadingDrawablePosition="Start"
+        app:layout_constraintTop_toBottomOf="@id/et_password"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
