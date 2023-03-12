@@ -8,7 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.media3.common.*
-import androidx.media3.common.Player.Listener
+import androidx.media3.common.Player.*
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.BitmapLoader
 import androidx.media3.session.MediaSession
@@ -48,9 +48,6 @@ class AudioPlayerUtil {
             _Player.addListener(object:Listener{
                 override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                     super.onPlayerStateChanged(playWhenReady, playbackState)
-                    if(!_Player.hasNextMediaItem()){
-                        AddMediaItem()
-                    }
                     when(playbackState){
                         Player.STATE_IDLE -> {
                             //Log.e(TAG,"onPlayerStateChanged: NoExit media")
@@ -63,10 +60,14 @@ class AudioPlayerUtil {
                             if(_Player.isPlaying)
                                 state = MediaState.Play
                             EventBus.getDefault().post(MediaStateChangeEvent(state))
-                            //Log.e(TAG,"onPlayerStateChanged: Ready")
                         }
                         Player.STATE_ENDED -> {
-                            //Log.e(TAG,"onPlayerStateChanged: End")
+                            if(_Player.hasNextMediaItem()){
+                                Log.e(TAG,"contain next media item")
+                            }
+                            else{
+                                Log.e(TAG,"no contain")
+                            }
                         }
                     }
                 }
@@ -93,7 +94,7 @@ class AudioPlayerUtil {
 
                     try {
                         var media = Gson().fromJson(objStr,Media::class.java)
-                        Log.e(TAG,"onMediaMetadataChanged: request ${media.name} lyric")
+                        //Log.e(TAG,"onMediaMetadataChanged: request ${media.name} lyric")
                         GlobalObject.CurrentMedia = media
                         EventBus.getDefault().post(MediaChangeEvent(media))
                         EventBus.getDefault().post(LyricLoadingEvent())
@@ -101,6 +102,7 @@ class AudioPlayerUtil {
                         sService.GetLyric(media.rid.toInt(),object: HttpCall<Lyric> {
                             override fun onError(e: Throwable) {
                                 //Toast.makeText(this@ResultActivity,e.message.toString(), Toast.LENGTH_SHORT).show()
+                                //Log.e(TAG,"error: onMediaMetadataChanged:${e.message.toString()}")
                                 GlobalObject.Lyric = null
                                 EventBus.getDefault().post(LyricChangeEvent())
                                 EventBus.getDefault().post(LyricIndexChangeEvent(0))
@@ -113,14 +115,20 @@ class AudioPlayerUtil {
                                         it.inTime = (it.time.toFloat() * 1000).toLong()
                                     }
                                 }
+                                //Log.e(TAG,"Get lyric success");
                                 GlobalObject.Lyric = t
                                 EventBus.getDefault().post(LyricChangeEvent(t))
                                 EventBus.getDefault().post(LyricIndexChangeEvent(0))
+
+                                // prepare next media item
+                                if(!_Player.hasNextMediaItem()){
+                                    AddMediaItem()
+                                }
                             }
                         })
                     }
                     catch (e:java.lang.Exception){
-                        Log.e(TAG,"onMediaMetadataChanged:${e.message.toString()}")
+                        //Log.e(TAG,"error: onMediaMetadataChanged:${e.message.toString()}")
                     }
                 }
 
@@ -175,10 +183,8 @@ class AudioPlayerUtil {
 
             var media = _PlayList.first()
             _PlayList.removeAt(0)
-            //Log.e(TAG,media.name)
             SearchService().GetPlayUrl(media.rid.toInt(),object:HttpCall<String>{
                 override fun onError(e: Throwable) {
-                    Log.e(TAG,"AddMediaItemError:${e.message.toString()}")
                     AddMediaItem(prepare)
                 }
 
@@ -198,7 +204,6 @@ class AudioPlayerUtil {
                             .build())
                         .build()
                     _Player.addMediaItem(mediaItem)
-
                     if(prepare)
                         _Player.prepare()
                 }

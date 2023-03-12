@@ -1,5 +1,6 @@
 package com.jqwong.music.service
 
+import android.util.Log
 import com.jqwong.music.app.App
 import com.jqwong.music.model.ArtistInfo
 import com.jqwong.music.model.Media
@@ -16,6 +17,7 @@ class CollectService {
     private val _FavoriteRepo:FavoriteRepository
     private val _SheetInfoRepo:SheetInfoRepository
     private val _ArtistRepo:ArtistRepository
+    private val TAG = "CollectService"
 
 
     init {
@@ -65,7 +67,7 @@ class CollectService {
             media.artistid
         )
 
-        val exitItem = _SheetInfoRepo.Exit(userId,sheet)
+        val exitItem = _SheetInfoRepo.Exit(userId,sheet.token,media.rid)
         if(exitItem == null){
             _SheetInfoRepo.Add(userId,sheet,inMedia)
             RemoteService().Collect(SheetInfo(null,userId,media.rid.toLong(),sheet.token,false),inMedia)

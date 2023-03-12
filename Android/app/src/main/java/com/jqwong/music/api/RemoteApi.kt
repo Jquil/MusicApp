@@ -51,7 +51,7 @@ interface RemoteApi {
 
 
     @PATCH("T_Music_SheetInfo")
-    fun UpdateSheetInfo(@Body sheetInfo: SheetInfo):Observable<List<SheetInfo>>
+    fun UpdateSheetInfo(@Body sheetInfo: SheetInfo):Observable<Response<Void>>
 
 
     @POST("T_Music_SheetInfo")

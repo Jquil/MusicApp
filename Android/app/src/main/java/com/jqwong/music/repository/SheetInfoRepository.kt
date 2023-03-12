@@ -1,5 +1,6 @@
 package com.jqwong.music.repository
 
+import android.util.Log
 import com.jqwong.music.app.App
 import com.jqwong.music.repository.dao.MediaDao
 import com.jqwong.music.repository.dao.SheetInfoDao
@@ -19,10 +20,13 @@ class SheetInfoRepository: BaseRepository() {
     }
 
 
-    fun Exit(userId: Long,sheet: Sheet):SheetInfo?{
+    fun Exit(userId: Long,sheetToken: String,rid: String):SheetInfo?{
         // then check query is exit sheet
         val data = _Dao.queryBuilder()
-            .where(SheetInfoDao.Properties.UserId.eq(userId), SheetInfoDao.Properties.SheetToken.eq(sheet.Token))
+            .where(SheetInfoDao.Properties.UserId.eq(userId),
+                   SheetInfoDao.Properties.SheetToken.eq(sheetToken),
+                   SheetInfoDao.Properties.Rid.eq(rid),
+                   SheetInfoDao.Properties.Delete.eq(false))
             .build().list()
         if(data.size == 0)
             return null
@@ -98,13 +102,17 @@ class SheetInfoRepository: BaseRepository() {
 
 
     fun Delete(userId:Long,sheetToken: String,rid:Int){
-        val sql = """
+        try {
+            val sql = """
             update ${SheetInfoDao.TABLENAME} set [${SheetInfoDao.Properties.Delete.columnName}] = true
             where ${SheetInfoDao.Properties.UserId.columnName} = '$userId'
-            and ${SheetInfoDao.Properties.SheetToken.columnName} = $sheetToken
+            and ${SheetInfoDao.Properties.SheetToken.columnName} = '$sheetToken'
             and ${SheetInfoDao.Properties.Rid.columnName} = $rid
         """.trimIndent()
-        App.mSession.database.execSQL(sql)
+            App.mSession.database.execSQL(sql)
+        }catch (e:Exception){
+            Log.e(TAG,e.message.toString())
+        }
     }
 
 

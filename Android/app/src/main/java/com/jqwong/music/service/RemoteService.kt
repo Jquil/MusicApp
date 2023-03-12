@@ -251,33 +251,38 @@ class RemoteService {
 
 
     fun DeleteOfCollect(sheetInfo: SheetInfo){
-        val inUserId = "eq.${sheetInfo.UserId}"
-        val inRid = "eq.${sheetInfo.rid}"
-        val inToken = "eq.${sheetInfo.SheetToken}"
-        RemoteApiService.h.QuerySheetInfo(inUserId,inToken,inRid)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object:MusicApiService.BaseObserver<List<SheetInfo>>{
-                override fun onSubscribe(d: Disposable) {
-                }
-
-                override fun onNext(t: List<SheetInfo>) {
-                    if(t.size != 0){
-                        var item = t.get(0)
-                        item.delete = true
-                        RemoteApiService.h.UpdateSheetInfo(sheetInfo)
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe()
+        try {
+            val inUserId = "eq.${sheetInfo.UserId}"
+            val inRid = "eq.${sheetInfo.rid}"
+            val inToken = "eq.${sheetInfo.SheetToken}"
+            RemoteApiService.h.QuerySheetInfo(inUserId,inToken,inRid)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(object:MusicApiService.BaseObserver<List<SheetInfo>>{
+                    override fun onSubscribe(d: Disposable) {
                     }
-                }
 
-                override fun onError(e: Throwable) {
-                }
+                    override fun onNext(t: List<SheetInfo>) {
+                        if(t.size != 0){
+                            var item = t.get(0)
+                            item.delete = true
+                            RemoteApiService.h.UpdateSheetInfo(sheetInfo)
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe()
+                        }
+                    }
 
-                override fun onComplete() {
-                }
-            })
+                    override fun onError(e: Throwable) {
+                    }
+
+                    override fun onComplete() {
+                    }
+                })
+        }
+        catch (e:Exception){
+            Log.e(TAG,e.message.toString())
+        }
     }
 
 
