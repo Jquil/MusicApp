@@ -4,6 +4,7 @@ import com.jqwong.music.model.ArtistInfo;
 import com.jqwong.music.model.Bang;
 import com.jqwong.music.model.MusicBaseData;
 import com.jqwong.music.model.MusicList;
+import com.jqwong.music.model.PlayUrl;
 import com.jqwong.music.model.Song;
 import com.jqwong.music.model.SongList;
 

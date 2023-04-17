@@ -2,23 +2,15 @@ package com.jqwong.music.service
 
 import android.util.Log
 import com.google.gson.Gson
-import com.google.gson.JsonObject
+import com.google.gson.reflect.TypeToken
 import com.jqwong.music.api.service.HttpCall
 import com.jqwong.music.api.service.MusicApiService
-import com.jqwong.music.app.App
 import com.jqwong.music.model.*
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Consumer
-import io.reactivex.internal.operators.observable.ObservableCreate
 import io.reactivex.schedulers.Schedulers
-import okhttp3.Call
-import okhttp3.Callback
 import okhttp3.Request
-import okhttp3.Response
-import retrofit2.converter.gson.GsonConverterFactory
-import java.io.IOException
 
 class SearchService {
 
@@ -58,20 +50,22 @@ class SearchService {
         }
 
         val observable = Observable.create<String> {
-            val req = Request.Builder().url("http://antiserver.kuwo.cn/anti.s?type=convert_url&rid=$rid&format=mp3&response=url").build()
+            val req = Request.Builder().url("http://www.kuwo.cn/api/v1/www/music/playUrl?mid=$rid&type=convert_url3").build()
             try {
                 val res = MusicApiService.c.newCall(req).execute()
-                it.onNext(res.body()!!.string())
+                val json = res.body()!!.string()
+                val resultType = object : TypeToken<MusicBaseData<PlayUrl>>() {}.type
+                val data = Gson().fromJson<MusicBaseData<PlayUrl>>(json,resultType)
+                it.onNext(data.data.url)
                 it.onComplete()
             }
             catch (e:java.lang.Exception){
                 it.onError(e)
             }
         }
-
         observable.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object: MusicApiService.BaseObserver<String>{
+            .subscribe(object:MusicApiService.BaseObserver<String>{
                 override fun onSubscribe(d: Disposable) {
 
                 }
@@ -87,6 +81,7 @@ class SearchService {
                     GlobalCache.Urls.put(rid,t)
                     callback.OnSuccess(t)
                 }
+
             })
     }
 
