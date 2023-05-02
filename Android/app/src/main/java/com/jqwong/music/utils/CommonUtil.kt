@@ -1,31 +1,20 @@
 package com.jqwong.music.utils
 
-import android.util.Log
+import android.os.Build
+import androidx.annotation.RequiresApi
+import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
 
+/**
+ * @author: Jq
+ * @date: 5/1/2023
+ */
 class CommonUtil {
 
     companion object{
 
-        private val TAG = "CommonUtil"
-
-        fun StrToTime(str:String):Long{
-            var time:Long = 0
-            if(str == "")
-                return time
-            val splitTimeArr = str.split(":")
-            when(splitTimeArr.size)
-            {
-                1 -> {
-                    time= splitTimeArr[0].toLong()
-                }
-                2 -> {
-                    time = splitTimeArr[0].toLong() * 60 + splitTimeArr[1].toLong()
-                }
-                3 -> {
-                    time = splitTimeArr[0].toLong() * 60 * 60 + splitTimeArr[1].toLong() * 60 + splitTimeArr[2].toLong()
-                }
-            }
-            return time * 1000
+        inline fun <reified T>getName():String{
+            return T::class.java.simpleName
         }
     }
 }

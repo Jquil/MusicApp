@@ -1,6 +1,12 @@
 package com.jqwong.music.model
 
-class LyricItem(val lineLyric:String,val time:String,var inTime:Long)
+/**
+ * @author: Jq
+ * @date: 5/1/2023
+ */
+class Lyric (
+    val data:LyricList,var rid:Int = 0
+)
 
 class LyricList(val lrclist:List<LyricItem>){
 
@@ -22,4 +28,4 @@ class LyricList(val lrclist:List<LyricItem>){
     }
 }
 
-class Lyric(val data:LyricList,var rid:Int = 0)
+class LyricItem(val lineLyric:String,val time:String,var inTime:Long)

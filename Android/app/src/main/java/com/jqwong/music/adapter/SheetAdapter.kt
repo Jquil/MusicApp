@@ -11,7 +11,12 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.QuickViewHolder
 import com.jqwong.music.R
-import com.jqwong.music.repository.entity.Sheet
+import com.jqwong.music.entity.Sheet
+
+/**
+ * @author: Jq
+ * @date: 4/30/2023
+ */
 
 class SheetAdapter: BaseQuickAdapter<Sheet, QuickViewHolder>() {
 
@@ -45,7 +50,7 @@ class SheetAdapter: BaseQuickAdapter<Sheet, QuickViewHolder>() {
         parent: ViewGroup,
         viewType: Int
     ): QuickViewHolder {
-        return QuickViewHolder(R.layout.component_sheet,parent)
+        return QuickViewHolder(R.layout.item_sheet,parent)
     }
 
 

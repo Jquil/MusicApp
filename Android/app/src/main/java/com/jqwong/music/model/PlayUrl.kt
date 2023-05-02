@@ -1,5 +1,9 @@
 package com.jqwong.music.model
 
-class PlayUrl (
+/**
+ * @author: Jq
+ * @date: 5/1/2023
+ */
+class PlayUrl(
     val url:String
 )

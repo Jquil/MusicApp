@@ -1,16 +1,12 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'org.greenrobot.greendao'
 }
-apply plugin: 'org.greenrobot.greendao'
 
 android {
     namespace 'com.jqwong.music'
     compileSdk 33
-
-    viewBinding {
-        enabled = true
-    }
 
     defaultConfig {
         applicationId "com.jqwong.music"
@@ -35,15 +31,18 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-
+    viewBinding {
+        enabled = true
+    }
     greendao{
-        schemaVersion 1
-        daoPackage 'com.jqwong.music.repository.dao'
+        schemaVersion 5
+        daoPackage 'com.jqwong.music.dal.dao'
         targetGenDir 'src/main/java'
     }
 }
 
 dependencies {
+
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
@@ -69,4 +68,8 @@ dependencies {
     implementation "androidx.media3:media3-session:$media3_version"
     implementation "androidx.media3:media3-exoplayer:$media3_version"
     implementation 'com.github.FlodCoding:LoadingButton:1.1.0-alpha01'
+    implementation "com.github.skydoves:powermenu:2.2.3"
+    implementation 'com.afollestad.material-dialogs:core:3.3.0'
+    implementation 'com.afollestad.material-dialogs:input:3.3.0'
+    implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
 }

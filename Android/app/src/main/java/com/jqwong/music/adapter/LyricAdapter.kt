@@ -8,9 +8,13 @@ import android.widget.TextView
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.QuickViewHolder
 import com.jqwong.music.R
-import com.jqwong.music.model.GlobalObject
+import com.jqwong.music.app.Global
 import com.jqwong.music.model.LyricItem
 
+/**
+ * @author: Jq
+ * @date: 5/1/2023
+ */
 class LyricAdapter: BaseQuickAdapter<LyricItem, QuickViewHolder>() {
     private val TAG = "LyricAdapter"
     private val _Min = 14f
@@ -20,7 +24,7 @@ class LyricAdapter: BaseQuickAdapter<LyricItem, QuickViewHolder>() {
         val tvLyric = holder.getView<TextView>(R.id.tv_lyric)
         tvLyric.text = item?.lineLyric
         val duration:Long = 250
-        if(position == GlobalObject.CurrentLyricIndex){
+        if(position == Global.lyricIndex){
             val anim = PropertyValuesHolder.ofFloat("textSize",_Min,_Max)
             ObjectAnimator.ofPropertyValuesHolder(tvLyric,anim)
                 .setDuration(duration)
@@ -46,6 +50,6 @@ class LyricAdapter: BaseQuickAdapter<LyricItem, QuickViewHolder>() {
         parent: ViewGroup,
         viewType: Int
     ): QuickViewHolder {
-        return QuickViewHolder(R.layout.component_lyric,parent)
+        return QuickViewHolder(R.layout.item_lyric,parent)
     }
 }

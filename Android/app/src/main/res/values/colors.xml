@@ -7,8 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="hint">#FFD4D5D9</color>
     <color name="normal">@color/black</color>
     <color name="normal_reserve">@color/white</color>
-    <color name="hint">#d4d5d9</color>
-    <color name="rippleDefaultColor">#424242</color>
+    <color name="rippleDefaultColor">#FF424242</color>
 </resources>
