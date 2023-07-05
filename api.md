@@ -4,7 +4,7 @@
 $root = "https://www.kuwo.cn/api/www"
 Method:GET
 Headers["Cookie"]  = "kw_token=EFWR1Z8B8F: Hm_token=a5k3Rn3zi52eF32EyQ3EQjb2HfbaCzDr"
-Headers["Cross"]    = "4ef7fff9eeb7a38b89bf3fbb5a6a111e"
+Headers["Cross"]   = "4ef7fff9eeb7a38b89bf3fbb5a6a111e"
 Headers["Referer"] = "https://www.kuwo.cn/"
 ```
 
