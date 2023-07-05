@@ -3,9 +3,9 @@
 ```
 $root = "https://www.kuwo.cn/api/www"
 Method:GET
-Headers["COOKIE"]  = "_ga=GA1.2.291993560.1625886876; _gid=GA1.2.445012141.1625886876; Hm_lvt_cdb524f42f0ce19b169a8071123a4797=1625903943,1625967386; Hm_lpvt_cdb524f42f0ce19b169a8071123a4797=1625967696; kw_token=IP4FK471YEF"
-Headers["CSRF"]    = "IP4FK471YEF"
-Headers["REFERER"] = "https://www.kuwo.cn/"
+Headers["Cookie"]  = "kw_token=EFWR1Z8B8F: Hm_token=a5k3Rn3zi52eF32EyQ3EQjb2HfbaCzDr"
+Headers["Cross"]    = "4ef7fff9eeb7a38b89bf3fbb5a6a111e"
+Headers["Referer"] = "https://www.kuwo.cn/"
 ```
 
 
