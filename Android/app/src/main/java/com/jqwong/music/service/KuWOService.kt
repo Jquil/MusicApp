@@ -52,7 +52,7 @@ class KuWOService:IService {
         TODO("Not yet implemented")
     }
 
-    override fun GetLeaderboardSongList(id: Long, page: Int, limit: Int): Response<List<Song>> {
+    override fun GetLeaderboardSongList(id: Long, page: Int, limit: Int): Response<List<Media>> {
         TODO("Not yet implemented")
     }
 
@@ -60,11 +60,11 @@ class KuWOService:IService {
         TODO("Not yet implemented")
     }
 
-    override suspend fun Search(key: String, page: Int, limit: Int): Response<List<Song>> {
+    override suspend fun Search(key: String, page: Int, limit: Int): Response<List<Media>> {
         val flag = "Search"
         val data = service.Search(key,page,limit).awaitResult()
         if(data.e != null){
-            return Response<List<Song>>(
+            return Response<List<Media>>(
                 title = flag,
                 success = false,
                 message = "",
@@ -77,11 +77,14 @@ class KuWOService:IService {
             )
         }
         else{
-            val list = mutableListOf<Song>()
+            val list = mutableListOf<Media>()
             data.data!!.data.list.forEach {
-                list.add(it.convert())
+                list.add(Media(
+                    audio = Audio.convert(it.convert()),
+                    video = null
+                ))
             }
-            return Response<List<Song>>(
+            return Response<List<Media>>(
                 title = flag,
                 success = true,
                 message = "ok",
@@ -95,11 +98,11 @@ class KuWOService:IService {
         TODO("Not yet implemented")
     }
 
-    override fun GetRecommendSongSheetData(data: Any, page: Int, limit: Int): Response<List<Song>> {
+    override fun GetRecommendSongSheetData(data: Any, page: Int, limit: Int): Response<List<Media>> {
         TODO("Not yet implemented")
     }
 
-    override fun GetRecommendDaily(data: Any): Response<List<Song>> {
+    override fun GetRecommendDaily(data: Any): Response<List<Media>> {
         TODO("Not yet implemented")
     }
 

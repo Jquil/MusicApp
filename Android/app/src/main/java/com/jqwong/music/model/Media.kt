@@ -5,6 +5,6 @@ package com.jqwong.music.model
  * @date: 7/28/2023
  */
 class Media(
-    var audio:Audio,
-    var video:Video
+    var audio:Audio?,
+    var video:Video?
 )

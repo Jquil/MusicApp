@@ -2,10 +2,11 @@ package com.jqwong.music.view
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import androidx.annotation.RequiresApi
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.jqwong.music.R
+import com.jqwong.music.adapter.MediaAdapter
 import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivitySearchResultBinding
 import com.jqwong.music.helper.TimeHelper
@@ -17,8 +18,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.Instant
-import kotlin.coroutines.Continuation
 
 /**
  * @author: Jq
@@ -27,6 +26,7 @@ import kotlin.coroutines.Continuation
 class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
     private lateinit var key:String
     private lateinit var platform:Platform
+    private lateinit var adapter:MediaAdapter
     private var page:Int = 0
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -69,6 +69,9 @@ class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
         _binding.includeToolbar.toolbar.setNavigationOnClickListener {
             finish()
         }
+        _binding.includeMain.rvList.layoutManager = LinearLayoutManager(this)
+        adapter = MediaAdapter()
+        _binding.includeMain.rvList.adapter = adapter
     }
     override fun useEventBus(): Boolean {
         return false
@@ -80,21 +83,30 @@ class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
         menuInflater.inflate(R.menu.menu_search_result,menu)
         return true
     }
-    private fun loadData(){
+    private fun loadData(reloadNumber:Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
-            if(page == 0){
-                page++
-                val data = ServiceProxy.Search(platform,key,page,_pageItemSize)
-                withContext(Dispatchers.Main){
-                    if(data.exception != null){
-                        toast(data.exception.message)
+            page++
+            val data = ServiceProxy.Search(platform,key,page,pageItemSize)
+            withContext(Dispatchers.Main){
+                if(data.exception != null){
+                    toast(data.exception.message)
+                    if(reloadNumber == maxReloadCount){
+                        // show error info
                     }
                     else{
-                        toast(data.data!!.size.toString())
+                        loadData(reloadNumber+1)
+                    }
+                }
+                else{
+                    if(page == 1){
+                        adapter.submitList(data.data)
+                        _binding.includeMain.stateLayout.showContent()
+                    }
+                    else{
+                        adapter.addAll(data.data!!)
                     }
                 }
             }
-
         }
     }
 }

@@ -7,6 +7,7 @@ package com.jqwong.music.model
 open class Song(
     val platform: Platform,
     val id:String,
+    val name:String,
     val album_id:String,
     val album:String,
     val pic:String,

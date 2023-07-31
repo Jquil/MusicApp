@@ -2,7 +2,6 @@ package com.jqwong.music.view
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -15,8 +14,9 @@ import androidx.viewbinding.ViewBinding
 abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
     protected lateinit var TAG:String
     protected lateinit var _binding:T
-    private var _useEventBus:Boolean = false
-    protected val _pageItemSize = 20
+    private var useEventBus:Boolean = false
+    protected val pageItemSize = 20
+    protected val maxReloadCount = 3
     abstract fun initData(savedInstanceState: Bundle?)
     abstract fun intView()
     abstract fun useEventBus():Boolean
@@ -36,22 +36,21 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
         TAG = localClassName
         window.statusBarColor = getColor(statusBarColor())
         val wic = ViewCompat.getWindowInsetsController(window.decorView)
-        if(wic != null)
-        {
+        if(wic != null) {
             wic.isAppearanceLightStatusBars = false
         }
         _binding = getBinding()
         setContentView(_binding.root)
         intView()
         initData(savedInstanceState)
-        _useEventBus = useEventBus()
-        if(_useEventBus)
+        useEventBus = useEventBus()
+        if(useEventBus)
         {
             // register eventbus
         }
     }
     override fun onDestroy() {
-        if(_useEventBus)
+        if(useEventBus)
         {
             // cancel register eventbus
         }

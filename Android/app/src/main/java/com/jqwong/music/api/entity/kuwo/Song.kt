@@ -35,6 +35,7 @@ data class Song(
         return com.jqwong.music.model.Song(
             platform = Platform.KuWo,
             id = rid.toString(),
+            name = name,
             album = album,
             album_id = albumid.toString(),
             pic = pic,
