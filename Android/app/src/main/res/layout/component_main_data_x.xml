@@ -10,12 +10,13 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:loading_layout="@layout/component_state_loading"
+        app:error_layout="@layout/component_state_error"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="wrap_content"/>
     </com.drake.statelayout.StateLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

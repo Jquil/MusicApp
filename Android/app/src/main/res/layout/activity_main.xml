@@ -24,6 +24,8 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:layout_margin="15dp">
 
                 <ImageButton
@@ -111,7 +113,7 @@
                             android:id="@+id/btn_recommend_sheet"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
-                            android:src="@drawable/ic_sheet"
+                            android:src="@drawable/ic_recommend"
                             android:background="?android:attr/selectableItemBackground"
                             app:layout_constraintLeft_toRightOf="@id/btn_recommend_song"
                             app:layout_constraintRight_toLeftOf="@id/btn_download"/>
@@ -119,7 +121,7 @@
                             android:id="@+id/btn_download"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
-                            android:src="@drawable/ic_sheet"
+                            android:src="@drawable/ic_local"
                             android:background="?android:attr/selectableItemBackground"
                             app:layout_constraintRight_toRightOf="parent"
                             app:layout_constraintLeft_toRightOf="@id/btn_recommend_sheet"/>

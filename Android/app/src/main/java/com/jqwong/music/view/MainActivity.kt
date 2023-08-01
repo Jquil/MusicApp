@@ -41,7 +41,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                 App.exceptions.add(
                     ExceptionLog(
                         title = "反序列化配置文件",
-                        message = e.message.toString(),
+                        exception = e,
                         time = TimeHelper.getTime()
                     )
                 )
@@ -66,6 +66,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                     toast("please input key about your want to search")
                 }
                 else{
+                    _binding.etSearch.clearFocus()
                     startActivity(Intent(this,SearchResultActivity::class.java).apply {
                         putExtra(ExtraKey.Search.name,key)
                         putExtra(ExtraKey.Platform.name,App.config.default_search_platform.name)
@@ -82,7 +83,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         return R.color.background
     }
     override fun onStop() {
-
+        App.config.save(this)
         super.onStop()
     }
 

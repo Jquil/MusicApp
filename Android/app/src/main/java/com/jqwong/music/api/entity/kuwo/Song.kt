@@ -14,10 +14,10 @@ data class Song(
     @field:Json(name = "artist") val artist:String,
     @field:Json(name = "artistid") val artistid:Long,
     @field:Json(name = "mvpayinfo") val mvpayinfo:MvInfo,
-    @field:Json(name = "pic") val pic:String,
+    @field:Json(name = "pic") val pic:String?,
     @field:Json(name = "album") val album:String,
     @field:Json(name = "albumid") val albumid:Long,
-    @field:Json(name = "albumpic") val albumpic:String,
+    @field:Json(name = "albumpic") val albumpic:String?,
     @field:Json(name = "name") val name:String,
     //@field:Json(name = "songTimeMintues") val songTimeMintues:String,
     @field:Json(name = "hasmv") val hasmv:Int,
@@ -38,12 +38,13 @@ data class Song(
             name = name,
             album = album,
             album_id = albumid.toString(),
-            pic = pic,
+            pic = pic ?: "",
             artists = listOf(
                 com.jqwong.music.model.Artist(
                     platform = Platform.KuWo,
                     name = artist,
                     id = artistid.toString(),
+                    description = null,
                     pic = null
                 )
             ),

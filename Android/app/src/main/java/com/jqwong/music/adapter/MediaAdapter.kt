@@ -28,9 +28,14 @@ class MediaAdapter: BaseQuickAdapter<Media, QuickViewHolder>(){
             }
             if(builder.isNotEmpty()){
                 builder.deleteCharAt(builder.length-1)
+                item.audio?.album.let {
+                    if(!it.isNullOrEmpty()){
+                        builder.append(" - ")
+                    }
+                }
             }
             tvTitle.text = item.audio?.name
-            tvDescription.text = "${builder.toString()} - ${item.audio?.album}"
+            tvDescription.text = "${builder.toString()}${item.audio?.album}"
             Glide.with(ivPic)
                 .asBitmap()
                 .load(item.audio?.pic)
@@ -39,7 +44,7 @@ class MediaAdapter: BaseQuickAdapter<Media, QuickViewHolder>(){
                 .into(ivPic)
         }
         else{
-
+            // show video info
         }
     }
 

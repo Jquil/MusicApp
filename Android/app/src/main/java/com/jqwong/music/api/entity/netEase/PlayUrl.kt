@@ -1,13 +1,11 @@
-package com.jqwong.music.api.entity.kuwo
+package com.jqwong.music.api.entity.netEase
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
-/**
- * @author: Jq
- * @date: 7/28/2023
- */
+
 @JsonClass(generateAdapter = true)
-data class MvUrl(
+data class PlayUrl(
+    @field:Json(name = "id") val id:Long,
     @field:Json(name = "url") val url:String
 )

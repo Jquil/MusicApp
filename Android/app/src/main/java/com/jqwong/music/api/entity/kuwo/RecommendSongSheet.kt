@@ -1,19 +1,24 @@
 package com.jqwong.music.api.entity.kuwo
 
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+
 /**
  * @author: Jq
  * @date: 7/28/2023
  */
-class RecommendSongSheet(
-    val list:List<Item>
+@JsonClass(generateAdapter = true)
+data class RecommendSongSheet(
+    @field:Json(name = "list") val list:List<Item>
 )
 {
-    class Item(
-        val img:String,
-        val uname:String,
-        val img700:String,
-        val name:String,
-        val id:Long,
-        val info:String
+    @JsonClass(generateAdapter = true)
+    data class Item(
+        @field:Json(name = "img") val img:String,
+        @field:Json(name = "uname") val uname:String,
+        @field:Json(name = "img700") val img700:String,
+        @field:Json(name = "name") val name:String,
+        @field:Json(name = "id") val id:Long,
+        @field:Json(name = "info") val info:String
     )
 }

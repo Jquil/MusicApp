@@ -8,5 +8,6 @@ class Artist(
     val id:String,
     val name:String,
     val pic:String?,
+    val description:String?,
     val platform: Platform
 )

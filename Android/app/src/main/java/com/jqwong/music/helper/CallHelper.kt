@@ -9,9 +9,6 @@ import retrofit2.Callback
  * @author: Jq
  * @date: 7/30/2023
  */
-class NetHelper {
-
-}
 
 suspend fun <T : Any> Call<T>.awaitResult(): ApiResult<T> {
     return suspendCancellableCoroutine{
@@ -37,7 +34,7 @@ suspend fun <T : Any> Call<T>.awaitResult(): ApiResult<T> {
                     else{
                         ApiResult<T>(
                             data = null,
-                            e = Exception("request failed")
+                            e = Exception(response.errorBody()?.string())
                         )
                     }
                 })
@@ -46,7 +43,7 @@ suspend fun <T : Any> Call<T>.awaitResult(): ApiResult<T> {
                 continuation.resumeWith(runCatching {
                     ApiResult<T>(
                         data = null,
-                        e = Exception(t.message)
+                        e = Exception(t.message,t.cause)
                     )
                 })
             }

@@ -8,5 +8,6 @@ class SongSheet(
     val platform: Platform,
     val id:String,
     val name:String,
-    val pic:String
+    val pic:String?,
+    val description:String?
 )

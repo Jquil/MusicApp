@@ -1,5 +1,6 @@
 package com.jqwong.music.service
 
+import com.jqwong.music.helper.FunHelper
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.model.*
 
@@ -10,30 +11,28 @@ import com.jqwong.music.model.*
 class ServiceProxy {
     companion object{
         private val services = mapOf(
-            Platform.KuWo to KuWOService()
+            Platform.KuWo to KuWOService(),
+            Platform.NetEaseCloud to NetEaseCloudService()
         )
-
-        suspend fun Search(platform:Platform, key:String,page:Int,limit:Int): Response<List<Media>> {
-            val title = "Search"
+        suspend fun search(platform:Platform, key:String, page:Int, limit:Int): Response<List<Media>> {
             if(!services.containsKey(platform)){
-                return notSupportPlatform(title,platform)
+                return notSupportPlatform(FunHelper.getName(),platform)
             }
-            return services.get(platform)!!.Search(key, page, limit)
+            return services.get(platform)!!.search(key, page, limit)
         }
         private fun <T>notSupportPlatform(title:String,platform: Platform):Response<T>{
             return Response(
                 title = title,
                 success = false,
                 data = null,
-                message = "failed",
+                message = "",
                 exception = ExceptionLog(
                     title = title,
-                    message = "not support '${platform.name}'",
+                    exception = Exception("not support '${platform.name}'"),
                     time = TimeHelper.getTime()
-                )
+                ),
+                support = false
             )
         }
     }
-
-
 }

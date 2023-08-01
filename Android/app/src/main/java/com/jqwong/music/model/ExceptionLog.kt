@@ -6,6 +6,6 @@ package com.jqwong.music.model
  */
 class ExceptionLog(
     val title:String,
-    val message:String,
+    val exception:Exception,
     val time:Long
 )

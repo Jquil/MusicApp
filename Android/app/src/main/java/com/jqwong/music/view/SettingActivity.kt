@@ -136,11 +136,11 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                     catch (e:Exception){
                         val log = ExceptionLog(
                             title = "Save KuWo Config",
-                            message = e.message.toString(),
+                            exception = e,
                             time = TimeHelper.getTime()
                         )
                         App.exceptions.add(log)
-                        loadingButtonFinishAnimation(it,false,"save failed: ${log.message}")
+                        loadingButtonFinishAnimation(it,false,"save failed: ${log.exception.message}")
                     }
                 }
             }

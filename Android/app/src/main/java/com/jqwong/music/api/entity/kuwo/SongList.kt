@@ -7,11 +7,12 @@ import com.squareup.moshi.JsonClass
  * @author: Jq
  * @date: 7/28/2023
  */
-class SongList(
-    val img:String,
-    val num:String,
-    val pub:String,
-    val musicList:List<Song>
+@JsonClass(generateAdapter = true)
+data class SongList(
+    @field:Json(name = "img") val img:String,
+    @field:Json(name = "num") val num:String,
+    @field:Json(name = "pub") val pub:String,
+    @field:Json(name = "musicList") val musicList:List<Song>
 )
 
 @JsonClass(generateAdapter = true)
