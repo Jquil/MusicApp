@@ -45,7 +45,7 @@ class KuWOService:IService {
             .create(KuWoMusicApi::class.java)
     }
     override suspend fun getLeaderboard(): Response<List<Leaderboard>> {
-        val title = FunHelper.getName()
+        val title = this::getLeaderboard.name
         val result = service.getLeaderboard().awaitResult()
         if(result.e != null){
             return error(title,result.e)
@@ -58,7 +58,7 @@ class KuWOService:IService {
                     children.add(
                         Leaderboard(
                             platform = Platform.KuWo,
-                            id = it.id,
+                            id = it.sourceid,
                             name = it.name,
                             children = null
                         )
@@ -84,8 +84,8 @@ class KuWOService:IService {
             )
         }
     }
-    override suspend fun getLeaderboardSongList(id: Long, page: Int, limit: Int): Response<List<Media>> {
-        val title = FunHelper.getName()
+    override suspend fun getLeaderboardSongList(id: String, page: Int, limit: Int): Response<List<Media>> {
+        val title = this::getLeaderboardSongList.name
         val result = service.getLeaderboardSongList(id.toString(),page,limit).awaitResult()
         if(result.e != null){
             return error(title,result.e)
@@ -109,7 +109,7 @@ class KuWOService:IService {
         }
     }
     override suspend fun getArtistSongList(id: Long, page: Int, limit: Int):Response<List<Media>> {
-        val title = FunHelper.getName()
+        val title = this::getArtistSongList.name
         val result = service.getArtistSongList(id.toString(),page,limit).awaitResult()
         if(result.e != null){
             return error(title,result.e)
@@ -133,7 +133,7 @@ class KuWOService:IService {
         }
     }
     override suspend fun getArtistInfo(id: Long): Response<Artist> {
-        val title = FunHelper.getName()
+        val title = this::getArtistInfo.name
         val result = service.getArtistInfo(id.toString()).awaitResult()
         return if(result.e != null){
             error(title,result.e)
@@ -158,7 +158,7 @@ class KuWOService:IService {
         }
     }
     override suspend fun search(key: String, page: Int, limit: Int): Response<List<Media>> {
-        val title = FunHelper.getName()
+        val title = this::search.name
         val result = service.search(key,page,limit).awaitResult()
         if(result.e != null){
             return error(title,result.e)
@@ -182,7 +182,7 @@ class KuWOService:IService {
         }
     }
     override suspend fun getRecommendSongSheetList(data: Any): Response<List<SongSheet>> {
-        val title = FunHelper.getName()
+        val title = this::getRecommendSongSheetList.name
         val result = service.getRecommendSongSheet().awaitResult()
         return if(result.e != null){
             error(title,result.e)
@@ -208,7 +208,7 @@ class KuWOService:IService {
         }
     }
     override suspend fun getRecommendSongSheetData(data: Any, page: Int, limit: Int): Response<List<Media>> {
-        val title = FunHelper.getName()
+        val title = this::getRecommendSongSheetData.name
         val result = service.getRecommendSongList(data.toString(),page,limit).awaitResult()
         return if(result.e != null){
             error(title,result.e)
@@ -232,7 +232,7 @@ class KuWOService:IService {
         }
     }
     override suspend fun getRecommendDaily(data: Any): Response<List<Media>> {
-        val title = FunHelper.getName()
+        val title = this::getRecommendDaily.name
         return notSupport(title)
     }
     override suspend fun getPlayUrl(id: Long, quality: Any):Response<String> {

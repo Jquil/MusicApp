@@ -99,13 +99,13 @@
                             android:layout_height="match_parent"
                             android:src="@drawable/ic_artist"
                             android:background="?android:attr/selectableItemBackground"
-                            app:layout_constraintRight_toLeftOf="@id/btn_recommend_song"
+                            app:layout_constraintRight_toLeftOf="@id/btn_leaderboard"
                             app:layout_constraintLeft_toLeftOf="parent"/>
                         <ImageButton
-                            android:id="@+id/btn_recommend_song"
+                            android:id="@+id/btn_leaderboard"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
-                            android:src="@drawable/ic_sheet"
+                            android:src="@drawable/ic_leaderboard"
                             android:background="?android:attr/selectableItemBackground"
                             app:layout_constraintLeft_toRightOf="@id/btn_favorite_artist"
                             app:layout_constraintRight_toLeftOf="@id/btn_recommend_sheet"/>
@@ -115,7 +115,7 @@
                             android:layout_height="match_parent"
                             android:src="@drawable/ic_recommend"
                             android:background="?android:attr/selectableItemBackground"
-                            app:layout_constraintLeft_toRightOf="@id/btn_recommend_song"
+                            app:layout_constraintLeft_toRightOf="@id/btn_leaderboard"
                             app:layout_constraintRight_toLeftOf="@id/btn_download"/>
                         <ImageButton
                             android:id="@+id/btn_download"

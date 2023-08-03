@@ -25,6 +25,7 @@
         <activity android:name=".view.SettingActivity"/>
         <activity android:name=".view.LyricActivity"/>
         <activity android:name=".view.SearchResultActivity"/>
+        <activity android:name=".view.LeaderboardActivity"/>
     </application>
 
 </manifest>

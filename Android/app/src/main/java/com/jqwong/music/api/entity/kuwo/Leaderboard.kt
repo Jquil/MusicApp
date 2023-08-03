@@ -19,5 +19,6 @@ data class Leaderboard(
         @field:Json(name = "id") val id:String,
         @field:Json(name = "pic") val pic:String,
         @field:Json(name = "pub") val pub:String,
+        @field:Json(name = "sourceid") val sourceid:String,
     )
 }

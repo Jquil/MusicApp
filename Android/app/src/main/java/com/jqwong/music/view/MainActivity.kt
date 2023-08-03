@@ -59,6 +59,11 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         _binding.layoutPlayBar.clPlayBar.setOnClickListener {
             startActivity(Intent(this,LyricActivity::class.java))
         }
+        _binding.btnLeaderboard.setOnClickListener {
+            startActivity(Intent(this,LeaderboardActivity::class.java).apply {
+                putExtra(ExtraKey.Platform.name,App.config.default_search_platform.name)
+            })
+        }
         _binding.etSearch.setOnEditorActionListener { textView, i, keyEvent ->
             if(i == EditorInfo.IME_ACTION_SEARCH){
                 val key = textView.text.toString()
@@ -86,7 +91,6 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         App.config.save(this)
         super.onStop()
     }
-
     private fun getDefaultConfig():Config {
         return Config(
             okhttp_request_timeout = 3000,

@@ -1,4 +1,5 @@
 <resources>
     <string name="change_platform">Change Platform</string>
     <string name="refresh">Refresh</string>
+    <string name="leaderboard">Leaderboard</string>
 </resources>

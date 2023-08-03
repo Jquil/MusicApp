@@ -87,7 +87,7 @@ class NetEaseCloudService:IService {
     }
 
     override suspend fun getLeaderboardSongList(
-        id: Long,
+        id: String,
         page: Int,
         limit: Int
     ): Response<List<Media>> {

@@ -20,6 +20,18 @@ class ServiceProxy {
             }
             return services.get(platform)!!.search(key, page, limit)
         }
+        suspend fun getLeaderboard(platform:Platform): Response<List<Leaderboard>> {
+            if(!services.containsKey(platform)){
+                return notSupportPlatform(FunHelper.getName(),platform)
+            }
+            return services.get(platform)!!.getLeaderboard()
+        }
+        suspend fun getLeaderboardSongList(platform:Platform, id:String, page:Int, limit:Int): Response<List<Media>> {
+            if(!services.containsKey(platform)){
+                return notSupportPlatform(FunHelper.getName(),platform)
+            }
+            return services.get(platform)!!.getLeaderboardSongList(id, page, limit)
+        }
         private fun <T>notSupportPlatform(title:String,platform: Platform):Response<T>{
             return Response(
                 title = title,

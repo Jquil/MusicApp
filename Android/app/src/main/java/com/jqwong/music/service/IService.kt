@@ -9,7 +9,7 @@ import com.jqwong.music.model.*
  */
 interface IService {
     suspend fun getLeaderboard():Response<List<Leaderboard>>
-    suspend fun getLeaderboardSongList(id:Long, page:Int, limit:Int):Response<List<Media>>
+    suspend fun getLeaderboardSongList(id:String, page:Int, limit:Int):Response<List<Media>>
     suspend fun getArtistSongList(id:Long, page:Int, limit:Int):Response<List<Media>>
     suspend fun getArtistInfo(id:Long):Response<Artist>
     suspend fun search(key:String, page:Int, limit:Int):Response<List<Media>>
