@@ -10,7 +10,9 @@ import com.jqwong.music.api.entity.kuwo.RecommendSongSheet
 import com.jqwong.music.api.entity.kuwo.SongList
 import com.jqwong.music.api.entity.kuwo.SongListM
 import com.jqwong.music.api.entity.kuwo.SongListX
+import okhttp3.ResponseBody
 import retrofit2.Call
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Query
 import retrofit2.http.Url
@@ -49,5 +51,5 @@ interface KuWoMusicApi {
     // "http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=228908&httpsStatus=1&reqId=f9204c10-1df1-11ec-8b4f-9f163660962a"
 
     @GET
-    fun getPlayUrl(@Url url:String,@Query("f") f:String,@Query("q") q:String):Call<String>
+    fun getPlayUrl(@Url url:String):Call<ResponseBody>
 }

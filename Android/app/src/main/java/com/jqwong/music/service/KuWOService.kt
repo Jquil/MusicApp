@@ -1,10 +1,12 @@
 package com.jqwong.music.service
 
+import android.content.res.Resources.NotFoundException
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.jqwong.music.api.KuWoMusicApi
 import com.jqwong.music.app.App
 import com.jqwong.music.helper.FunHelper
+import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.helper.awaitResult
 import com.jqwong.music.model.*
 import com.squareup.moshi.Moshi
@@ -16,6 +18,7 @@ import retrofit2.Callback
 import retrofit2.Retrofit
 import retrofit2.await
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.net.URLEncoder
 import java.util.Base64
 import java.util.concurrent.TimeUnit
 
@@ -238,14 +241,46 @@ class KuWOService:IService {
         val title = this::getRecommendDaily.name
         return notSupport(title)
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override suspend fun getPlayUrl(id: String, quality: Any):Response<String> {
         // $"corp=kuwo&p2p=1&type=convert_url2&format={format}&rid={musicid}"
+        val title = this::getPlayUrl.name
         var text = "corp=kuwo&p2p=1&type=convert_url2&format=${quality}&rid=${id}"
         text = EncryptHelper.encrypt(text)
-        service.getPlayUrl("http://mobi.kuwo.cn/mobi.s","kuwo",text).awaitResult()
-        var code = 200
-        TODO("Not yet implemented")
+        val result = service.getPlayUrl("http://mobi.kuwo.cn/mobi.s?f=kuwo&q=${text}").awaitResult()
+        return if(result.e != null){
+            error(title,result.e)
+        }
+        else{
+            val data = result.data!!.bytes().contentToString()
+            val line = data.split("\r\n")
+            val code = 200
+            val coe2 = 200
+            for(i in 0 until line.size){
+                if(line[i].contains("http"))
+                    Response(
+                        title = title,
+                        data = line[i],
+                        success = true,
+                        support = true,
+                        exception = null,
+                        message = "ok"
+                    )
+            }
+            Response(
+                title = title,
+                data = "",
+                success = true,
+                support = true,
+                exception = ExceptionLog(
+                    title = title,
+                    exception = NotFoundException("url"),
+                    time = TimeHelper.getTime()
+                ),
+                message = "ok"
+            )
+        }
     }
     override suspend fun getMvUrl(id: Long):Response<String> {
         TODO("Not yet implemented")
@@ -383,6 +418,7 @@ class KuWOService:IService {
                 // println(out)
                 return out
             }
+
             @RequiresApi(Build.VERSION_CODES.O)
             fun encrypt(text:String):String{
                 val buffer = text.toByteArray()

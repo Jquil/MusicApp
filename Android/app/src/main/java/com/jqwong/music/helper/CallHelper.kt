@@ -34,7 +34,7 @@ suspend fun <T : Any> Call<T>.awaitResult(): ApiResult<T> {
                     else{
                         ApiResult<T>(
                             data = null,
-                            e = Exception(response.errorBody()?.string())
+                            e = Exception("${response.raw().code()}:${response.raw().message()}")
                         )
                     }
                 })
