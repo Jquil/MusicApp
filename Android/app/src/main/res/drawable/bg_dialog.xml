@@ -16,7 +16,7 @@
                 android:width="100dp"
                 android:left="20dp"
                 android:right="20dp"
-                android:top="20dp"
+                android:top="21dp"
                 android:gravity="center_horizontal">
                 <shape
                     android:shape="rectangle">

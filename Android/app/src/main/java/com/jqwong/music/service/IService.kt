@@ -16,7 +16,7 @@ interface IService {
     suspend fun getRecommendSongSheetList(data:Any):Response<List<SongSheet>>
     suspend fun getRecommendSongSheetData(data:Any, page:Int, limit:Int):Response<List<Media>>
     suspend fun getRecommendDaily(data:Any):Response<List<Media>>
-    suspend fun getPlayUrl(id:Long, quality:Any):Response<String>
+    suspend fun getPlayUrl(id:String, quality:Any):Response<String>
     suspend fun getMvUrl(id:Long):Response<String>
     suspend fun getLyrics(id:Long):Response<Lyrics>
     fun <T>error(title:String,e:Exception):Response<T>{

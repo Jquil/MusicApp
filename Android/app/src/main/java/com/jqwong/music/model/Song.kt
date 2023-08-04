@@ -13,7 +13,7 @@ open class Song(
     val pic:String,
     val artists:List<Artist>,
     val time:Long?,
-    val play_url:String?,
+    var play_url:String?,
     val mv_url:String?,
     val has_mv:Boolean
 )

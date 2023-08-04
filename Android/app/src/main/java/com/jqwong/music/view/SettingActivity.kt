@@ -21,8 +21,7 @@ import com.jqwong.music.R
 import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivitySettingBinding
 import com.jqwong.music.helper.TimeHelper
-import com.jqwong.music.helper.setTitleColor
-import com.jqwong.music.helper.setTitlePadding
+import com.jqwong.music.helper.setTitleDefaultStyle
 import com.jqwong.music.model.ExceptionLog
 import com.jqwong.music.model.FmgQuality
 import com.jqwong.music.model.Platform
@@ -88,8 +87,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                 cornerRadius(20f)
                 view.setBackgroundResource(R.drawable.bg_dialog)
                 title(text = "Kuwo config")
-                view.setTitlePadding(10)
-                view.setTitleColor(getColor(R.color.white))
+                view.setTitleDefaultStyle(this@SettingActivity)
                 val wrapper = view.contentLayout.findViewById<LinearLayout>(R.id.ll_wrapper_cookie)
                 var number = 1
                 App.config.kuWoMusicConfig.cookies.forEach {

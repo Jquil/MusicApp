@@ -10,10 +10,13 @@ import com.jqwong.music.R
 import com.jqwong.music.app.App
 import com.jqwong.music.app.Constant
 import com.jqwong.music.databinding.ActivityMainBinding
+import com.jqwong.music.event.MediaChangeEvent
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.model.*
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 /**
  * @author: Jq
@@ -131,5 +134,10 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                 upload_video_bind_lyric_info = true
             )
         )
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMediaChangeEvent(event: MediaChangeEvent){
+
     }
 }

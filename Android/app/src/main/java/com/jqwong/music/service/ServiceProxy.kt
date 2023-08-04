@@ -32,6 +32,12 @@ class ServiceProxy {
             }
             return services.get(platform)!!.getLeaderboardSongList(id, page, limit)
         }
+        suspend fun getPlayUrl(platform:Platform,id:String,quality:Any):Response<String>{
+            if(!services.containsKey(platform)){
+                return notSupportPlatform(FunHelper.getName(),platform)
+            }
+            return services.get(platform)!!.getPlayUrl(id,quality)
+        }
         private fun <T>notSupportPlatform(title:String,platform: Platform):Response<T>{
             return Response(
                 title = title,

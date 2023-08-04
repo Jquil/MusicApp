@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.ImageButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
@@ -19,16 +20,19 @@ import com.jqwong.music.adapter.LeaderBoardAdapter
 import com.jqwong.music.adapter.MediaAdapter
 import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivityLeaderboardBinding
+import com.jqwong.music.event.MediaChangeEvent
+import com.jqwong.music.event.MediaLoadingEvent
+import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.helper.setErrorInfo
-import com.jqwong.music.helper.setTitleColor
-import com.jqwong.music.helper.setTitlePadding
+import com.jqwong.music.helper.setTitleDefaultStyle
 import com.jqwong.music.helper.startAnimation
 import com.jqwong.music.model.ExceptionLog
 import com.jqwong.music.model.ExtraKey
 import com.jqwong.music.model.Leaderboard
 import com.jqwong.music.model.Media
 import com.jqwong.music.model.Platform
+import com.jqwong.music.model.PlayList
 import com.jqwong.music.service.ServiceProxy
 import com.jqwong.music.view.listener.DoubleClickListener
 import kotlinx.coroutines.CoroutineScope
@@ -36,6 +40,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
     private lateinit var _platform: Platform
@@ -44,7 +51,7 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
     private var loadFinish:Boolean = false
     private var page:Int = 0
     private val leaderboards:MutableMap<Platform,List<Leaderboard>> = mutableMapOf()
-    private val leaderBoardPath:MutableList<Leaderboard> = mutableListOf()
+    private lateinit var currentLeaderboard:Leaderboard
 
     override fun initData(savedInstanceState: Bundle?) {
         intent.getStringExtra(ExtraKey.Platform.name).let {
@@ -91,7 +98,14 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
         adapter = MediaAdapter()
         adapter.setOnItemClickListener(object: BaseQuickAdapter.OnItemClickListener<Media>{
             override fun onClick(adapter: BaseQuickAdapter<Media, *>, view: View, position: Int) {
-
+                val list = mutableListOf<Media>()
+                adapter.items.subList(position,adapter.items.size).forEach {
+                    list.add(it.copy())
+                }
+                EventBus.getDefault().post(MediaChangeEvent(adapter.getItem(position)!!))
+                App.playList = PlayList(0,list)
+                adapter.notifyDataSetChanged()
+                AudioHelper.start()
             }
 
         })
@@ -102,7 +116,7 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
             }
 
             override fun onLoad() {
-                loadMediaList(_platform,leaderBoardPath.last().id.toString())
+                loadMediaList(_platform,currentLeaderboard.id.toString())
             }
 
         })
@@ -113,7 +127,7 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
     }
 
     override fun useEventBus(): Boolean {
-        return false
+        return true
     }
 
     override fun statusBarColor(): Int {
@@ -132,11 +146,10 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
                     customView(R.layout.dialog_select_leaderboard)
                     cornerRadius(20f)
                     view.setBackgroundResource(R.drawable.bg_dialog)
-                    view.setTitlePadding(10)
-                    view.setTitleColor(getColor(R.color.white))
-
+                    view.setTitleDefaultStyle(this@LeaderboardActivity)
                     val adapter = LeaderBoardAdapter()
                     val rvList = view.contentLayout.findViewById<RecyclerView>(R.id.rv_list)
+                    val path = mutableListOf<Leaderboard>()
                     rvList.layoutManager = LinearLayoutManager(this@LeaderboardActivity)
                     rvList.adapter = adapter
                     adapter.setOnItemClickListener(object:BaseQuickAdapter.OnItemClickListener<Leaderboard>{
@@ -146,13 +159,13 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
                             position: Int
                         ) {
                             val item = adapter.getItem(position)!!
+                            path.add(item)
                             if(item.children != null){
                                 adapter.submitList(item.children)
                             }
                             else{
                                 page = 0
-                                leaderBoardPath.clear()
-                                leaderBoardPath.add(item)
+                                currentLeaderboard = item
                                 supportActionBar?.title = item.name
                                 _binding.includeMain.stateLayout.showLoading()
                                 loadMediaList(_platform,item.id.toString(),0)
@@ -161,6 +174,21 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
 
                     })
                     adapter.submitList(leaderboards.get(_platform))
+                    val btnPoP = view.contentLayout.findViewById<ImageButton>(R.id.btn_pop)
+                    btnPoP.setOnClickListener {
+                        if(path.size > 0){
+                            path.removeAt(path.size-1)
+                            if(path.size == 0){
+                                adapter.submitList(leaderboards.get(_platform))
+                            }
+                            else{
+                                adapter.submitList(path.get(path.size-1).children)
+                            }
+                        }
+                        else{
+                            this.cancel()
+                        }
+                    }
                 }
             }
         }
@@ -168,12 +196,11 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
     }
 
     private fun getFirstLeaderboard(data:List<Leaderboard>):Leaderboard{
-        val first = data.first()
-        leaderBoardPath.add(first)
-        return if(first.children!=null){
-            getFirstLeaderboard(first.children)
+        currentLeaderboard = data.first()
+        return if(currentLeaderboard.children != null){
+            getFirstLeaderboard(currentLeaderboard.children!!)
         } else{
-            first
+            currentLeaderboard
         }
     }
 
@@ -249,5 +276,15 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
                 }
             }
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMediaLoadingEvent(event:MediaLoadingEvent){
+        _binding.includeToolbar.cpiLoading.visibility = if(event.finish) View.GONE else View.VISIBLE
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMediaChangeEvent(event: MediaChangeEvent){
+        adapter.notifyDataSetChanged()
     }
 }

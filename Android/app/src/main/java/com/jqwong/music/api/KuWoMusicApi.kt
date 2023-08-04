@@ -47,4 +47,7 @@ interface KuWoMusicApi {
     @GET
     fun getLyrics(@Url url:String, @Query("musicId") musicId:String): BaseResponseX<Lyrics>
     // "http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=228908&httpsStatus=1&reqId=f9204c10-1df1-11ec-8b4f-9f163660962a"
+
+    @GET
+    fun getPlayUrl(@Url url:String,@Query("f") f:String,@Query("q") q:String):Call<String>
 }

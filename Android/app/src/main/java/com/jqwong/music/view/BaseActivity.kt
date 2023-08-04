@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.viewbinding.ViewBinding
+import org.greenrobot.eventbus.EventBus
 
 /**
  * @author: Jq
@@ -47,13 +48,13 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
         useEventBus = useEventBus()
         if(useEventBus)
         {
-            // register eventbus
+            EventBus.getDefault().register(this)
         }
     }
     override fun onDestroy() {
         if(useEventBus)
         {
-            // cancel register eventbus
+            EventBus.getDefault().unregister(this)
         }
         super.onDestroy()
     }

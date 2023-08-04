@@ -150,7 +150,7 @@ class NetEaseCloudService:IService {
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    override suspend fun getPlayUrl(id: Long, quality: Any): Response<String> {
+    override suspend fun getPlayUrl(id: String, quality: Any): Response<String> {
         val map = mapOf(
             "ids" to "[${id}]",
             "encodeType" to "flac",

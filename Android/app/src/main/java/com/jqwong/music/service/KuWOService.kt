@@ -11,7 +11,10 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.Retrofit
+import retrofit2.await
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.Base64
 import java.util.concurrent.TimeUnit
@@ -235,7 +238,13 @@ class KuWOService:IService {
         val title = this::getRecommendDaily.name
         return notSupport(title)
     }
-    override suspend fun getPlayUrl(id: Long, quality: Any):Response<String> {
+    @RequiresApi(Build.VERSION_CODES.O)
+    override suspend fun getPlayUrl(id: String, quality: Any):Response<String> {
+        // $"corp=kuwo&p2p=1&type=convert_url2&format={format}&rid={musicid}"
+        var text = "corp=kuwo&p2p=1&type=convert_url2&format=${quality}&rid=${id}"
+        text = EncryptHelper.encrypt(text)
+        service.getPlayUrl("http://mobi.kuwo.cn/mobi.s","kuwo",text).awaitResult()
+        var code = 200
         TODO("Not yet implemented")
     }
     override suspend fun getMvUrl(id: Long):Response<String> {
@@ -437,7 +446,6 @@ class KuWOService:IService {
                 var _text = Base64.getEncoder().encodeToString(b8.toByteArray())
                 _text = _text.replace("\n","")
                 return _text
-                return ""
             }
         }
         class OperatorULong(val v:ULong){
