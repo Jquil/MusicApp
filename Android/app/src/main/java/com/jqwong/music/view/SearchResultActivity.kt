@@ -4,6 +4,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.media3.common.util.UnstableApi
@@ -17,6 +18,7 @@ import com.jqwong.music.adapter.CustomLoadMoreAdapter
 import com.jqwong.music.adapter.MediaAdapter
 import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivitySearchResultBinding
+import com.jqwong.music.event.MediaChangeEvent
 import com.jqwong.music.helper.*
 import com.jqwong.music.model.*
 import com.jqwong.music.service.ServiceProxy
@@ -26,6 +28,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 /**
  * @author: Jq
@@ -111,7 +115,7 @@ class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
         _binding.includeMain.rvList.adapter = adapterHelper.adapter
     }
     override fun useEventBus(): Boolean {
-        return false
+        return true
     }
     override fun statusBarColor(): Int {
         return R.color.background
@@ -120,6 +124,18 @@ class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
         menuInflater.inflate(R.menu.menu_search_result,menu)
         return true
     }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.action_refresh -> {
+                _binding.includeMain.stateLayout.showLoading()
+                page = 0
+                loadData()
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     private fun loadData(reloadNumber:Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){
@@ -165,5 +181,10 @@ class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
                 }
             }
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMediaChangeEvent(event: MediaChangeEvent){
+        adapter.notifyDataSetChanged()
     }
 }

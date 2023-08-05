@@ -79,7 +79,7 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
             true
         }
         _binding.includeToolbar.toolbar.setOnClickListener(object: DoubleClickListener(){
-            override fun onDoubleClick(v: View?) {
+                override fun onDoubleClick(v: View?) {
                 _binding.includeMain.rvList.scrollToPosition(0)
             }
         })

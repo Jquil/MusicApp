@@ -16,3 +16,14 @@ fun List<Media>.copy():List<Media>{
     }
     return list
 }
+
+fun List<Media>.getIndex(audio: Audio):Int{
+    for (i in 0 until count()){
+        if(get(i).audio != null
+            && get(i).audio!!.platform == audio.platform
+            && get(i).audio!!.id == audio.id){
+            return i
+        }
+    }
+    return -1
+}

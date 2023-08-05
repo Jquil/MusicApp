@@ -1,8 +1,13 @@
 package com.jqwong.music.model
 
 import android.net.Uri
+import android.os.Bundle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import com.jqwong.music.helper.toJson
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import java.io.*
 
 /**
  * @author: Jq
@@ -40,11 +45,31 @@ class Audio(
     }
 }
 
+fun Audio.toJson():String{
+    val moshi = Moshi.Builder()
+        .addLast(KotlinJsonAdapterFactory())
+        .build()
+    val adapter = moshi.adapter(Audio::class.java)
+    return adapter.toJson(this)
+}
+
+fun String.toAudio():Audio{
+    val moshi = Moshi.Builder()
+        .addLast(KotlinJsonAdapterFactory())//使用kotlin反射处理，要加上这个
+        .build()
+    val adapter = moshi.adapter(Audio::class.java)
+    return adapter.fromJson(this)!!
+}
+
 fun Audio.build(): MediaItem {
+    val bundle = Bundle().apply {
+        putString(ExtraKey.Audio.name,toJson())
+    }
     return MediaItem.Builder()
         .setUri(play_url)
         .setMediaMetadata(
             MediaMetadata.Builder()
+                .setExtras(bundle)
                 .setAlbumTitle(album)
                 .setAlbumArtist(artists.toName())
                 .setArtist(artists.toName())

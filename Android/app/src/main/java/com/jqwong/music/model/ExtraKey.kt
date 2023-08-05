@@ -6,5 +6,6 @@ package com.jqwong.music.model
  */
 enum class ExtraKey {
     Search,
-    Platform
+    Platform,
+    Audio
 }

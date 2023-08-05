@@ -4,9 +4,11 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.annotation.RequiresApi
 import androidx.core.view.GravityCompat
+import androidx.media3.common.util.UnstableApi
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
@@ -14,9 +16,8 @@ import com.jqwong.music.R
 import com.jqwong.music.app.App
 import com.jqwong.music.app.Constant
 import com.jqwong.music.databinding.ActivityMainBinding
-import com.jqwong.music.event.MediaChangeEvent
-import com.jqwong.music.event.MediaLoadingEvent
-import com.jqwong.music.event.MediaPositionChangeEvent
+import com.jqwong.music.event.*
+import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.model.*
 import com.squareup.moshi.Moshi
@@ -24,6 +25,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
+@UnstableApi
 /**
  * @author: Jq
  * @date: 7/23/2023
@@ -89,6 +91,14 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             }
             true
         }
+        _binding.layoutPlayBar.ibPlayStatus.setOnClickListener {
+            AudioHelper.playOrPause()
+        }
+
+        if(App.playListIsInitialized() && !(App.playList.data.isNullOrEmpty())){
+            onMediaChangeEvent(MediaChangeEvent(App.playList.data.get(App.playList.index)))
+        }
+        onPlayerStatusChangeEvent(PlayerStatusChangeEvent(AudioHelper.getPlayerIsPlaying()))
     }
     override fun useEventBus(): Boolean {
         return true
@@ -154,17 +164,42 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                 .apply(RequestOptions.bitmapTransform(RoundedCorners(10)))
                 .into(_binding.layoutPlayBar.ivPic)
         }
+        _binding.layoutPlayBar.lpiPlay.progress = 0
     }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMediaLoadingEvent(event:MediaLoadingEvent){
-
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaPositionChangeEvent(event:MediaPositionChangeEvent){
+        if(!App.playListIsInitialized() || App.playList.lyrics == null)
+            return
         val lyric = App.playList.lyrics!!.current(event.position)
         _binding.layoutPlayBar.tvLyric.text = lyric.text
         _binding.layoutPlayBar.lpiPlay.progress = (event.position*1.0/App.playList.lyrics!!.lyrics.last().time*100).toInt()
+    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMediaLoadingEvent(event:MediaLoadingEvent){
+        // 加载歌词完成后重置状态
+        _binding.layoutPlayBar.tvLyric.text = "loading..."
+        _binding.layoutPlayBar.cpiLoading.visibility = View.VISIBLE
+        _binding.layoutPlayBar.ibPlayStatus.visibility = View.GONE
+    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onLyricsLoadingEvent(event: LyricsLoadingEvent){
+        if(event.finish){
+            _binding.layoutPlayBar.tvLyric.text = ""
+            if(App.playListIsInitialized()){
+                if(App.playList.lyrics != null){
+                    _binding.layoutPlayBar.tvLyric.text = App.playList.lyrics!!.lyrics.first().text
+                }
+                else{
+                    _binding.layoutPlayBar.tvLyric.text = "i'm sorry, but no data was requested"
+                }
+            }
+            _binding.layoutPlayBar.cpiLoading.visibility = View.GONE
+            _binding.layoutPlayBar.ibPlayStatus.visibility = View.VISIBLE
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onPlayerStatusChangeEvent(event: PlayerStatusChangeEvent){
+        _binding.layoutPlayBar.ibPlayStatus.setImageResource(if(event.playing) R.drawable.ic_pause else R.drawable.ic_play)
     }
 }
