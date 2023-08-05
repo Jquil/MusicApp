@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
@@ -22,17 +23,8 @@ import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivityLeaderboardBinding
 import com.jqwong.music.event.MediaChangeEvent
 import com.jqwong.music.event.MediaLoadingEvent
-import com.jqwong.music.helper.AudioHelper
-import com.jqwong.music.helper.TimeHelper
-import com.jqwong.music.helper.setErrorInfo
-import com.jqwong.music.helper.setTitleDefaultStyle
-import com.jqwong.music.helper.startAnimation
-import com.jqwong.music.model.ExceptionLog
-import com.jqwong.music.model.ExtraKey
-import com.jqwong.music.model.Leaderboard
-import com.jqwong.music.model.Media
-import com.jqwong.music.model.Platform
-import com.jqwong.music.model.PlayList
+import com.jqwong.music.helper.*
+import com.jqwong.music.model.*
 import com.jqwong.music.service.ServiceProxy
 import com.jqwong.music.view.listener.DoubleClickListener
 import kotlinx.coroutines.CoroutineScope
@@ -96,18 +88,12 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
         }
         _binding.includeMain.rvList.layoutManager = LinearLayoutManager(this)
         adapter = MediaAdapter()
-        adapter.setOnItemClickListener(object: BaseQuickAdapter.OnItemClickListener<Media>{
+        adapter.setOnItemClickListener(@UnstableApi object: BaseQuickAdapter.OnItemClickListener<Media>{
             override fun onClick(adapter: BaseQuickAdapter<Media, *>, view: View, position: Int) {
-                val list = mutableListOf<Media>()
-                adapter.items.subList(position,adapter.items.size).forEach {
-                    list.add(it.copy())
-                }
-                EventBus.getDefault().post(MediaChangeEvent(adapter.getItem(position)!!))
-                App.playList = PlayList(0,list)
+                App.playList = PlayList(0,null,adapter.items.subList(position,adapter.items.size).copy())
                 adapter.notifyDataSetChanged()
                 AudioHelper.start()
             }
-
         })
         val loadMoreAdapter = CustomLoadMoreAdapter()
         loadMoreAdapter.setOnLoadMoreListener(object: TrailingLoadStateAdapter.OnTrailingListener{

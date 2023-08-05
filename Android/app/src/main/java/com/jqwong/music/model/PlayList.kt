@@ -6,5 +6,10 @@ package com.jqwong.music.model
  */
 class PlayList(
     var index:Int,
+    var lyrics: Lyrics?,
     val data:List<Media>
-)
+){
+    fun current():Media{
+        return data.get(index)
+    }
+}

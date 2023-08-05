@@ -161,11 +161,11 @@ class NetEaseCloudService:IService {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getMvUrl(id: Long): Response<String> {
+    override suspend fun getMvUrl(id: String): Response<String> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getLyrics(id: Long): Response<Lyrics> {
+    override suspend fun getLyrics(id: String): Response<Lyrics> {
         TODO("Not yet implemented")
     }
 

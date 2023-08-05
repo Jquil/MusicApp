@@ -3,14 +3,20 @@ package com.jqwong.music.view
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.inputmethod.EditorInfo
 import androidx.annotation.RequiresApi
 import androidx.core.view.GravityCompat
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 import com.jqwong.music.R
 import com.jqwong.music.app.App
 import com.jqwong.music.app.Constant
 import com.jqwong.music.databinding.ActivityMainBinding
 import com.jqwong.music.event.MediaChangeEvent
+import com.jqwong.music.event.MediaLoadingEvent
+import com.jqwong.music.event.MediaPositionChangeEvent
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.model.*
 import com.squareup.moshi.Moshi
@@ -138,6 +144,27 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaChangeEvent(event: MediaChangeEvent){
+        val media = event.media
+        if(media.video == null){
+            _binding.layoutPlayBar.tvName.text = media.audio!!.name
+            Glide.with(_binding.layoutPlayBar.ivPic)
+                .asBitmap()
+                .load(media.audio!!.pic)
+                .placeholder(R.drawable.ic_music)
+                .apply(RequestOptions.bitmapTransform(RoundedCorners(10)))
+                .into(_binding.layoutPlayBar.ivPic)
+        }
+    }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMediaLoadingEvent(event:MediaLoadingEvent){
+
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMediaPositionChangeEvent(event:MediaPositionChangeEvent){
+        val lyric = App.playList.lyrics!!.current(event.position)
+        _binding.layoutPlayBar.tvLyric.text = lyric.text
+        _binding.layoutPlayBar.lpiPlay.progress = (event.position*1.0/App.playList.lyrics!!.lyrics.last().time*100).toInt()
     }
 }

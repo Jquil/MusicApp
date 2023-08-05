@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.View
 import androidx.annotation.RequiresApi
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.QuickAdapterHelper
@@ -16,13 +17,8 @@ import com.jqwong.music.adapter.CustomLoadMoreAdapter
 import com.jqwong.music.adapter.MediaAdapter
 import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivitySearchResultBinding
-import com.jqwong.music.helper.TimeHelper
-import com.jqwong.music.helper.setErrorInfo
-import com.jqwong.music.helper.startAnimation
-import com.jqwong.music.model.ExceptionLog
-import com.jqwong.music.model.ExtraKey
-import com.jqwong.music.model.Media
-import com.jqwong.music.model.Platform
+import com.jqwong.music.helper.*
+import com.jqwong.music.model.*
 import com.jqwong.music.service.ServiceProxy
 import com.jqwong.music.view.listener.DoubleClickListener
 import kotlinx.coroutines.CoroutineScope
@@ -90,9 +86,11 @@ class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
         }
         _binding.includeMain.rvList.layoutManager = LinearLayoutManager(this)
         adapter = MediaAdapter()
-        adapter.setOnItemClickListener(object:BaseQuickAdapter.OnItemClickListener<Media>{
+        adapter.setOnItemClickListener(@UnstableApi object:BaseQuickAdapter.OnItemClickListener<Media>{
             override fun onClick(adapter: BaseQuickAdapter<Media, *>, view: View, position: Int) {
-
+                App.playList = PlayList(0,null,adapter.items.subList(position,adapter.items.size).copy())
+                adapter.notifyDataSetChanged()
+                AudioHelper.start()
             }
 
         })

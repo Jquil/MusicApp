@@ -38,6 +38,12 @@ class ServiceProxy {
             }
             return services.get(platform)!!.getPlayUrl(id,quality)
         }
+        suspend fun getLyrics(platform: Platform,id: String):Response<Lyrics>{
+            if(!services.containsKey(platform)){
+                return notSupportPlatform(FunHelper.getName(),platform)
+            }
+            return services.get(platform)!!.getLyrics(id)
+        }
         private fun <T>notSupportPlatform(title:String,platform: Platform):Response<T>{
             return Response(
                 title = title,

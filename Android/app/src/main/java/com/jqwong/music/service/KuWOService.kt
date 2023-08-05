@@ -2,12 +2,14 @@ package com.jqwong.music.service
 
 import android.content.res.Resources.NotFoundException
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.jqwong.music.api.KuWoMusicApi
 import com.jqwong.music.app.App
 import com.jqwong.music.helper.FunHelper
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.helper.awaitResult
+import com.jqwong.music.helper.toKwTime
 import com.jqwong.music.model.*
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -253,22 +255,21 @@ class KuWOService:IService {
             error(title,result.e)
         }
         else{
-            val data = result.data!!.bytes().contentToString()
+            val data = result.data!!.bytes().toString(Charsets.UTF_8)
             val line = data.split("\r\n")
-            val code = 200
-            val coe2 = 200
             for(i in 0 until line.size){
-                if(line[i].contains("http"))
-                    Response(
+                if(line[i].indexOf("url=") != -1){
+                    return Response(
                         title = title,
-                        data = line[i],
+                        data = line[i].substring(3+1),
                         success = true,
                         support = true,
                         exception = null,
                         message = "ok"
                     )
+                }
             }
-            Response(
+            return Response(
                 title = title,
                 data = "",
                 success = true,
@@ -282,11 +283,35 @@ class KuWOService:IService {
             )
         }
     }
-    override suspend fun getMvUrl(id: Long):Response<String> {
+    override suspend fun getMvUrl(id: String):Response<String> {
         TODO("Not yet implemented")
     }
-    override suspend fun getLyrics(id: Long) :Response<Lyrics>{
-        TODO("Not yet implemented")
+    override suspend fun getLyrics(id: String) :Response<Lyrics>{
+        val title = this::getLyrics.name
+        val url = "http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=${id}&httpsStatus=1&reqId=f9204c10-1df1-11ec-8b4f-9f163660962a"
+        val result = service.getLyrics(url).awaitResult()
+        return if(result.e != null){
+            error(title,result.e)
+        }
+        else{
+            val list = mutableListOf<Lyric>()
+            result.data!!.data.lrclist.forEach {
+                list.add(
+                    Lyric(
+                        time = it.time.toKwTime(),
+                        text = it.lineLyric
+                    )
+                )
+            }
+            Response(
+                title=title,
+                success = true,
+                support = true,
+                exception = null,
+                data = Lyrics(Platform.KuWo,id,list),
+                message = "ok"
+            )
+        }
     }
     class EncryptHelper{
         companion object{

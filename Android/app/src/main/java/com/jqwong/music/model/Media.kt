@@ -8,3 +8,11 @@ data class Media(
     var audio:Audio?,
     var video:Video?
 )
+
+fun List<Media>.copy():List<Media>{
+    val list = mutableListOf<Media>()
+    forEach {
+        list.add(it.copy())
+    }
+    return list
+}
