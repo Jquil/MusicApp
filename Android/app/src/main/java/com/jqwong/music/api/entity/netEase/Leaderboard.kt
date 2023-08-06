@@ -7,6 +7,6 @@ import com.squareup.moshi.JsonClass
 data class Leaderboard(
     @field:Json(name = "id") val id:Long,
     @field:Json(name = "name") val name:String,
-    @field:Json(name = "description") val description:String,
+    @field:Json(name = "description") val description:String?,
     @field:Json(name = "coverImgUrl") val coverImgUrl:String
 )

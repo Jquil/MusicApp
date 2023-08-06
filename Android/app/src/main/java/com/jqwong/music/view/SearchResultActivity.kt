@@ -132,6 +132,16 @@ class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
                 page = 0
                 loadData()
             }
+            R.id.action_change_platform -> {
+                changePlatform(listOf(Platform.KuWo,Platform.NetEaseCloud)){
+                    if(it == platform)
+                        return@changePlatform
+                    platform = it
+                    page = 0
+                    _binding.includeMain.stateLayout.showLoading()
+                    loadData()
+                }
+            }
         }
         return super.onOptionsItemSelected(item)
     }

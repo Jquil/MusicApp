@@ -32,7 +32,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
@@ -66,10 +65,11 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
             }
         }
         _binding.includeMain.stateLayout.showLoading()
-        loadLeaderBoard(_platform, callback = {
-            val first = getFirstLeaderboard(it)
-            supportActionBar?.title = first.name
-            loadMediaList(_platform,first.id!!)
+        getLeaderBoards(_platform, callback = {
+            leaderboards.put(_platform,it)
+            currentLeaderboard = getFirstLeaderboard(it)
+            supportActionBar?.title = currentLeaderboard.name
+            loadMediaList(_platform,currentLeaderboard.id!!)
         })
     }
 
@@ -126,55 +126,87 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
-            R.id.action_leaderboard -> {
-                MaterialDialog(this, BottomSheet()).show {
-                    customView(R.layout.dialog_select_leaderboard)
-                    cornerRadius(20f)
-                    view.setBackgroundResource(R.drawable.bg_dialog)
-                    view.setTitleDefaultStyle(this@LeaderboardActivity)
-                    val adapter = LeaderBoardAdapter()
-                    val rvList = view.contentLayout.findViewById<RecyclerView>(R.id.rv_list)
-                    val path = mutableListOf<Leaderboard>()
-                    rvList.layoutManager = LinearLayoutManager(this@LeaderboardActivity)
-                    rvList.adapter = adapter
-                    adapter.setOnItemClickListener(object:BaseQuickAdapter.OnItemClickListener<Leaderboard>{
-                        override fun onClick(
-                            adapter: BaseQuickAdapter<Leaderboard, *>,
-                            view: View,
-                            position: Int
-                        ) {
-                            val item = adapter.getItem(position)!!
-                            path.add(item)
-                            if(item.children != null){
-                                adapter.submitList(item.children)
+        if(_binding.includeMain.stateLayout.loaded){
+            when(item.itemId) {
+                R.id.action_leaderboard -> {
+                    MaterialDialog(this, BottomSheet()).show {
+                        customView(R.layout.dialog_select_leaderboard)
+                        cornerRadius(20f)
+                        view.setBackgroundResource(R.drawable.bg_dialog)
+                        view.setTitleDefaultStyle(this@LeaderboardActivity)
+                        val adapter = LeaderBoardAdapter()
+                        val rvList = view.contentLayout.findViewById<RecyclerView>(R.id.rv_list)
+                        val path = mutableListOf<Leaderboard>()
+                        rvList.layoutManager = LinearLayoutManager(this@LeaderboardActivity)
+                        rvList.adapter = adapter
+                        adapter.setOnItemClickListener(object:BaseQuickAdapter.OnItemClickListener<Leaderboard>{
+                            override fun onClick(
+                                adapter: BaseQuickAdapter<Leaderboard, *>,
+                                view: View,
+                                position: Int
+                            ) {
+                                val item = adapter.getItem(position)!!
+                                path.add(item)
+                                if(item.children != null){
+                                    adapter.submitList(item.children)
+                                }
+                                else{
+                                    page = 0
+                                    currentLeaderboard = item
+                                    supportActionBar?.title = item.name
+                                    _binding.includeMain.stateLayout.showLoading()
+                                    loadMediaList(_platform,item.id.toString(),0)
+                                }
                             }
-                            else{
-                                page = 0
-                                currentLeaderboard = item
-                                supportActionBar?.title = item.name
-                                _binding.includeMain.stateLayout.showLoading()
-                                loadMediaList(_platform,item.id.toString(),0)
-                            }
-                        }
 
-                    })
-                    adapter.submitList(leaderboards.get(_platform))
-                    val btnPoP = view.contentLayout.findViewById<ImageButton>(R.id.btn_pop)
-                    btnPoP.setOnClickListener {
-                        if(path.size > 0){
-                            path.removeAt(path.size-1)
-                            if(path.size == 0){
-                                adapter.submitList(leaderboards.get(_platform))
+                        })
+                        adapter.submitList(leaderboards.get(_platform))
+                        val btnPoP = view.contentLayout.findViewById<ImageButton>(R.id.btn_pop)
+                        btnPoP.setOnClickListener {
+                            if(path.size > 0){
+                                path.removeAt(path.size-1)
+                                if(path.size == 0){
+                                    adapter.submitList(leaderboards.get(_platform))
+                                }
+                                else{
+                                    adapter.submitList(path.get(path.size-1).children)
+                                }
                             }
                             else{
-                                adapter.submitList(path.get(path.size-1).children)
+                                this.cancel()
                             }
-                        }
-                        else{
-                            this.cancel()
                         }
                     }
+                }
+                R.id.action_change_platform -> {
+                    changePlatform(listOf(Platform.KuWo,Platform.NetEaseCloud)) {
+                        if(it == _platform)
+                            return@changePlatform
+                        page = 0
+                        _platform = it
+                        _binding.includeMain.stateLayout.showLoading()
+                        if(leaderboards.containsKey(_platform)){
+                            currentLeaderboard = getFirstLeaderboard(leaderboards.get(_platform)!!)
+                            supportActionBar?.title = currentLeaderboard.name
+                            loadMediaList(_platform,currentLeaderboard.id!!)
+                        }
+                        else{
+                            supportActionBar?.title = ""
+                            _binding.includeToolbar.cpiLoading.visibility = View.VISIBLE
+                            getLeaderBoards(_platform,{
+                                _binding.includeToolbar.cpiLoading.visibility = View.GONE
+                                leaderboards.put(_platform,it)
+                                currentLeaderboard = getFirstLeaderboard(leaderboards.get(_platform)!!)
+                                supportActionBar?.title = currentLeaderboard.name
+                                loadMediaList(_platform,currentLeaderboard.id!!)
+                            })
+                        }
+                    }
+                }
+                R.id.action_refresh -> {
+                    _binding.includeMain.stateLayout.showLoading()
+                    page = 0
+                    loadMediaList(_platform,currentLeaderboard.id!!)
                 }
             }
         }
@@ -182,15 +214,15 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
     }
 
     private fun getFirstLeaderboard(data:List<Leaderboard>):Leaderboard{
-        currentLeaderboard = data.first()
-        return if(currentLeaderboard.children != null){
-            getFirstLeaderboard(currentLeaderboard.children!!)
+        val lb = data.first()
+        return if(lb.children != null){
+            getFirstLeaderboard(lb.children)
         } else{
-            currentLeaderboard
+            lb
         }
     }
 
-    private fun loadLeaderBoard(platform: Platform,callback:(List<Leaderboard>) -> Unit, reloadNumber: Int = 0){
+    private fun getLeaderBoards(platform: Platform, callback:(List<Leaderboard>) -> Unit, reloadNumber: Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             val data = ServiceProxy.getLeaderboard(platform)
             withContext(Dispatchers.Main){
@@ -205,12 +237,11 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
                         }
                     }
                     else{
-                        loadLeaderBoard(platform,callback,reloadNumber+1)
+                        getLeaderBoards(platform,callback,reloadNumber+1)
                     }
                 }
                 else{
                     val result = data.data!!
-                    leaderboards.put(platform,result)
                     callback(result)
                 }
             }

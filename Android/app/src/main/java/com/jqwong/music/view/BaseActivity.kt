@@ -3,10 +3,18 @@ package com.jqwong.music.view
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.viewbinding.ViewBinding
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.bottomsheets.BottomSheet
+import com.afollestad.materialdialogs.customview.customView
+import com.jqwong.music.R
+import com.jqwong.music.helper.setTitleDefaultStyle
+import com.jqwong.music.model.Platform
 import org.greenrobot.eventbus.EventBus
 
 /**
@@ -32,6 +40,27 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
     }
     protected fun toast(message:String){
         Toast.makeText(this,message,Toast.LENGTH_SHORT).show()
+    }
+    protected fun changePlatform(list:List<Platform>,call:(platform:Platform)->Unit){
+        MaterialDialog(this, BottomSheet()).show {
+            customView(R.layout.dialog_select_platform)
+            cornerRadius(20f)
+            setTitle("")
+            view.setBackgroundResource(R.drawable.bg_dialog)
+            view.setTitleDefaultStyle(this@BaseActivity)
+            val layout = view.contentLayout.findViewById<LinearLayout>(R.id.ll_wrapper)
+            list.forEach {
+                val name = it.name
+                val child = View.inflate(this@BaseActivity,R.layout.item_platform,null)
+                child.findViewById<TextView>(R.id.tv_name).let {
+                    it.text = name
+                    it.setOnClickListener {
+                        call.invoke(Platform.valueOf((it as TextView).text.toString()))
+                    }
+                }
+                layout.addView(child)
+            }
+        }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

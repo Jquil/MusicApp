@@ -14,6 +14,7 @@ import com.jqwong.music.api.entity.netEase.SongList
 import retrofit2.Call
 import retrofit2.http.POST
 import retrofit2.http.Query
+import retrofit2.http.Url
 
 /**
  * @author: Jq
@@ -21,17 +22,17 @@ import retrofit2.http.Query
  */
 interface NetEaseCloudMusicApi {
     @POST
-    fun search(@Query("params") params:String):Call<BaseResponse<SongList>>
+    fun search(@Url url:String, @Query("params") params:String):Call<BaseResponse<SongList>>
     // https://interface.music.163.com/eapi/cloudsearch/pc
 
     @POST("api/toplist")
     fun getLeaderboard():Call<BaseResponseX<List<Leaderboard>>>
 
-    @POST("api/v6/playlist/detail")
+    @POST("api/v6/playlist/detail?s=8&n=10000")
     fun getPlayListDetail(@Query("id") id:Long):Call<BaseResponseZ<PlayList>>
 
-    @POST("weapi/song/enhance/play/mv/url")
-    fun getPlayUrl(@Query("params") params:String,@Query("encSecKey")encSecKey:String):Call<BaseResponseM<PlayUrl>>
+    @POST
+    fun getPlayUrl(@Url url: String, @Query("params") params:String):Call<BaseResponseM<List<PlayUrl>>>
 
     @POST("weapi/v1/artist/songs")
     fun getArtistSongList(@Query("params") params:String,@Query("encSecKey")encSecKey:String):Call<BaseResponseO<List<Song>>>

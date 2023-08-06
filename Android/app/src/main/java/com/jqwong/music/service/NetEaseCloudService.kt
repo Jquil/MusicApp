@@ -1,21 +1,15 @@
 package com.jqwong.music.service
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
-import com.jqwong.music.api.KuWoMusicApi
 import com.jqwong.music.api.NetEaseCloudMusicApi
 import com.jqwong.music.app.App
 import com.jqwong.music.helper.FunHelper
 import com.jqwong.music.helper.awaitResult
 import com.jqwong.music.helper.toJson
-import com.jqwong.music.model.Artist
-import com.jqwong.music.model.Config
-import com.jqwong.music.model.Leaderboard
-import com.jqwong.music.model.Lyrics
-import com.jqwong.music.model.Media
-import com.jqwong.music.model.Platform
-import com.jqwong.music.model.Response
-import com.jqwong.music.model.SongSheet
+import com.jqwong.music.helper.toNetEaseCloudTime
+import com.jqwong.music.model.*
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
@@ -31,6 +25,8 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 class NetEaseCloudService:IService {
+
+    private val TAG = "NetEaseCloudService"
 
     companion object{
         private val config = OkHttpClient.Builder()
@@ -91,7 +87,24 @@ class NetEaseCloudService:IService {
         page: Int,
         limit: Int
     ): Response<List<Media>> {
-        TODO("Not yet implemented")
+        val title = this::getLeaderboardSongList.name
+        val result = service.getPlayListDetail(id.toLong()).awaitResult()
+        return if(result.e != null)
+            error(title,result.e)
+        else{
+            val list = mutableListOf<Media>()
+            result.data!!.playlist.tracks.forEach {
+                list.add(it.convert())
+            }
+            Response(
+                title = title,
+                message = "ok",
+                data = list,
+                support = true,
+                success = true,
+                exception = null
+            )
+        }
     }
 
     override suspend fun getArtistSongList(id: Long, page: Int, limit: Int): Response<List<Media>> {
@@ -105,6 +118,7 @@ class NetEaseCloudService:IService {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override suspend fun search(key: String, page: Int, limit: Int): Response<List<Media>> {
         val title = FunHelper.getName()
+        val api = "https://interface.music.163.com/eapi/cloudsearch/pc"
         val map = mapOf(
             "s" to key,
             "type" to 1,
@@ -113,7 +127,7 @@ class NetEaseCloudService:IService {
             "total" to true
         )
         val params = EncryptHelper.eApi("/api/cloudsearch/pc",map.toJson())
-        val result = service.search(params).awaitResult()
+        val result = service.search(api,params).awaitResult()
         return if(result.e != null){
             return error(title,result.e)
         }
@@ -151,14 +165,28 @@ class NetEaseCloudService:IService {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override suspend fun getPlayUrl(id: String, quality: Any): Response<String> {
+        val title = this::getPlayUrl.name
+        val api = "https://interface.music.163.com/eapi/song/enhance/player/url/v1"
+        val url = "/api/song/enhance/player/url/v1"
         val map = mapOf(
             "ids" to "[${id}]",
             "encodeType" to "flac",
             "level" to quality
         )
-        val params = EncryptHelper.weApi(map.toJson())
-        service.getPlayUrl(params.first,params.second)
-        TODO("Not yet implemented")
+        val params = EncryptHelper.eApi(url,map.toJson())
+        val result = service.getPlayUrl(api,params).awaitResult()
+        return if(result.e != null)
+            error(title,result.e)
+        else{
+            return Response(
+                title = title,
+                support = true,
+                success = true,
+                data = result.data!!.data.first().url,
+                exception = null,
+                message = "ok"
+            )
+        }
     }
 
     override suspend fun getMvUrl(id: String): Response<String> {
@@ -166,7 +194,39 @@ class NetEaseCloudService:IService {
     }
 
     override suspend fun getLyrics(id: String): Response<Lyrics> {
-        TODO("Not yet implemented")
+        val title = this::getLyrics.name
+        val result = service.getLyrics(id).awaitResult()
+        return if(result.e != null)
+            error(title,result.e)
+        else{
+            val data = result.data!!.lrc.lyric
+            val arr = data.split("\n")
+            val list = mutableListOf<Lyric>()
+            arr.forEach {
+                if(!it.isNullOrEmpty()){
+                    val strTime = it.substring(1,it.indexOf(']'))
+                    val text = it.substring(it.indexOf(']')+1)
+                    list.add(
+                        Lyric(
+                            text = text.trim(),
+                            time = strTime.toNetEaseCloudTime()
+                        )
+                    )
+                }
+            }
+            Response(
+                title = title,
+                success = true,
+                support = true,
+                data = Lyrics(
+                    id = id,
+                    platform = Platform.NetEaseCloud,
+                    lyrics = list
+                ),
+                message = "ok",
+                exception = null
+            )
+        }
     }
 
 
