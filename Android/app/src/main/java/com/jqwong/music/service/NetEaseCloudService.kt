@@ -4,6 +4,7 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.jqwong.music.api.NetEaseCloudMusicApi
+import com.jqwong.music.api.entity.netEase.UniKey
 import com.jqwong.music.app.App
 import com.jqwong.music.helper.FunHelper
 import com.jqwong.music.helper.awaitResult
@@ -225,6 +226,30 @@ class NetEaseCloudService:IService {
                 ),
                 message = "ok",
                 exception = null
+            )
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    suspend fun getLoginUniKey():Response<String>{
+        val title = this::getLoginUniKey.name
+        val map = mapOf(
+            "type" to 1,
+            "csrf_token" to ""
+        )
+        val _params = EncryptHelper.weApi(map.toJson())
+        val result = service.getLoginUniKey(_params.first,_params.second).awaitResult()
+        return if(result.e != null){
+            error(title,result.e)
+        }
+        else{
+            Response(
+                title = title,
+                data = result.data!!.data.uniKey,
+                support = true,
+                success = true,
+                exception = null,
+                message = "ok"
             )
         }
     }

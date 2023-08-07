@@ -2,21 +2,27 @@ package com.jqwong.music.view
 
 import android.annotation.SuppressLint
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.children
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.customview.customView
+import com.drake.statelayout.StateLayout
 import com.github.leandroborgesferreira.loadingbutton.customViews.CircularProgressButton
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.jqwong.music.R
 import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivitySettingBinding
@@ -24,7 +30,10 @@ import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.helper.setTitleDefaultStyle
 import com.jqwong.music.model.ExceptionLog
 import com.jqwong.music.model.FmgQuality
+import com.jqwong.music.model.NetEaseCloudMusicConfig
 import com.jqwong.music.model.Platform
+import com.jqwong.music.service.NetEaseCloudService
+import com.jqwong.music.service.ServiceProxy
 import kotlinx.coroutines.*
 
 /**
@@ -35,6 +44,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
     override fun initData(savedInstanceState: Bundle?) {
 
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("RestrictedApi")
     override fun intView() {
         setSupportActionBar(_binding.includeToolbar.toolbar)
@@ -60,24 +70,19 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
             it.hint = App.config.ffmpeg_parse_quality_upload.name
         }
 
-        val platforms = mutableListOf<String>()
-        for(item in App.enable_platform) {
-            platforms.add(item.name)
-        }
-        val adapterPlatform = ArrayAdapter(this,R.layout.item_drop_down_text,platforms)
         (_binding.menuDefaultSearchSource.editText as? AutoCompleteTextView)?.let{
             setDropdownDefaultBackground(it)
-            it.setAdapter(adapterPlatform)
+            it.setAdapter(ArrayAdapter(this,R.layout.item_drop_down_text, listOf(Platform.KuWo,Platform.NetEaseCloud)))
             it.hint = App.config.default_search_platform.name
         }
         (_binding.menuSyncPlatformData.editText as? AutoCompleteTextView)?.let{
             setDropdownDefaultBackground(it)
-            it.setAdapter(adapterPlatform)
+            it.setAdapter(ArrayAdapter(this,R.layout.item_drop_down_text, listOf(Platform.NetEaseCloud)))
             it.hint = App.config.data_sync_platform.name
         }
         (_binding.menuAutoChangePlatform.editText as? AutoCompleteTextView)?.let{
             setDropdownDefaultBackground(it)
-            it.setAdapter(adapterPlatform)
+            it.setAdapter(ArrayAdapter(this,R.layout.item_drop_down_text, listOf(Platform.KuWo,Platform.NetEaseCloud)))
             it.hint = App.config.priority_auto_change_platform.name
         }
         _binding.smAutoChangePlatform.isChecked = App.config.auto_change_platform
@@ -136,6 +141,52 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                         App.exceptions.add(log)
                         loadingButtonFinishAnimation(it,false,"save failed: ${log.exception.message}")
                     }
+                }
+            }
+        }
+        _binding.linkConfigNetEaseCloud.setOnClickListener {
+            MaterialDialog(this,BottomSheet()).show {
+                customView(R.layout.dialog_config_neteasecloud)
+                cornerRadius(20f)
+                view.setBackgroundResource(R.drawable.bg_dialog)
+                title(text = "NetEaseCloud config")
+                view.setTitleDefaultStyle(this@SettingActivity)
+                val menuQuality = view.contentLayout.findViewById<TextInputLayout>(R.id.menu_quality)
+                (menuQuality.editText as? AutoCompleteTextView)?.let{
+                    setDropdownDefaultBackground(it)
+                    val list = mutableListOf<String>()
+                    var hint = ""
+                    NetEaseCloudMusicConfig.qualities.forEach {
+                        list.add(it.key)
+                        if(it.value == App.config.netEaseCloudMusicConfig.quality){
+                            hint = it.key
+                        }
+                    }
+                    it.setAdapter(ArrayAdapter(this@SettingActivity,R.layout.item_drop_down_text,list))
+                    it.hint = hint
+                }
+                val tvName = view.contentLayout.findViewById<TextView>(R.id.tv_name)
+                val tvToken = view.contentLayout.findViewById<TextView>(R.id.tv_token)
+                tvName.setText(App.config.netEaseCloudMusicConfig.username)
+                tvToken.setText(App.config.netEaseCloudMusicConfig.csrf_token)
+                view.contentLayout.findViewById<AppCompatButton>(R.id.btn_login).setOnClickListener {
+                    // 生成二维码
+                    MaterialDialog(this@SettingActivity,BottomSheet()).show {
+                        customView(R.layout.dialog_login_netease)
+                        cornerRadius(20f)
+                        view.setBackgroundResource(R.drawable.bg_dialog)
+                        view.setTitleDefaultStyle(this@SettingActivity)
+                        val stateLayout = view.contentLayout.findViewById<StateLayout>(R.id.state_layout)
+                        stateLayout.showLoading()
+                        val ivQr = view.contentLayout.findViewById<ImageView>(R.id.iv_qr)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            var key = (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).getLoginUniKey()
+                            val code = 200
+                        }
+                    }
+                }
+                view.contentLayout.findViewById<AppCompatButton>(R.id.btn_save).setOnClickListener {
+
                 }
             }
         }

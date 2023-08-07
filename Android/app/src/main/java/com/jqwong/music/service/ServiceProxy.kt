@@ -14,6 +14,24 @@ class ServiceProxy {
             Platform.KuWo to KuWOService(),
             Platform.NetEaseCloud to NetEaseCloudService()
         )
+
+        fun getService(platform: Platform):Response<IService>{
+            val title = this::getService.name
+            return if(!services.containsKey(platform)){
+                notSupportPlatform<IService>(title,platform)
+            }
+            else{
+                Response(
+                    title = title,
+                    data = services.get(platform),
+                    message = "ok",
+                    success = true,
+                    support = true,
+                    exception = null
+                )
+            }
+        }
+
         suspend fun search(platform:Platform, key:String, page:Int, limit:Int): Response<List<Media>> {
             if(!services.containsKey(platform)){
                 return notSupportPlatform(FunHelper.getName(),platform)

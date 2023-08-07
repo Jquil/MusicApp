@@ -11,6 +11,7 @@ import com.jqwong.music.api.entity.netEase.PlayList
 import com.jqwong.music.api.entity.netEase.PlayUrl
 import com.jqwong.music.api.entity.netEase.Song
 import com.jqwong.music.api.entity.netEase.SongList
+import com.jqwong.music.api.entity.netEase.UniKey
 import retrofit2.Call
 import retrofit2.http.POST
 import retrofit2.http.Query
@@ -39,4 +40,7 @@ interface NetEaseCloudMusicApi {
 
     @POST("api/song/lyric?_nmclfl=1&tv=-1&lv=-1&rv=-1&kv=-1")
     fun getLyrics(@Query("id") id:String):Call<LyricResponse>
+
+    @POST("weapi/login/qrcode/unikey")
+    fun getLoginUniKey(@Query("params") params:String,@Query("encSecKey") encSecKey:String):Call<BaseResponseM<UniKey>>
 }

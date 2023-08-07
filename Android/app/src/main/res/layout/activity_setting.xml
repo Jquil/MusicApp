@@ -67,7 +67,7 @@
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:paddingRight="10dp"
-                                android:text="okhttp request timeout"
+                                android:text="okhttp connection timeout"
                                 android:textColor="@color/white"/>
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/input_okhttp_request_timeout"
@@ -309,6 +309,7 @@
                         app:layout_constraintTop_toBottomOf="@id/tv_title_platform_config">
 
                         <TextView
+                            android:id="@+id/link_config_netEaseCloud"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="[1] NetEaseCloud music"
