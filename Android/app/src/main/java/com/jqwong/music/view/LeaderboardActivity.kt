@@ -224,6 +224,9 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
 
     private fun getLeaderBoards(platform: Platform, callback:(List<Leaderboard>) -> Unit, reloadNumber: Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
+            if(reloadNumber != 0){
+                delay(1000)
+            }
             val data = ServiceProxy.getLeaderboard(platform)
             withContext(Dispatchers.Main){
                 if(data.exception != null){

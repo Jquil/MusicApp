@@ -20,8 +20,14 @@ import com.jqwong.music.event.*
 import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.model.*
+import com.jqwong.music.service.KuWOService
+import com.jqwong.music.service.ServiceProxy
+import com.jqwong.music.view.web.KuWoWebViewClient
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
@@ -59,6 +65,13 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                 App.config = getDefaultConfig()
             }
         }
+
+        // 加载酷我平台Headers
+        App.config.kuWoMusicConfig.cookies.clear()
+        _binding.wvView.settings.javaScriptEnabled = true
+        _binding.wvView.settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188"
+        _binding.wvView.webViewClient = KuWoWebViewClient()
+        _binding.wvView.loadUrl("http://kuwo.cn")
     }
     override fun intView() {
         _binding.btnDrawer.setOnClickListener {
@@ -134,11 +147,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                 cookies = HashMap<String,String>()
             ),
             kuWoMusicConfig = KuWoMusicConfig(
-                cookies = HashMap<String,String>().apply {
-                    put("Cookie","Hm_lvt_cdb524f42f0ce19b169a8071123a4797=1689694107; _ga=GA1.2.259721034.1689694749; _gid=GA1.2.1715768254.1689694749; Hm_lpvt_cdb524f42f0ce19b169a8071123a4797=1689770825; _ga_ETPBRPM9ML=GS1.2.1689770827.2.0.1689770827.60.0.0; Hm_Iuvt_cdb524f42f0ce19b169b8072123a4727=3MiWHX6n8Zr8sN48sF3dccyTWjZ54Hxy")
-                    put("Secret","6d11133bb2dcdb6786619f78d7a8adc54ef3caecde8e45df2f1656e490f16f42053e556b")
-                    put("Referer","https://www.kuwo.cn")
-                },
+                cookies = HashMap<String,String>(),
                 quality = KuWoMusicConfig.qualities.getOrDefault("flac","flac")
             ),
             memFireDbConfig = MemFireDbConfig(

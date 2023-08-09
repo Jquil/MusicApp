@@ -43,7 +43,7 @@ suspend fun <T : Any> Call<T>.awaitResult(): ApiResult<T> {
                 continuation.resumeWith(runCatching {
                     ApiResult<T>(
                         data = null,
-                        e = Exception(t.message,t.cause)
+                        e = Exception("${t.message}",t.cause)
                     )
                 })
             }

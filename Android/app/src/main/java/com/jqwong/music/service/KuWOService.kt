@@ -13,13 +13,16 @@ import com.jqwong.music.helper.toKwTime
 import com.jqwong.music.model.*
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Retrofit
 import retrofit2.await
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.io.IOException
 import java.net.URLEncoder
 import java.util.Base64
 import java.util.concurrent.TimeUnit
@@ -30,13 +33,19 @@ import java.util.concurrent.TimeUnit
  */
 class KuWOService:IService {
     companion object{
+        private val TAG = "KuWOService"
+        private val FILTER_LIST = mutableListOf(
+            "mobi.kuwo.cn"
+        )
         private val config = OkHttpClient.Builder()
             .connectTimeout(App.config.okhttp_request_timeout,TimeUnit.MILLISECONDS)
             .addInterceptor {
                 val req = it.request()
                 val builder = req.newBuilder()
-                App.config.kuWoMusicConfig.cookies.forEach { s, s2 ->
-                    builder.header(s,s2)
+                if(!FILTER_LIST.contains(req.url().host())){
+                    App.config.kuWoMusicConfig.cookies.forEach { s, s2 ->
+                        builder.header(s,s2)
+                    }
                 }
                 it.proceed(builder.build())
             }
@@ -250,7 +259,8 @@ class KuWOService:IService {
         val title = this::getPlayUrl.name
         var text = "corp=kuwo&p2p=1&type=convert_url2&format=${quality}&rid=${id}"
         text = EncryptHelper.encrypt(text)
-        val result = service.getPlayUrl("http://mobi.kuwo.cn/mobi.s?f=kuwo&q=${text}").awaitResult()
+        val url = "http://mobi.kuwo.cn/mobi.s?f=kuwo&q=${text}"
+        val result = service.getPlayUrl(url).awaitResult()
         return if(result.e != null){
             error(title,result.e)
         }
