@@ -21,6 +21,7 @@ import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.model.*
 import com.jqwong.music.service.KuWOService
+import com.jqwong.music.service.NetEaseCloudService
 import com.jqwong.music.service.ServiceProxy
 import com.jqwong.music.view.web.KuWoWebViewClient
 import com.squareup.moshi.Moshi
@@ -72,6 +73,11 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         _binding.wvView.settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188"
         _binding.wvView.webViewClient = KuWoWebViewClient()
         _binding.wvView.loadUrl("http://kuwo.cn")
+
+        // 校验网易云csrf_token是否过期
+        CoroutineScope(Dispatchers.IO).launch{
+            //(ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).GetRecommendSongSheet(App.config.netEaseCloudMusicConfig.csrf_token!!)
+        }
     }
     override fun intView() {
         _binding.btnDrawer.setOnClickListener {

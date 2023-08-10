@@ -33,3 +33,4 @@ data class BaseResponseO<T>(
     @field:Json(name = "songs") val songs:T,
     @field:Json(name = "code") val code:Int,
 )
+

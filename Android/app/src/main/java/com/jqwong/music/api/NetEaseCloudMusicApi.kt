@@ -5,6 +5,7 @@ import com.jqwong.music.api.entity.netEase.BaseResponseM
 import com.jqwong.music.api.entity.netEase.BaseResponseO
 import com.jqwong.music.api.entity.netEase.BaseResponseX
 import com.jqwong.music.api.entity.netEase.BaseResponseZ
+import com.jqwong.music.api.entity.netEase.CheckLoginResponse
 import com.jqwong.music.api.entity.netEase.Leaderboard
 import com.jqwong.music.api.entity.netEase.LyricResponse
 import com.jqwong.music.api.entity.netEase.PlayList
@@ -12,7 +13,9 @@ import com.jqwong.music.api.entity.netEase.PlayUrl
 import com.jqwong.music.api.entity.netEase.Song
 import com.jqwong.music.api.entity.netEase.SongList
 import com.jqwong.music.api.entity.netEase.UniKey
+import okhttp3.ResponseBody
 import retrofit2.Call
+import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.Query
 import retrofit2.http.Url
@@ -41,6 +44,15 @@ interface NetEaseCloudMusicApi {
     @POST("api/song/lyric?_nmclfl=1&tv=-1&lv=-1&rv=-1&kv=-1")
     fun getLyrics(@Query("id") id:String):Call<LyricResponse>
 
-    @POST("weapi/login/qrcode/unikey")
-    fun getLoginUniKey(@Query("params") params:String,@Query("encSecKey") encSecKey:String):Call<BaseResponseM<UniKey>>
+    @POST
+    fun getLoginUniKey(@Url url:String):Call<UniKey>
+
+    @POST
+    fun loginCheck(@Url url:String):Call<CheckLoginResponse>
+
+    @POST("weapi/login/qrcode/client/login")
+    fun login(@Body body: String):Call<ResponseBody>
+
+    @POST("weapi/v1/discovery/recommend/resource")
+    fun GetRecommendSongSheet(@Body body:String):Call<ResponseBody>
 }

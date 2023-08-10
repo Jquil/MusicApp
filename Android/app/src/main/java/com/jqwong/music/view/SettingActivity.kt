@@ -1,9 +1,11 @@
 package com.jqwong.music.view
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.provider.CalendarContract.Colors
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.ImageButton
@@ -26,6 +28,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.jqwong.music.R
 import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivitySettingBinding
+import com.jqwong.music.helper.QrHelper
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.helper.setTitleDefaultStyle
 import com.jqwong.music.model.ExceptionLog
@@ -165,23 +168,66 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                     it.setAdapter(ArrayAdapter(this@SettingActivity,R.layout.item_drop_down_text,list))
                     it.hint = hint
                 }
-                val tvName = view.contentLayout.findViewById<TextView>(R.id.tv_name)
                 val tvToken = view.contentLayout.findViewById<TextView>(R.id.tv_token)
-                tvName.setText(App.config.netEaseCloudMusicConfig.username)
                 tvToken.setText(App.config.netEaseCloudMusicConfig.csrf_token)
                 view.contentLayout.findViewById<AppCompatButton>(R.id.btn_login).setOnClickListener {
                     // 生成二维码
                     MaterialDialog(this@SettingActivity,BottomSheet()).show {
                         customView(R.layout.dialog_login_netease)
                         cornerRadius(20f)
+                        title(text = "QR Code")
                         view.setBackgroundResource(R.drawable.bg_dialog)
                         view.setTitleDefaultStyle(this@SettingActivity)
                         val stateLayout = view.contentLayout.findViewById<StateLayout>(R.id.state_layout)
                         stateLayout.showLoading()
                         val ivQr = view.contentLayout.findViewById<ImageView>(R.id.iv_qr)
+                        val btnAuthentication = view.contentLayout.findViewById<AppCompatButton>(R.id.btn_authentication)
+                        var key = ""
                         CoroutineScope(Dispatchers.IO).launch {
-                            var key = (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).getLoginUniKey()
-                            val code = 200
+                            val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).getLoginUniKey()
+                            } else {
+                                TODO("VERSION.SDK_INT < TIRAMISU")
+                            }
+                            withContext(Dispatchers.Main){
+                                if(result.exception != null){
+                                    toast(result.exception.exception.message.toString())
+                                }
+                                else{
+                                    key = result.data!!
+                                    val url = "https://music.163.com/login?codekey=${result.data}"
+                                    ivQr.setImageBitmap(QrHelper.createQRCodeBitmap(url,250,250,"UTF-8","L","1",
+                                        Color.BLACK,Color.WHITE))
+                                    stateLayout.showContent()
+                                }
+                            }
+                        }
+                        btnAuthentication.setOnClickListener {
+                            if(key.isNullOrEmpty())
+                                return@setOnClickListener
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).loginCheck(key)
+                                } else {
+                                    TODO("VERSION.SDK_INT < TIRAMISU")
+                                }
+                                withContext(Dispatchers.Main){
+                                    if (result.exception != null){
+                                        toast(result.exception.exception.message.toString())
+                                    }
+                                    else{
+                                        toast(result.data!!.message)
+                                        if(result.data.success){
+                                            withContext(Dispatchers.IO){
+                                                val result = (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).login(key)
+//                                                    App.config.netEaseCloudMusicConfig.csrf_token = key
+//                                                tvToken.setText(key)
+//                                                cancel()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

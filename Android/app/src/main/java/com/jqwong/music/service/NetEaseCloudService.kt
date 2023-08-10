@@ -238,14 +238,15 @@ class NetEaseCloudService:IService {
             "csrf_token" to ""
         )
         val _params = EncryptHelper.weApi(map.toJson())
-        val result = service.getLoginUniKey(_params.first,_params.second).awaitResult()
+        val url = "https://music.163.com/weapi/login/qrcode/unikey?params=${_params.first}&encSecKey=${_params.second}"
+        val result = service.getLoginUniKey(url).awaitResult()
         return if(result.e != null){
             error(title,result.e)
         }
         else{
             Response(
                 title = title,
-                data = result.data!!.data.uniKey,
+                data = result.data!!.unikey,
                 support = true,
                 success = true,
                 exception = null,
@@ -254,6 +255,70 @@ class NetEaseCloudService:IService {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    suspend fun loginCheck(key: String):Response<LoginResponse>{
+        val title = this::loginCheck.name
+        val map = mapOf(
+            "key" to key,
+            "type" to 1,
+            "csrf_token" to ""
+        )
+        val _params= EncryptHelper.weApi(map.toJson())
+        val url = "https://music.163.com/weapi/login/qrcode/client/login?params=${_params.first}&encSecKey=${_params.second}"
+        val result = service.loginCheck(url).awaitResult()
+        return if (result.e != null)
+            error(title,result.e)
+        else{
+            Response(
+                title = title,
+                support = true,
+                success = true,
+                data = LoginResponse(
+                    success = result.data!!.code == 803,
+                    message = result.data.message,
+                    data = null
+                ),
+                exception = null,
+                message = "ok"
+            )
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    suspend fun login(key: String):Response<LoginResponse>{
+        val title = this::login.name
+        val map = mapOf(
+            "type" to 1,
+            "key" to key
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val _params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.login(_params).awaitResult()
+        Log.e(TAG,result.data!!.bytes().toString(Charsets.UTF_8))
+        return if(result.e != null)
+            error(title,result.e)
+        else{
+            Response(
+                title = title,
+                success = true,
+                support = true,
+                data = null,
+                message = "ok",
+                exception = null
+            )
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    suspend fun GetRecommendSongSheet(token:String){
+        val map = mapOf(
+            "csrf_token" to token
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.GetRecommendSongSheet(params).awaitResult()
+        Log.e(TAG,result.data!!.bytes().toString(Charsets.UTF_8))
+    }
 
     @Suppress("Since15")
     class EncryptHelper{
