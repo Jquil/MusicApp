@@ -13,6 +13,7 @@ import com.jqwong.music.api.entity.netEase.PlayUrl
 import com.jqwong.music.api.entity.netEase.Song
 import com.jqwong.music.api.entity.netEase.SongList
 import com.jqwong.music.api.entity.netEase.UniKey
+import okhttp3.Response
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.Body
@@ -50,9 +51,6 @@ interface NetEaseCloudMusicApi {
     @POST
     fun loginCheck(@Url url:String):Call<CheckLoginResponse>
 
-    @POST("weapi/login/qrcode/client/login")
-    fun login(@Body body: String):Call<ResponseBody>
-
-    @POST("weapi/v1/discovery/recommend/resource")
-    fun GetRecommendSongSheet(@Body body:String):Call<ResponseBody>
+    @POST
+    fun GetRecommendSongSheet(@Url url:String):Call<ResponseBody>
 }

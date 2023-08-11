@@ -6,5 +6,6 @@ package com.jqwong.music.model
  */
 class ApiResult<T>(
     val data:T?,
-    val e:Exception?
+    val e:Exception?,
+    val header:okhttp3.Headers?
 )

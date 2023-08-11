@@ -18,23 +18,27 @@ suspend fun <T : Any> Call<T>.awaitResult(): ApiResult<T> {
                 continuation.resumeWith(runCatching {
                     if(response.isSuccessful){
                         val data = response.body()
+                        val header = response.headers()
                         if(data == null){
                             ApiResult<T>(
                                 data = null,
-                                e = NullPointerException()
+                                e = NullPointerException(),
+                                header = header
                             )
                         }
                         else{
                             ApiResult<T>(
                                 data = data,
-                                e = null
+                                e = null,
+                                header = header
                             )
                         }
                     }
                     else{
                         ApiResult<T>(
                             data = null,
-                            e = Exception("${response.raw().code()}:${response.raw().message()}")
+                            e = Exception("${response.raw().code()}:${response.raw().message()}"),
+                            header = null
                         )
                     }
                 })
@@ -43,7 +47,8 @@ suspend fun <T : Any> Call<T>.awaitResult(): ApiResult<T> {
                 continuation.resumeWith(runCatching {
                     ApiResult<T>(
                         data = null,
-                        e = Exception("${t.message}",t.cause)
+                        e = Exception("${t.message}",t.cause),
+                        header = null
                     )
                 })
             }

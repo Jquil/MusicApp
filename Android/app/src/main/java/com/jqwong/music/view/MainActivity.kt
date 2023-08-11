@@ -76,7 +76,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
 
         // 校验网易云csrf_token是否过期
         CoroutineScope(Dispatchers.IO).launch{
-            //(ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).GetRecommendSongSheet(App.config.netEaseCloudMusicConfig.csrf_token!!)
+            (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).GetRecommendSongSheet(App.config.netEaseCloudMusicConfig.csrf_token!!)
         }
     }
     override fun intView() {

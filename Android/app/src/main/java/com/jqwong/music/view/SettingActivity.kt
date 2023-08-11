@@ -217,13 +217,10 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                                     }
                                     else{
                                         toast(result.data!!.message)
-                                        if(result.data.success){
-                                            withContext(Dispatchers.IO){
-                                                val result = (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).login(key)
-//                                                    App.config.netEaseCloudMusicConfig.csrf_token = key
-//                                                tvToken.setText(key)
-//                                                cancel()
-                                            }
+                                        if(result.data.data != null){
+                                            val token = result.data.data.toString()
+                                            App.config.netEaseCloudMusicConfig.csrf_token = token
+                                            tvToken.setText(token)
                                         }
                                     }
                                 }

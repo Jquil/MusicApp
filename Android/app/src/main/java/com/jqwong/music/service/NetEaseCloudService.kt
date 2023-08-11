@@ -15,6 +15,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import okio.use
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.net.URLEncoder
@@ -269,6 +270,21 @@ class NetEaseCloudService:IService {
         return if (result.e != null)
             error(title,result.e)
         else{
+            var token = ""
+            result.header.let {
+                it!!.values("set-cookie").forEach {
+                    if(it.contains("__csrf")){
+                        val arr = it.split(';')
+                        arr.forEach {
+                            if(it.contains("__csrf")){
+                                token = it.replace("__csrf=","")
+                                return@forEach
+                            }
+                        }
+                        return@forEach
+                    }
+                }
+            }
             Response(
                 title = title,
                 support = true,
@@ -276,35 +292,10 @@ class NetEaseCloudService:IService {
                 data = LoginResponse(
                     success = result.data!!.code == 803,
                     message = result.data.message,
-                    data = null
+                    data = token
                 ),
                 exception = null,
                 message = "ok"
-            )
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    suspend fun login(key: String):Response<LoginResponse>{
-        val title = this::login.name
-        val map = mapOf(
-            "type" to 1,
-            "key" to key
-        )
-        val _text = EncryptHelper.weApi(map.toJson())
-        val _params = "params=${_text.first}&encSecKey=${_text.second}"
-        val result = service.login(_params).awaitResult()
-        Log.e(TAG,result.data!!.bytes().toString(Charsets.UTF_8))
-        return if(result.e != null)
-            error(title,result.e)
-        else{
-            Response(
-                title = title,
-                success = true,
-                support = true,
-                data = null,
-                message = "ok",
-                exception = null
             )
         }
     }
@@ -316,7 +307,8 @@ class NetEaseCloudService:IService {
         )
         val _text = EncryptHelper.weApi(map.toJson())
         val params = "params=${_text.first}&encSecKey=${_text.second}"
-        val result = service.GetRecommendSongSheet(params).awaitResult()
+        val url = "https://music.163.com/weapi/v1/discovery/recommend/resource?${params}"
+        val result = service.GetRecommendSongSheet(url).awaitResult()
         Log.e(TAG,result.data!!.bytes().toString(Charsets.UTF_8))
     }
 
