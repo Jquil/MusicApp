@@ -11,7 +11,8 @@
         android:id="@+id/ll_token"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_constraintTop_toTopOf="parent">
         <TextView
             android:layout_width="150dp"
             android:layout_height="wrap_content"
@@ -31,11 +32,38 @@
             android:textStyle="bold"/>
     </LinearLayout>
     <LinearLayout
-        android:id="@+id/ll_quality"
+        android:id="@+id/ll_music_a"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/ll_token">
+        <TextView
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:textAlignment="textStart"
+            android:textColor="@color/white"
+            android:textSize="20dp"
+            android:text="music_a："/>
+        <TextView
+            android:id="@+id/tv_music_a"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:textAlignment="textStart"
+            android:maxLines="5"
+            android:ellipsize="end"
+            android:maxEms="50"
+            android:textColor="@color/white"
+            android:textSize="20dp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/ll_quality"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/ll_music_a">
         <TextView
             android:layout_width="150dp"
             android:layout_height="wrap_content"

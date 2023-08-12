@@ -2,28 +2,19 @@ package com.jqwong.music.service
 
 import android.content.res.Resources.NotFoundException
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import com.jqwong.music.api.KuWoMusicApi
 import com.jqwong.music.app.App
-import com.jqwong.music.helper.FunHelper
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.helper.awaitResult
 import com.jqwong.music.helper.toKwTime
 import com.jqwong.music.model.*
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Retrofit
-import retrofit2.await
 import retrofit2.converter.moshi.MoshiConverterFactory
-import java.io.IOException
-import java.net.URLEncoder
 import java.util.Base64
 import java.util.concurrent.TimeUnit
 
@@ -224,9 +215,9 @@ class KuWOService:IService {
             )
         }
     }
-    override suspend fun getRecommendSongSheetData(data: Any, page: Int, limit: Int): Response<List<Media>> {
+    override suspend fun getRecommendSongSheetData(id:String, page:Int, limit:Int,data:Any): Response<List<Media>> {
         val title = this::getRecommendSongSheetData.name
-        val result = service.getRecommendSongList(data.toString(),page,limit).awaitResult()
+        val result = service.getRecommendSongSheetData(id,page,limit).awaitResult()
         return if(result.e != null){
             error(title,result.e)
         }
@@ -242,7 +233,7 @@ class KuWOService:IService {
                 title = title,
                 success = true,
                 message = "ok",
-                data = null,
+                data = list,
                 exception = null,
                 support = true
             )

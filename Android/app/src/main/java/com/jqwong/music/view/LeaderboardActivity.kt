@@ -1,10 +1,12 @@
 package com.jqwong.music.view
 
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
+import androidx.annotation.RequiresApi
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -125,6 +127,7 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
         return true
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if(_binding.includeMain.stateLayout.loaded){
             when(item.itemId) {
@@ -140,6 +143,7 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
                         rvList.layoutManager = LinearLayoutManager(this@LeaderboardActivity)
                         rvList.adapter = adapter
                         adapter.setOnItemClickListener(object:BaseQuickAdapter.OnItemClickListener<Leaderboard>{
+                            @RequiresApi(Build.VERSION_CODES.O)
                             override fun onClick(
                                 adapter: BaseQuickAdapter<Leaderboard, *>,
                                 view: View,
@@ -155,7 +159,9 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
                                     currentLeaderboard = item
                                     supportActionBar?.title = item.name
                                     _binding.includeMain.stateLayout.showLoading()
-                                    loadMediaList(_platform,item.id.toString(),0)
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        loadMediaList(_platform,item.id.toString(),0)
+                                    }
                                 }
                             }
 
@@ -251,10 +257,11 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
         }
     }
 
-    private fun loadMediaList(platform: Platform,id:String, reloadNumber:Int = 0){
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun loadMediaList(platform: Platform, id:String, reloadNumber:Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){
-                delay(1000)
+                delay((1000 * reloadNumber).toLong())
             }
             page++
             val data = ServiceProxy.getLeaderboardSongList(platform,id,page,pageItemSize)

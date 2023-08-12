@@ -38,7 +38,8 @@ import org.greenrobot.eventbus.ThreadMode
  * @date: 7/23/2023
  */
 class MainActivity:BaseActivity<ActivityMainBinding>() {
-    @RequiresApi(Build.VERSION_CODES.O)
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun initData(savedInstanceState: Bundle?) {
         val sp = getSharedPreferences(Constant.CONFIG, MODE_PRIVATE)
         val strConfig = sp.getString(Constant.CONFIG,null)
@@ -73,11 +74,6 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         _binding.wvView.settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188"
         _binding.wvView.webViewClient = KuWoWebViewClient()
         _binding.wvView.loadUrl("http://kuwo.cn")
-
-        // 校验网易云csrf_token是否过期
-        CoroutineScope(Dispatchers.IO).launch{
-            (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).GetRecommendSongSheet(App.config.netEaseCloudMusicConfig.csrf_token!!)
-        }
     }
     override fun intView() {
         _binding.btnDrawer.setOnClickListener {
@@ -113,6 +109,11 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         _binding.layoutPlayBar.ibPlayStatus.setOnClickListener {
             AudioHelper.playOrPause()
         }
+        _binding.btnRecommendSheet.setOnClickListener {
+            startActivity(Intent(this,RecommendSheetActivity::class.java).apply {
+                putExtra(ExtraKey.Platform.name,App.config.default_search_platform.name)
+            })
+        }
 
         if(App.playListIsInitialized() && !(App.playList.data.isNullOrEmpty())){
             onMediaChangeEvent(MediaChangeEvent(App.playList.data.get(App.playList.index)))
@@ -140,10 +141,8 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             ffmpeg_parse_quality_audition = FmgQuality.HQ,
             ffmpeg_parse_quality_upload = FmgQuality.SQ,
             netEaseCloudMusicConfig = NetEaseCloudMusicConfig(
-                cookies = HashMap<String, String>(),
                 csrf_token = "",
-                username = "",
-                pic = "",
+                music_a = "",
                 quality = NetEaseCloudMusicConfig.qualities.get("无损")!!
             ),
             qqMusicConfig = QQMusicConfig(

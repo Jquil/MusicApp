@@ -39,10 +39,8 @@ class Config(
 }
 
 class NetEaseCloudMusicConfig(
-    var cookies:Map<String,String>,
     var csrf_token:String?,
-    var username:String?,
-    var pic:String?,
+    var music_a:String?,
     var quality:String
 )
 {

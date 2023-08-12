@@ -6,10 +6,7 @@ import androidx.annotation.RequiresApi
 import com.jqwong.music.api.NetEaseCloudMusicApi
 import com.jqwong.music.api.entity.netEase.UniKey
 import com.jqwong.music.app.App
-import com.jqwong.music.helper.FunHelper
-import com.jqwong.music.helper.awaitResult
-import com.jqwong.music.helper.toJson
-import com.jqwong.music.helper.toNetEaseCloudTime
+import com.jqwong.music.helper.*
 import com.jqwong.music.model.*
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -35,10 +32,17 @@ class NetEaseCloudService:IService {
             .connectTimeout(App.config.okhttp_request_timeout, TimeUnit.MILLISECONDS)
             .addInterceptor {
                 val req = it.request()
-                val builder = req.newBuilder()
-                App.config.netEaseCloudMusicConfig.cookies.forEach { s, s2 ->
-                    builder.header(s,s2)
+                var token = ""
+                var role = "MUSIC_A=bf8bfeabb1aa84f9c8c3906c04a04fb864322804c83f5d607e91a04eae463c9436bd1a17ec353cf780b396507a3f7464e8a60f4bbc019437993166e004087dd32d1490298caf655c2353e58daa0bc13cc7d5c198250968580b12c1b8817e3f5c807e650dd04abd3fb8130b7ae43fcc5b;"
+                if(!App.config.netEaseCloudMusicConfig.csrf_token.isNullOrEmpty()){
+                    token = "csrf=${App.config.netEaseCloudMusicConfig.csrf_token};"
                 }
+                if(!App.config.netEaseCloudMusicConfig.music_a.isNullOrEmpty()){
+                    role = "MUSIC_U=${App.config.netEaseCloudMusicConfig.music_a};"
+                }
+                val builder = req.newBuilder()
+                    .header("Content-Type","application/x-www-form-urlencoded")
+                    .header("Cookie","NMTID=f43b2a069050d510416f015d10cd2ae0;_ntes_nuid=0250cd17c80bf506719bd4e019c616b0;__remember_me=true;${token} ${role}")
                 it.proceed(builder.build())
             }
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
@@ -56,7 +60,7 @@ class NetEaseCloudService:IService {
     }
 
     override suspend fun getLeaderboard(): Response<List<Leaderboard>> {
-        val title = FunHelper.getName()
+        val title = this::getLeaderboard.name
         val result = service.getLeaderboard().awaitResult()
         return if(result.e != null){
             return error(title,result.e)
@@ -119,7 +123,7 @@ class NetEaseCloudService:IService {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override suspend fun search(key: String, page: Int, limit: Int): Response<List<Media>> {
-        val title = FunHelper.getName()
+        val title = this::search.name
         val api = "https://interface.music.163.com/eapi/cloudsearch/pc"
         val map = mapOf(
             "s" to key,
@@ -149,16 +153,57 @@ class NetEaseCloudService:IService {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override suspend fun getRecommendSongSheetList(data: Any): Response<List<SongSheet>> {
-        TODO("Not yet implemented")
+        val title = this::getRecommendSongSheetList.name
+        val map = mapOf(
+            "csrf_token" to data
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.GetRecommendSongSheet(params.toRam()).awaitResult()
+        return if(result.e != null)
+            error(title,result.e)
+        else{
+            val list = mutableListOf<SongSheet>()
+            result.data!!.recommend.forEach {
+                list.add(it.convert())
+            }
+            return Response(
+                title = title,
+                success = true,
+                support = true,
+                message = "ok",
+                data = list,
+                exception = null
+            )
+        }
     }
 
     override suspend fun getRecommendSongSheetData(
-        data: Any,
+        id: String,
         page: Int,
-        limit: Int
+        limit: Int,
+        data:Any,
     ): Response<List<Media>> {
-        TODO("Not yet implemented")
+        val title = this::getRecommendSongSheetData.name
+        val result = service.getPlayListDetail(id.toLong()).awaitResult()
+        return if(result.e != null)
+            error(title,result.e)
+        else{
+            val list = mutableListOf<Media>()
+            result.data!!.playlist.tracks.forEach {
+                list.add(it.convert())
+            }
+            Response(
+                title = title,
+                message = "ok",
+                data = list,
+                support = true,
+                success = true,
+                exception = null
+            )
+        }
     }
 
     override suspend fun getRecommendDaily(data: Any): Response<List<Media>> {
@@ -238,9 +283,9 @@ class NetEaseCloudService:IService {
             "type" to 1,
             "csrf_token" to ""
         )
-        val _params = EncryptHelper.weApi(map.toJson())
-        val url = "https://music.163.com/weapi/login/qrcode/unikey?params=${_params.first}&encSecKey=${_params.second}"
-        val result = service.getLoginUniKey(url).awaitResult()
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.getLoginUniKey(params.toRam()).awaitResult()
         return if(result.e != null){
             error(title,result.e)
         }
@@ -264,13 +309,14 @@ class NetEaseCloudService:IService {
             "type" to 1,
             "csrf_token" to ""
         )
-        val _params= EncryptHelper.weApi(map.toJson())
-        val url = "https://music.163.com/weapi/login/qrcode/client/login?params=${_params.first}&encSecKey=${_params.second}"
-        val result = service.loginCheck(url).awaitResult()
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.loginCheck(params.toRam()).awaitResult()
         return if (result.e != null)
             error(title,result.e)
         else{
             var token = ""
+            var musicA = ""
             result.header.let {
                 it!!.values("set-cookie").forEach {
                     if(it.contains("__csrf")){
@@ -281,7 +327,15 @@ class NetEaseCloudService:IService {
                                 return@forEach
                             }
                         }
-                        return@forEach
+                    }
+                    if(it.contains("MUSIC_U")){
+                        val arr = it.split(';')
+                        arr.forEach {
+                            if(it.contains("MUSIC_U")){
+                                musicA = it.replace("MUSIC_U=","")
+                                return@forEach
+                            }
+                        }
                     }
                 }
             }
@@ -291,25 +345,17 @@ class NetEaseCloudService:IService {
                 success = true,
                 data = LoginResponse(
                     success = result.data!!.code == 803,
-                    message = result.data.message,
-                    data = token
+                    data = NetEaseCloudMusicConfig(
+                        csrf_token = token,
+                        music_a = musicA,
+                        quality = ""
+                    ),
+                    message = result.data.message
                 ),
                 exception = null,
                 message = "ok"
             )
         }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    suspend fun GetRecommendSongSheet(token:String){
-        val map = mapOf(
-            "csrf_token" to token
-        )
-        val _text = EncryptHelper.weApi(map.toJson())
-        val params = "params=${_text.first}&encSecKey=${_text.second}"
-        val url = "https://music.163.com/weapi/v1/discovery/recommend/resource?${params}"
-        val result = service.GetRecommendSongSheet(url).awaitResult()
-        Log.e(TAG,result.data!!.bytes().toString(Charsets.UTF_8))
     }
 
     @Suppress("Since15")

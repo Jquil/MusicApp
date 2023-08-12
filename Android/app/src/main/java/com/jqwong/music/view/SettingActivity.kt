@@ -169,7 +169,9 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                     it.hint = hint
                 }
                 val tvToken = view.contentLayout.findViewById<TextView>(R.id.tv_token)
+                val tvMusicA = view.contentLayout.findViewById<TextView>(R.id.tv_music_a)
                 tvToken.setText(App.config.netEaseCloudMusicConfig.csrf_token)
+                tvMusicA.setText(App.config.netEaseCloudMusicConfig.music_a)
                 view.contentLayout.findViewById<AppCompatButton>(R.id.btn_login).setOnClickListener {
                     // 生成二维码
                     MaterialDialog(this@SettingActivity,BottomSheet()).show {
@@ -218,9 +220,11 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                                     else{
                                         toast(result.data!!.message)
                                         if(result.data.data != null){
-                                            val token = result.data.data.toString()
-                                            App.config.netEaseCloudMusicConfig.csrf_token = token
-                                            tvToken.setText(token)
+                                            val config = result.data.data as NetEaseCloudMusicConfig
+                                            App.config.netEaseCloudMusicConfig.csrf_token = config.csrf_token
+                                            App.config.netEaseCloudMusicConfig.music_a = config.music_a
+                                            tvToken.setText(config.csrf_token)
+                                            tvMusicA.setText(config.music_a)
                                         }
                                     }
                                 }

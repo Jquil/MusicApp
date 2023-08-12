@@ -12,7 +12,6 @@ import com.jqwong.music.api.entity.kuwo.SongListM
 import com.jqwong.music.api.entity.kuwo.SongListX
 import okhttp3.ResponseBody
 import retrofit2.Call
-import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Query
 import retrofit2.http.Url
@@ -34,11 +33,11 @@ interface KuWoMusicApi {
     @GET("www/artist/artistMusic?httpsStatus=1&reqId=87263830-f72d-11eb-979c-c11891b4f2ba")
     fun getArtistSongList(@Query("artistid") artistid:String, @Query("pn") pn:Int, @Query("rn") rn:Int):Call<BaseResponse<SongListM>>
 
-    @GET("www/rcm/index/playlist?pn=1&rn=20&httpsStatus=1")
+    @GET("www/rcm/index/playlist?httpsStatus=1&reqId=87263830-f72d-11eb-979c-c11891b4f2ba")
     fun getRecommendSongSheet():Call<BaseResponse<RecommendSongSheet>>
 
-    @GET("www/playlist/playListInfo?httpsStatus=1&pid=1082685104&pn=1&rn=20")
-    fun getRecommendSongList(@Query("artistid") artistid:String, @Query("pn") pn:Int, @Query("rn") rn:Int):Call<BaseResponse<SongListX>>
+    @GET("www/playlist/playListInfo?httpsStatus=1&reqId=87263830-f72d-11eb-979c-c11891b4f2ba&plat=web_www&from=")
+    fun getRecommendSongSheetData(@Query("pid") pid:String, @Query("pn") pn:Int, @Query("rn") rn:Int):Call<BaseResponse<SongListX>>
 
     @GET("www/music/playUrl?type=mv&httpsStatus=1&reqId=db3f8670-e1f6-11eb-942d-33e288737b1d&plat=web_www&from=")
     fun getMvUrl(@Query("mid") mid:String):BaseResponse<MvUrl>

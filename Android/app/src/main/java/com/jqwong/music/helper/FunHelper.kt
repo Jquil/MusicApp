@@ -1,9 +1,8 @@
 package com.jqwong.music.helper
 
-class FunHelper {
-    companion object{
-        fun getName():String{
-            return object{}.javaClass.enclosingMethod.name
-        }
-    }
+import okhttp3.MediaType
+import okhttp3.RequestBody
+
+fun String.toRam():RequestBody{
+    return RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"),this)
 }
