@@ -228,6 +228,7 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun getLeaderBoards(platform: Platform, callback:(List<Leaderboard>) -> Unit, reloadNumber: Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){

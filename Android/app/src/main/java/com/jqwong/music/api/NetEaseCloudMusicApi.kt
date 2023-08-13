@@ -2,8 +2,6 @@ package com.jqwong.music.api
 
 import com.jqwong.music.api.entity.netEase.*
 import okhttp3.RequestBody
-import okhttp3.Response
-import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -23,7 +21,11 @@ interface NetEaseCloudMusicApi {
     fun getLeaderboard():Call<BaseResponseX<List<Leaderboard>>>
 
     @POST("api/v6/playlist/detail?s=8&n=10000")
-    fun getPlayListDetail(@Query("id") id:Long):Call<BaseResponseZ<PlayList>>
+    fun getPlayListDetail(@Query("id") id:Long):Call<BaseResponseZ<PlayListDetail>>
+
+    @POST("/weapi/v3/song/detail")
+    fun getPlayList(@Body content:RequestBody):Call<BaseResponseO<List<Song>>>
+    // c:[{"id":1},],csrf
 
     @POST
     fun getPlayUrl(@Url url: String, @Query("params") params:String):Call<BaseResponseM<List<PlayUrl>>>
@@ -41,5 +43,24 @@ interface NetEaseCloudMusicApi {
     fun loginCheck(@Body content:RequestBody):Call<CheckLoginResponse>
 
     @POST("/weapi/v1/discovery/recommend/resource")
-    fun GetRecommendSongSheet(@Body content: RequestBody):Call<RecommendSheetResult>
+    fun getRecommendSongSheet(@Body content: RequestBody):Call<RecommendSheetResult>
+
+    @POST("/weapi/v1/radio/get")
+    fun personalFM(@Body content: RequestBody):Call<BaseResponseM<List<SongX>>>
+    // csrf_token
+
+    @POST("/weapi/v3/discovery/recommend/songs")
+    fun getDailySongs(@Body content: RequestBody):Call<BaseResponseM<DailySongs>>
+    // csrf_token
+
+    @POST("/weapi/song/enhance/play/mv/url")
+    fun getMvUrl(@Body content: RequestBody):Call<BaseResponseM<MvUrl>>
+    // {"id":"5436712","r":1080,"csrf_token":"4548003c8bdf353cfe2dfa20fc3b8136"}
+
+    @POST("/weapi/user/playlist")
+    fun getUserSheet(@Body content: RequestBody):Call<BaseResponseZ<List<UserSheet>>>
+    // {"uid":"32953014","limit":30,"offset":0,"includeVideo":true,"csrf_token":"4548003c8bdf353cfe2dfa20fc3b8136"}
+
+    @POST("/weapi/nuser/account/get")
+    fun getUserInfo(@Body content: RequestBody):Call<UserResponse>
 }

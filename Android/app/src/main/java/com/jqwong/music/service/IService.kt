@@ -1,5 +1,7 @@
 package com.jqwong.music.service
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.model.*
 
@@ -8,6 +10,7 @@ import com.jqwong.music.model.*
  * @date: 7/28/2023
  */
 interface IService {
+    fun getPlatform():Platform
     suspend fun getLeaderboard():Response<List<Leaderboard>>
     suspend fun getLeaderboardSongList(id:String, page:Int, limit:Int):Response<List<Media>>
     suspend fun getArtistSongList(id:Long, page:Int, limit:Int):Response<List<Media>>
@@ -19,7 +22,10 @@ interface IService {
     suspend fun getPlayUrl(id:String, quality:Any):Response<String>
     suspend fun getMvUrl(id:String):Response<String>
     suspend fun getLyrics(id:String):Response<Lyrics>
-    fun <T>error(title:String,e:Exception):Response<T>{
+    suspend fun getUserSheet(data: Any):Response<List<SongSheet>>
+    suspend fun getUserSheetData(page:Int, limit:Int,data:Any):Response<List<Media>>
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun <T>error(title:String, e:Exception):Response<T>{
         return Response(
             title = title,
             success = false,

@@ -16,6 +16,10 @@ class ServiceProxy {
             Platform.NetEaseCloud to NetEaseCloudService()
         )
 
+        fun all():Collection<IService>{
+            return services.values
+        }
+
         @RequiresApi(Build.VERSION_CODES.O)
         fun getService(platform: Platform):Response<IService>{
             val title = this::getService.name
@@ -84,6 +88,14 @@ class ServiceProxy {
                 return notSupportPlatform(this::getRecommendSongSheetData.name,platform)
             }
             return services.get(platform)!!.getRecommendSongSheetData(id,page,limit,data)
+        }
+
+        @RequiresApi(Build.VERSION_CODES.O)
+        suspend fun getUserSheetData(platform: Platform,page:Int,limit:Int, data:Any):Response<List<Media>>{
+            if(!services.containsKey(platform)){
+                return notSupportPlatform(this::getUserSheetData.name,platform)
+            }
+            return services.get(platform)!!.getUserSheetData(page,limit,data)
         }
 
         @RequiresApi(Build.VERSION_CODES.O)

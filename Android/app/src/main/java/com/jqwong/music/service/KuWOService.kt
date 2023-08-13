@@ -52,6 +52,12 @@ class KuWOService:IService {
             .build()
             .create(KuWoMusicApi::class.java)
     }
+
+    override fun getPlatform(): Platform {
+        return Platform.KuWo
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getLeaderboard(): Response<List<Leaderboard>> {
         val title = this::getLeaderboard.name
         val result = service.getLeaderboard().awaitResult()
@@ -92,6 +98,7 @@ class KuWOService:IService {
             )
         }
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getLeaderboardSongList(id: String, page: Int, limit: Int): Response<List<Media>> {
         val title = this::getLeaderboardSongList.name
         val result = service.getLeaderboardSongList(id.toString(),page,limit).awaitResult()
@@ -116,6 +123,7 @@ class KuWOService:IService {
             )
         }
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getArtistSongList(id: Long, page: Int, limit: Int):Response<List<Media>> {
         val title = this::getArtistSongList.name
         val result = service.getArtistSongList(id.toString(),page,limit).awaitResult()
@@ -140,6 +148,7 @@ class KuWOService:IService {
             )
         }
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getArtistInfo(id: Long): Response<Artist> {
         val title = this::getArtistInfo.name
         val result = service.getArtistInfo(id.toString()).awaitResult()
@@ -165,6 +174,7 @@ class KuWOService:IService {
             )
         }
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun search(key: String, page: Int, limit: Int): Response<List<Media>> {
         val title = this::search.name
         val result = service.search(key,page,limit).awaitResult()
@@ -189,6 +199,7 @@ class KuWOService:IService {
             )
         }
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getRecommendSongSheetList(data: Any): Response<List<SongSheet>> {
         val title = this::getRecommendSongSheetList.name
         val result = service.getRecommendSongSheet().awaitResult()
@@ -215,7 +226,8 @@ class KuWOService:IService {
             )
         }
     }
-    override suspend fun getRecommendSongSheetData(id:String, page:Int, limit:Int,data:Any): Response<List<Media>> {
+    @RequiresApi(Build.VERSION_CODES.O)
+    override suspend fun getRecommendSongSheetData(id:String, page:Int, limit:Int, data:Any): Response<List<Media>> {
         val title = this::getRecommendSongSheetData.name
         val result = service.getRecommendSongSheetData(id,page,limit).awaitResult()
         return if(result.e != null){
@@ -287,6 +299,7 @@ class KuWOService:IService {
     override suspend fun getMvUrl(id: String):Response<String> {
         TODO("Not yet implemented")
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getLyrics(id: String) :Response<Lyrics>{
         val title = this::getLyrics.name
         val url = "http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=${id}&httpsStatus=1&reqId=f9204c10-1df1-11ec-8b4f-9f163660962a"
@@ -314,6 +327,15 @@ class KuWOService:IService {
             )
         }
     }
+
+    override suspend fun getUserSheet(data: Any): Response<List<SongSheet>> {
+        return notSupport(this::getUserSheet.name)
+    }
+
+    override suspend fun getUserSheetData(page: Int, limit: Int, data: Any): Response<List<Media>> {
+        return notSupport(this::getUserSheet.name)
+    }
+
     class EncryptHelper{
         companion object{
             private val SECRET_KEY = "ylzsxkwm".toByteArray(Charsets.UTF_8)

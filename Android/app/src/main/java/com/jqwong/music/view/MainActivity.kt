@@ -6,19 +6,25 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.webkit.WebView
 import androidx.annotation.RequiresApi
 import androidx.core.view.GravityCompat
 import androidx.media3.common.util.UnstableApi
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
+import com.chad.library.adapter.base.BaseQuickAdapter
 import com.jqwong.music.R
+import com.jqwong.music.adapter.SongSheetAdapter
 import com.jqwong.music.app.App
 import com.jqwong.music.app.Constant
 import com.jqwong.music.databinding.ActivityMainBinding
 import com.jqwong.music.event.*
 import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.helper.TimeHelper
+import com.jqwong.music.helper.startAnimation
 import com.jqwong.music.model.*
 import com.jqwong.music.service.KuWOService
 import com.jqwong.music.service.NetEaseCloudService
@@ -29,6 +35,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
@@ -41,6 +48,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun initData(savedInstanceState: Bundle?) {
+        _binding.stateLayout.showLoading()
         val sp = getSharedPreferences(Constant.CONFIG, MODE_PRIVATE)
         val strConfig = sp.getString(Constant.CONFIG,null)
         if(strConfig == null || strConfig == "") {
@@ -69,11 +77,62 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         }
 
         // 加载酷我平台Headers
-        App.config.kuWoMusicConfig.cookies.clear()
         _binding.wvView.settings.javaScriptEnabled = true
         _binding.wvView.settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188"
         _binding.wvView.webViewClient = KuWoWebViewClient()
         _binding.wvView.loadUrl("http://kuwo.cn")
+
+        // 初始化用户平台歌单
+        CoroutineScope(Dispatchers.IO).launch {
+            ServiceProxy.all().forEach {
+                var data:Any = ""
+                var jumpParams = ""
+                when(it::class.java){
+                    NetEaseCloudService::class.java ->{
+                        App.config.netEaseCloudMusicConfig.let {
+                            data = "${it.uid};${it.csrf_token}"
+                            jumpParams = it.csrf_token!!
+                        }
+                    }
+                }
+                val result = it.getUserSheet(data)
+                val platform = it.getPlatform()
+                if(result.exception == null && result.support && result.data != null){
+                    withContext(Dispatchers.Main){
+                        val adapter = SongSheetAdapter()
+                        adapter.showPic = true
+                        val view = layoutInflater.inflate(R.layout.component_sheet,null)
+                        val rv = view.findViewById<RecyclerView>(R.id.rv_list)
+                        rv.isNestedScrollingEnabled = false
+                        rv.layoutManager = LinearLayoutManager(this@MainActivity)
+                        rv.adapter = adapter
+                        adapter.setOnItemClickListener(object:BaseQuickAdapter.OnItemClickListener<SongSheet>{
+                            override fun onClick(
+                                adapter: BaseQuickAdapter<SongSheet, *>,
+                                view: View,
+                                position: Int
+                            ) {
+                                startActivity(Intent(this@MainActivity,SongSheetActivity::class.java).apply {
+                                    putExtra(ExtraKey.Platform.name,platform.name)
+                                    putExtra(ExtraKey.SongSheet.name,adapter.getItem(position)!!.toJson())
+                                    putExtra(ExtraKey.Data.name,jumpParams)
+                                })
+                            }
+
+                        })
+                        adapter.submitList(result.data)
+                        _binding.llSheet.addView(view)
+                    }
+                }
+
+                if(it == ServiceProxy.all().last()){
+                    withContext(Dispatchers.Main){
+                        showContent()
+                    }
+                }
+            }
+        }
+
     }
     override fun intView() {
         _binding.btnDrawer.setOnClickListener {
@@ -143,7 +202,9 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             netEaseCloudMusicConfig = NetEaseCloudMusicConfig(
                 csrf_token = "",
                 music_a = "",
-                quality = NetEaseCloudMusicConfig.qualities.get("无损")!!
+                quality = NetEaseCloudMusicConfig.qualities.get("无损")!!,
+                uid = "",
+                name = ""
             ),
             qqMusicConfig = QQMusicConfig(
                 cookies = HashMap<String,String>()
@@ -215,5 +276,14 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlayerStatusChangeEvent(event: PlayerStatusChangeEvent){
         _binding.layoutPlayBar.ibPlayStatus.setImageResource(if(event.playing) R.drawable.ic_pause else R.drawable.ic_play)
+    }
+
+    fun showContent(){
+        _binding.stateLayout.apply {
+            onContent {
+                this@apply.startAnimation()
+            }
+            this.showContent()
+        }
     }
 }

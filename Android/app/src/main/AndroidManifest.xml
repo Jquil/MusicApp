@@ -28,6 +28,7 @@
         <activity android:name=".view.SearchResultActivity"/>
         <activity android:name=".view.LeaderboardActivity"/>
         <activity android:name=".view.RecommendSheetActivity"/>
+        <activity android:name=".view.SongSheetActivity"/>
     </application>
 
 </manifest>

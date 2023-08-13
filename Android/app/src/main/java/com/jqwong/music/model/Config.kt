@@ -39,6 +39,8 @@ class Config(
 }
 
 class NetEaseCloudMusicConfig(
+    var uid:String?,
+    var name:String?,
     var csrf_token:String?,
     var music_a:String?,
     var quality:String

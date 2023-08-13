@@ -135,6 +135,7 @@ class RecommendSheetActivity:BaseActivity<ActivityRecommendSheetBinding>() {
                 R.id.action_change_platform -> {
                     changePlatform(listOf(Platform.KuWo,Platform.NetEaseCloud)) {
                         _binding.includeMain.stateLayout.showLoading()
+                        _platform = it
                         if(sheets.containsKey(it)){
                             val item = sheets.get(it)!!.first()
                             page = 0
@@ -143,7 +144,6 @@ class RecommendSheetActivity:BaseActivity<ActivityRecommendSheetBinding>() {
                             loadMediaList(_platform,item.id,0)
                         }
                         else{
-                            _platform = it
                             getRecommendSheets(it, callback = {
                                 sheets.put(_platform,it)
                                 currentSheet = it.first()

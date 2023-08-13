@@ -33,7 +33,12 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
     abstract fun statusBarColor():Int
     private fun getBinding():T{
         val acName = javaClass.simpleName
-        val name = acName.substring(0, acName.indexOf("Activity"))
+        val parent = javaClass.superclass.name
+        var name = acName.substring(0, acName.indexOf("Activity"))
+        if(parent != BaseActivity::class.java.name){
+            val arr = parent.split('.')
+            name = arr.last()
+        }
         val bindingClass = classLoader.loadClass("${packageName}.databinding.Activity${name}Binding")
         return bindingClass.getMethod("inflate", LayoutInflater::class.java)
             .invoke(null, layoutInflater) as T

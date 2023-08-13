@@ -1,10 +1,8 @@
 package com.jqwong.music.service
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import com.jqwong.music.api.NetEaseCloudMusicApi
-import com.jqwong.music.api.entity.netEase.UniKey
 import com.jqwong.music.app.App
 import com.jqwong.music.helper.*
 import com.jqwong.music.model.*
@@ -12,7 +10,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import okio.use
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.net.URLEncoder
@@ -59,6 +56,11 @@ class NetEaseCloudService:IService {
             .create(NetEaseCloudMusicApi::class.java)
     }
 
+    override fun getPlatform(): Platform {
+        return Platform.NetEaseCloud
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getLeaderboard(): Response<List<Leaderboard>> {
         val title = this::getLeaderboard.name
         val result = service.getLeaderboard().awaitResult()
@@ -88,26 +90,64 @@ class NetEaseCloudService:IService {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override suspend fun getLeaderboardSongList(
         id: String,
         page: Int,
         limit: Int
     ): Response<List<Media>> {
-        val title = this::getLeaderboardSongList.name
-        val result = service.getPlayListDetail(id.toLong()).awaitResult()
-        return if(result.e != null)
-            error(title,result.e)
-        else{
-            val list = mutableListOf<Media>()
-            result.data!!.playlist.tracks.forEach {
-                list.add(it.convert())
-            }
-            Response(
+        return getPlayList(this::getLeaderboardSongList.name,id,page,limit,"")
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    suspend fun getPlayList(title:String, id:String, page: Int, limit: Int, token:String):Response<List<Media>>{
+        val detail = service.getPlayListDetail(id.toLong()).awaitResult()
+        if(detail.e != null){
+            return error(title,detail.e)
+        }
+        val ids = detail.data!!.playlist.trackIds
+        val start = (page-1)*limit
+        if(start >= ids.count())
+            return Response(
                 title = title,
+                success = true,
+                support = true,
+                data = listOf(),
                 message = "ok",
-                data = list,
+                exception = null
+            )
+
+        var end = start + limit
+        if(end >= ids.count())
+            end = ids.count()-1
+        val list = ids.subList(start,end)
+        val builder = StringBuilder()
+        list.forEach {
+            builder.append("{\"id\":${it.id}},")
+        }
+        builder.deleteAt(builder.length-1)
+        builder.insert(0,'[')
+        builder.append(']')
+        val map = mapOf(
+            "c" to builder.toString(),
+            "csrf_token" to token
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.getPlayList(params.toRam()).awaitResult()
+        if(result.e != null)
+            return error(title,result.e)
+        else{
+            val data = mutableListOf<Media>()
+            result.data!!.songs.forEach {
+                data.add(it.convert())
+            }
+            return Response(
+                title = title,
+                data = data,
                 support = true,
                 success = true,
+                message = "ok",
                 exception = null
             )
         }
@@ -161,7 +201,7 @@ class NetEaseCloudService:IService {
         )
         val _text = EncryptHelper.weApi(map.toJson())
         val params = "params=${_text.first}&encSecKey=${_text.second}"
-        val result = service.GetRecommendSongSheet(params.toRam()).awaitResult()
+        val result = service.getRecommendSongSheet(params.toRam()).awaitResult()
         return if(result.e != null)
             error(title,result.e)
         else{
@@ -180,34 +220,80 @@ class NetEaseCloudService:IService {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override suspend fun getRecommendSongSheetData(
         id: String,
         page: Int,
         limit: Int,
         data:Any,
     ): Response<List<Media>> {
-        val title = this::getRecommendSongSheetData.name
-        val result = service.getPlayListDetail(id.toLong()).awaitResult()
+        return getPlayList(this::getRecommendSongSheetData.name,id,page,limit,data.toString())
+    }
+
+    override suspend fun getRecommendDaily(data: Any): Response<List<Media>> {
+        TODO("Not yet implemented")
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    override suspend fun getUserSheet(data:Any):Response<List<SongSheet>>{
+        // uid:String, token:String
+        val title = this::getUserSheet.name
+        if(data.toString().isNullOrEmpty())
+            return notSupport(title)
+        val arr = data.toString().split(';')
+        val uid = arr[0]
+        val token = arr[1]
+        if(uid.isNullOrEmpty() || token.isNullOrEmpty())
+            return notSupport(title)
+        val map = mapOf(
+            "uid" to uid,
+            "limit" to 99999,
+            "offset" to 0,
+            "includeVideo" to false,
+            "csrf_token" to token
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.getUserSheet(params.toRam()).awaitResult()
         return if(result.e != null)
             error(title,result.e)
         else{
-            val list = mutableListOf<Media>()
-            result.data!!.playlist.tracks.forEach {
-                list.add(it.convert())
+            val list = mutableListOf<SongSheet>()
+            result.data!!.playlist.forEach {
+                list.add(
+                    SongSheet(
+                        platform = Platform.NetEaseCloud,
+                        id = it.id.toString(),
+                        name = it.name,
+                        pic = it.coverImgUrl,
+                        description = ""
+                    )
+                )
             }
             Response(
                 title = title,
-                message = "ok",
                 data = list,
-                support = true,
                 success = true,
+                support = true,
+                message = "ok",
                 exception = null
             )
         }
     }
 
-    override suspend fun getRecommendDaily(data: Any): Response<List<Media>> {
-        TODO("Not yet implemented")
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    override suspend fun getUserSheetData(page:Int, limit:Int, data: Any): Response<List<Media>> {
+        val title = this::getUserSheetData.name
+        if(data.toString().isNullOrEmpty())
+            return notSupport(title)
+        val arr = data.toString().split(';')
+        if(arr.count() != 2)
+            return notSupport(title)
+        val id = arr[0]
+        val token = arr[1]
+        if(id.isNullOrEmpty() || token.isNullOrEmpty())
+            return notSupport(title)
+        return getPlayList(title,id,page,limit,token)
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -240,6 +326,7 @@ class NetEaseCloudService:IService {
         TODO("Not yet implemented")
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getLyrics(id: String): Response<Lyrics> {
         val title = this::getLyrics.name
         val result = service.getLyrics(id).awaitResult()
@@ -348,9 +435,41 @@ class NetEaseCloudService:IService {
                     data = NetEaseCloudMusicConfig(
                         csrf_token = token,
                         music_a = musicA,
-                        quality = ""
+                        quality = "",
+                        uid = "",
+                        name = ""
                     ),
                     message = result.data.message
+                ),
+                exception = null,
+                message = "ok"
+            )
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    suspend fun getUserInfo(token:String):Response<NetEaseCloudMusicConfig>{
+        val title = this::getUserInfo.name
+        val map = mapOf(
+            "csrf_token" to token
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.getUserInfo(params.toRam()).awaitResult()
+        return if(result.e != null)
+            error(title,result.e)
+        else {
+            val profile = result.data!!.profile
+            Response(
+                title = title,
+                success = true,
+                support = true,
+                data = NetEaseCloudMusicConfig(
+                    uid = profile.userId.toString(),
+                    name = profile.nickname,
+                    csrf_token = null,
+                    music_a = null,
+                    quality = ""
                 ),
                 exception = null,
                 message = "ok"

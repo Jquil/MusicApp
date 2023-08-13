@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
-import android.provider.CalendarContract.Colors
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.ImageButton
@@ -28,9 +27,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.jqwong.music.R
 import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivitySettingBinding
-import com.jqwong.music.helper.QrHelper
-import com.jqwong.music.helper.TimeHelper
-import com.jqwong.music.helper.setTitleDefaultStyle
+import com.jqwong.music.helper.*
 import com.jqwong.music.model.ExceptionLog
 import com.jqwong.music.model.FmgQuality
 import com.jqwong.music.model.NetEaseCloudMusicConfig
@@ -168,12 +165,18 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                     it.setAdapter(ArrayAdapter(this@SettingActivity,R.layout.item_drop_down_text,list))
                     it.hint = hint
                 }
+                val tvUid = view.contentLayout.findViewById<TextView>(R.id.tv_uid)
+                val tvName = view.contentLayout.findViewById<TextView>(R.id.tv_name)
                 val tvToken = view.contentLayout.findViewById<TextView>(R.id.tv_token)
                 val tvMusicA = view.contentLayout.findViewById<TextView>(R.id.tv_music_a)
-                tvToken.setText(App.config.netEaseCloudMusicConfig.csrf_token)
-                tvMusicA.setText(App.config.netEaseCloudMusicConfig.music_a)
-                view.contentLayout.findViewById<AppCompatButton>(R.id.btn_login).setOnClickListener {
-                    // 生成二维码
+                App.config.netEaseCloudMusicConfig.let {
+                    tvUid.text = it.uid
+                    tvName.text = it.name
+                    tvToken.text = it.csrf_token
+                    tvMusicA.text = it.music_a
+                }
+                view.contentLayout.findViewById<CircularProgressButton>(R.id.btn_login).setOnClickListener {
+                    // 逻辑: 生成二维码,由用户使用网易云App扫描并确认授权 => 获取到用户信息以及token
                     MaterialDialog(this@SettingActivity,BottomSheet()).show {
                         customView(R.layout.dialog_login_netease)
                         cornerRadius(20f)
@@ -183,8 +186,9 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                         val stateLayout = view.contentLayout.findViewById<StateLayout>(R.id.state_layout)
                         stateLayout.showLoading()
                         val ivQr = view.contentLayout.findViewById<ImageView>(R.id.iv_qr)
-                        val btnAuthentication = view.contentLayout.findViewById<AppCompatButton>(R.id.btn_authentication)
-                        var key = ""
+                        val btnAuthentication = view.contentLayout.findViewById<CircularProgressButton>(R.id.btn_authentication)
+                        var uniKey = ""
+                        // 显示二维码
                         CoroutineScope(Dispatchers.IO).launch {
                             val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).getLoginUniKey()
@@ -194,9 +198,16 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                             withContext(Dispatchers.Main){
                                 if(result.exception != null){
                                     toast(result.exception.exception.message.toString())
+                                    stateLayout.apply {
+                                        onError {
+                                            this@apply.startAnimation()
+                                        }
+                                        this.showError()
+                                        this.setErrorInfo(result.exception)
+                                    }
                                 }
                                 else{
-                                    key = result.data!!
+                                    uniKey = result.data!!
                                     val url = "https://music.163.com/login?codekey=${result.data}"
                                     ivQr.setImageBitmap(QrHelper.createQRCodeBitmap(url,250,250,"UTF-8","L","1",
                                         Color.BLACK,Color.WHITE))
@@ -204,36 +215,52 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                                 }
                             }
                         }
+                        // 用户认证
                         btnAuthentication.setOnClickListener {
-                            if(key.isNullOrEmpty())
+                            if(uniKey.isNullOrEmpty())
                                 return@setOnClickListener
+                            (it as CircularProgressButton).startAnimation()
                             CoroutineScope(Dispatchers.IO).launch {
                                 val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).loginCheck(key)
+                                    (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).loginCheck(uniKey)
                                 } else {
                                     TODO("VERSION.SDK_INT < TIRAMISU")
                                 }
                                 withContext(Dispatchers.Main){
                                     if (result.exception != null){
-                                        toast(result.exception.exception.message.toString())
+                                        loadingButtonFinishAnimation(it,false,result.exception.exception.message.toString())
                                     }
                                     else{
-                                        toast(result.data!!.message)
-                                        if(result.data.data != null){
-                                            val config = result.data.data as NetEaseCloudMusicConfig
-                                            App.config.netEaseCloudMusicConfig.csrf_token = config.csrf_token
-                                            App.config.netEaseCloudMusicConfig.music_a = config.music_a
-                                            tvToken.setText(config.csrf_token)
-                                            tvMusicA.setText(config.music_a)
+                                        val config = result.data!!.data as NetEaseCloudMusicConfig
+                                        App.config.netEaseCloudMusicConfig.csrf_token = config.csrf_token
+                                        App.config.netEaseCloudMusicConfig.music_a = config.music_a
+                                        tvToken.setText(config.csrf_token)
+                                        tvMusicA.setText(config.music_a)
+                                        withContext(Dispatchers.IO){
+                                            val result = (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).getUserInfo(config.csrf_token!!)
+                                            withContext(Dispatchers.Main){
+                                                if(result.data != null){
+                                                    tvUid.text = result.data.uid
+                                                    tvName.text = result.data.name
+                                                }
+                                            }
                                         }
+                                        loadingButtonFinishAnimation(it,true,"authentication success")
                                     }
                                 }
                             }
                         }
                     }
                 }
-                view.contentLayout.findViewById<AppCompatButton>(R.id.btn_save).setOnClickListener {
-
+                view.contentLayout.findViewById<CircularProgressButton>(R.id.btn_save).setOnClickListener {
+                    (it as CircularProgressButton).startAnimation()
+                    App.config.netEaseCloudMusicConfig.let {
+                        it.uid = tvUid.text.toString()
+                        it.name = tvName.text.toString()
+                        it.music_a = tvMusicA.text.toString()
+                        it.csrf_token = tvToken.text.toString()
+                    }
+                    loadingButtonFinishAnimation(it,true,"save success")
                 }
             }
         }
