@@ -12,12 +12,16 @@ import com.jqwong.music.adapter.CustomLoadMoreAdapter
 import com.jqwong.music.adapter.MediaAdapter
 import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivityTemplateBinding
+import com.jqwong.music.event.MediaChangeEvent
+import com.jqwong.music.event.MediaLoadingEvent
 import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.model.Media
 import com.jqwong.music.model.Platform
 import com.jqwong.music.model.PlayList
 import com.jqwong.music.model.copy
 import com.jqwong.music.view.listener.DoubleClickListener
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 /**
  * @author: Jq
@@ -64,11 +68,20 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
     }
 
     override fun useEventBus(): Boolean {
-        return false
+        return true
     }
 
     override fun statusBarColor(): Int {
         return R.color.background
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMediaChangeEvent(event: MediaChangeEvent){
+        adapter.notifyDataSetChanged()
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMediaLoadingEvent(event: MediaLoadingEvent){
+        _binding.includeToolbar.cpiLoading.visibility = if(event.finish) View.GONE else View.VISIBLE
+    }
 }

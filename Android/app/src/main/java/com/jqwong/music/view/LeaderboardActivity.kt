@@ -37,34 +37,19 @@ import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
-    private lateinit var _platform: Platform
-    private lateinit var adapter:MediaAdapter
-    private lateinit var adapterHelper: QuickAdapterHelper
-    private var loadFinish:Boolean = false
-    private var page:Int = 0
+class LeaderboardActivity:Template() {
     private val leaderboards:MutableMap<Platform,List<Leaderboard>> = mutableMapOf()
     private lateinit var currentLeaderboard:Leaderboard
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
+        super.initData(savedInstanceState)
         intent.getStringExtra(ExtraKey.Platform.name).let {
             if(it == null || it == ""){
                 toast("platform is null")
                 finish()
             }
-            try {
-                _platform = Platform.valueOf(it!!)
-            }
-            catch (e:Exception){
-                val log = ExceptionLog(
-                    title = "Leaderboard page get 'Platform' failed",
-                    exception = e,
-                    time = TimeHelper.getTime()
-                )
-                App.exceptions.add(log)
-                toast(log.title)
-                finish()
-            }
+            _platform = Platform.valueOf(it!!)
         }
         _binding.includeMain.stateLayout.showLoading()
         getLeaderBoards(_platform, callback = {
@@ -76,50 +61,17 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
     }
 
     override fun intView() {
-        setSupportActionBar(_binding.includeToolbar.toolbar)
-        _binding.includeToolbar.toolbar.setOnLongClickListener {
-            true
-        }
-        _binding.includeToolbar.toolbar.setOnClickListener(object: DoubleClickListener(){
-                override fun onDoubleClick(v: View?) {
-                _binding.includeMain.rvList.scrollToPosition(0)
-            }
-        })
-        _binding.includeToolbar.toolbar.setNavigationOnClickListener {
-            finish()
-        }
-        _binding.includeMain.rvList.layoutManager = LinearLayoutManager(this)
-        adapter = MediaAdapter()
-        adapter.setOnItemClickListener(@UnstableApi object: BaseQuickAdapter.OnItemClickListener<Media>{
-            override fun onClick(adapter: BaseQuickAdapter<Media, *>, view: View, position: Int) {
-                App.playList = PlayList(0,null,adapter.items.subList(position,adapter.items.size).copy())
-                adapter.notifyDataSetChanged()
-                AudioHelper.start()
-            }
-        })
-        val loadMoreAdapter = CustomLoadMoreAdapter()
-        loadMoreAdapter.setOnLoadMoreListener(object: TrailingLoadStateAdapter.OnTrailingListener{
+        super.intView()
+        adapterHelper.trailingLoadStateAdapter?.setOnLoadMoreListener(object: TrailingLoadStateAdapter.OnTrailingListener{
             override fun onFailRetry() {
 
             }
 
+            @RequiresApi(Build.VERSION_CODES.O)
             override fun onLoad() {
                 loadMediaList(_platform,currentLeaderboard.id.toString())
             }
-
         })
-        adapterHelper = QuickAdapterHelper.Builder(adapter)
-            .setTrailingLoadStateAdapter(loadMoreAdapter)
-            .build()
-        _binding.includeMain.rvList.adapter = adapterHelper.adapter
-    }
-
-    override fun useEventBus(): Boolean {
-        return true
-    }
-
-    override fun statusBarColor(): Int {
-        return R.color.background
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -306,13 +258,4 @@ class LeaderboardActivity:BaseActivity<ActivityLeaderboardBinding>() {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMediaLoadingEvent(event:MediaLoadingEvent){
-        _binding.includeToolbar.cpiLoading.visibility = if(event.finish) View.GONE else View.VISIBLE
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMediaChangeEvent(event: MediaChangeEvent){
-        adapter.notifyDataSetChanged()
-    }
 }

@@ -3,10 +3,8 @@ package com.jqwong.music.view
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.webkit.WebView
 import androidx.annotation.RequiresApi
 import androidx.core.view.GravityCompat
 import androidx.media3.common.util.UnstableApi
@@ -26,7 +24,6 @@ import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.helper.startAnimation
 import com.jqwong.music.model.*
-import com.jqwong.music.service.KuWOService
 import com.jqwong.music.service.NetEaseCloudService
 import com.jqwong.music.service.ServiceProxy
 import com.jqwong.music.view.web.KuWoWebViewClient
@@ -112,7 +109,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                                 view: View,
                                 position: Int
                             ) {
-                                startActivity(Intent(this@MainActivity,SongSheetActivity::class.java).apply {
+                                startActivity(Intent(this@MainActivity,UserSongSheetActivity::class.java).apply {
                                     putExtra(ExtraKey.Platform.name,platform.name)
                                     putExtra(ExtraKey.SongSheet.name,adapter.getItem(position)!!.toJson())
                                     putExtra(ExtraKey.Data.name,jumpParams)

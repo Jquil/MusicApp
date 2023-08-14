@@ -35,16 +35,12 @@ import org.greenrobot.eventbus.ThreadMode
  * @author: Jq
  * @date: 7/29/2023
  */
-class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
+class SearchResultActivity:Template() {
     private lateinit var key:String
-    private lateinit var platform:Platform
-    private lateinit var adapter:MediaAdapter
-    private lateinit var adapterHelper: QuickAdapterHelper
-    private var loadFinish:Boolean = false
-    private var page:Int = 0
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
+        super.initData(savedInstanceState)
         intent.getStringExtra(ExtraKey.Search.name).let {
             if(it == null || it == ""){
                 toast("search key is null")
@@ -58,73 +54,30 @@ class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
                 toast("platform is null")
                 finish()
             }
-            try {
-                platform = Platform.valueOf(it!!)
-            }
-            catch (e:Exception){
-                val log = ExceptionLog(
-                    title = "Search page get 'Platform' failed",
-                    exception = e,
-                    time = TimeHelper.getTime()
-                )
-                App.exceptions.add(log)
-                toast(log.title)
-                finish()
-            }
+            _platform = Platform.valueOf(it!!)
         }
         _binding.includeMain.stateLayout.showLoading()
         loadData()
     }
     override fun intView() {
-        setSupportActionBar(_binding.includeToolbar.toolbar)
-        _binding.includeToolbar.toolbar.setOnLongClickListener {
-            true
-        }
-        _binding.includeToolbar.toolbar.setOnClickListener(object:DoubleClickListener(){
-            override fun onDoubleClick(v: View?) {
-                _binding.includeMain.rvList.scrollToPosition(0)
-            }
-        })
-        _binding.includeToolbar.toolbar.setNavigationOnClickListener {
-            finish()
-        }
-        _binding.includeMain.rvList.layoutManager = LinearLayoutManager(this)
-        adapter = MediaAdapter()
-        adapter.setOnItemClickListener(@UnstableApi object:BaseQuickAdapter.OnItemClickListener<Media>{
-            override fun onClick(adapter: BaseQuickAdapter<Media, *>, view: View, position: Int) {
-                App.playList = PlayList(0,null,adapter.items.subList(position,adapter.items.size).copy())
-                adapter.notifyDataSetChanged()
-                AudioHelper.start()
-            }
-
-        })
-        val loadMoreAdapter = CustomLoadMoreAdapter()
-        loadMoreAdapter.setOnLoadMoreListener(object:TrailingLoadStateAdapter.OnTrailingListener{
+        super.intView()
+        adapterHelper.trailingLoadStateAdapter?.setOnLoadMoreListener(object: TrailingLoadStateAdapter.OnTrailingListener{
             override fun onFailRetry() {
 
             }
 
+            @RequiresApi(Build.VERSION_CODES.O)
             override fun onLoad() {
                 loadData()
             }
-
         })
-        adapterHelper = QuickAdapterHelper.Builder(adapter)
-            .setTrailingLoadStateAdapter(loadMoreAdapter)
-            .build()
-        _binding.includeMain.rvList.adapter = adapterHelper.adapter
-    }
-    override fun useEventBus(): Boolean {
-        return true
-    }
-    override fun statusBarColor(): Int {
-        return R.color.background
     }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_search_result,menu)
         return true
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_refresh -> {
@@ -134,9 +87,9 @@ class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
             }
             R.id.action_change_platform -> {
                 changePlatform(listOf(Platform.KuWo,Platform.NetEaseCloud)){
-                    if(it == platform)
+                    if(it == _platform)
                         return@changePlatform
-                    platform = it
+                    _platform = it
                     page = 0
                     _binding.includeMain.stateLayout.showLoading()
                     loadData()
@@ -146,13 +99,14 @@ class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
         return super.onOptionsItemSelected(item)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun loadData(reloadNumber:Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){
                 delay(1000)
             }
             page++
-            val data = ServiceProxy.search(platform,key,page,pageItemSize)
+            val data = ServiceProxy.search(_platform,key,page,pageItemSize)
             withContext(Dispatchers.Main){
                 if(data.exception != null){
                     if(reloadNumber == maxReloadCount){
@@ -191,10 +145,5 @@ class SearchResultActivity:BaseActivity<ActivitySearchResultBinding>() {
                 }
             }
         }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMediaChangeEvent(event: MediaChangeEvent){
-        adapter.notifyDataSetChanged()
     }
 }

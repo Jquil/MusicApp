@@ -17,7 +17,7 @@ import kotlinx.coroutines.*
  * @author: Jq
  * @date: 8/13/2023
  */
-class SongSheetActivity:Template() {
+class UserSongSheetActivity:Template() {
 
     private lateinit var songSheet:SongSheet
     private lateinit var _params:Any

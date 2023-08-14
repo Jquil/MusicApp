@@ -33,36 +33,20 @@ import kotlinx.coroutines.*
  * @author: Jq
  * @date: 8/12/2023
  */
-class RecommendSheetActivity:BaseActivity<ActivityRecommendSheetBinding>() {
+class RecommendSheetActivity:Template() {
 
-    private lateinit var _platform:Platform
     private val sheets = mutableMapOf<Platform,List<SongSheet>>()
-    private var loadFinish:Boolean = false
-    private var page:Int = 0
     private lateinit var currentSheet: SongSheet
-    private lateinit var adapter: MediaAdapter
-    private lateinit var adapterHelper: QuickAdapterHelper
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
+        super.initData(savedInstanceState)
         intent.getStringExtra(ExtraKey.Platform.name).let {
             if(it == null || it == ""){
                 toast("platform is null")
                 finish()
             }
-            try {
-                _platform = Platform.valueOf(it!!)
-            }
-            catch (e:Exception){
-                val log = ExceptionLog(
-                    title = "Leaderboard page get 'Platform' failed",
-                    exception = e,
-                    time = TimeHelper.getTime()
-                )
-                App.exceptions.add(log)
-                toast(log.title)
-                finish()
-            }
+            _platform = Platform.valueOf(it!!)
         }
         _binding.includeMain.stateLayout.showLoading()
         getRecommendSheets(_platform, callback = {
@@ -74,29 +58,8 @@ class RecommendSheetActivity:BaseActivity<ActivityRecommendSheetBinding>() {
     }
 
     override fun intView() {
-        setSupportActionBar(_binding.includeToolbar.toolbar)
-        _binding.includeToolbar.toolbar.setOnLongClickListener {
-            true
-        }
-        _binding.includeToolbar.toolbar.setOnClickListener(object: DoubleClickListener(){
-            override fun onDoubleClick(v: View?) {
-                _binding.includeMain.rvList.scrollToPosition(0)
-            }
-        })
-        _binding.includeToolbar.toolbar.setNavigationOnClickListener {
-            finish()
-        }
-        _binding.includeMain.rvList.layoutManager = LinearLayoutManager(this)
-        adapter = MediaAdapter()
-        adapter.setOnItemClickListener(@UnstableApi object: BaseQuickAdapter.OnItemClickListener<Media>{
-            override fun onClick(adapter: BaseQuickAdapter<Media, *>, view: View, position: Int) {
-                App.playList = PlayList(0,null,adapter.items.subList(position,adapter.items.size).copy())
-                adapter.notifyDataSetChanged()
-                AudioHelper.start()
-            }
-        })
-        val loadMoreAdapter = CustomLoadMoreAdapter()
-        loadMoreAdapter.setOnLoadMoreListener(object: TrailingLoadStateAdapter.OnTrailingListener{
+        super.intView()
+        adapterHelper.trailingLoadStateAdapter?.setOnLoadMoreListener(object: TrailingLoadStateAdapter.OnTrailingListener{
             override fun onFailRetry() {
 
             }
@@ -105,20 +68,7 @@ class RecommendSheetActivity:BaseActivity<ActivityRecommendSheetBinding>() {
             override fun onLoad() {
                 loadMediaList(_platform,currentSheet.id)
             }
-
         })
-        adapterHelper = QuickAdapterHelper.Builder(adapter)
-            .setTrailingLoadStateAdapter(loadMoreAdapter)
-            .build()
-        _binding.includeMain.rvList.adapter = adapterHelper.adapter
-    }
-
-    override fun useEventBus(): Boolean {
-        return false
-    }
-
-    override fun statusBarColor(): Int {
-        return R.color.background
     }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_recommend_sheet,menu)
