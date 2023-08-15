@@ -2,63 +2,40 @@ package com.jqwong.music.view
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import androidx.annotation.RequiresApi
-import androidx.media3.common.util.UnstableApi
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.chad.library.adapter.base.BaseQuickAdapter
-import com.chad.library.adapter.base.QuickAdapterHelper
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R
-import com.jqwong.music.adapter.CustomLoadMoreAdapter
-import com.jqwong.music.adapter.MediaAdapter
 import com.jqwong.music.app.App
-import com.jqwong.music.databinding.ActivitySearchResultBinding
-import com.jqwong.music.event.MediaChangeEvent
-import com.jqwong.music.helper.*
-import com.jqwong.music.model.*
+import com.jqwong.music.helper.content
+import com.jqwong.music.helper.empty
+import com.jqwong.music.helper.error
+import com.jqwong.music.helper.startAnimation
+import com.jqwong.music.model.ExtraKey
+import com.jqwong.music.model.Platform
 import com.jqwong.music.service.ServiceProxy
-import com.jqwong.music.view.listener.DoubleClickListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
-/**
- * @author: Jq
- * @date: 7/29/2023
- */
-class SearchResultActivity:Template() {
-    private lateinit var key:String
+class RecommendDailyActivity:Template() {
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    private val implPlatforms = setOf(
+        Platform.NetEaseCloud
+    )
+
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
-        intent.getStringExtra(ExtraKey.Search.name).let {
-            if(it == null || it == ""){
-                toast("search key is null")
-                finish()
-            }
-            key = it.toString()
-            supportActionBar?.title = key
-        }
-        intent.getStringExtra(ExtraKey.Platform.name).let {
-            if(it == null || it == ""){
-                toast("platform is null")
-                finish()
-            }
-            _platform = Platform.valueOf(it!!)
-        }
+        _platform = Platform.valueOf(intent.getStringExtra(ExtraKey.Platform.name)!!)
+        supportActionBar?.title = "Daily media"
         _binding.includeMain.stateLayout.showLoading()
-        loadData()
+        loadMediaList(_platform)
     }
+
     override fun intView() {
         super.intView()
         adapterHelper.trailingLoadStateAdapter?.setOnLoadMoreListener(object: TrailingLoadStateAdapter.OnTrailingListener{
@@ -68,31 +45,25 @@ class SearchResultActivity:Template() {
 
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onLoad() {
-                loadData()
             }
         })
     }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_search_result,menu)
+        menuInflater.inflate(R.menu.menu_recommend_daily,menu)
         return true
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean{
         when(item.itemId){
-            R.id.action_refresh -> {
-                _binding.includeMain.stateLayout.showLoading()
-                page = 0
-                loadData()
-            }
             R.id.action_change_platform -> {
-                changePlatform(listOf(Platform.KuWo,Platform.NetEaseCloud)){
-                    if(it == _platform)
+                changePlatform(implPlatforms.toList()) {
+                    if (it == _platform)
                         return@changePlatform
-                    _platform = it
-                    page = 0
                     _binding.includeMain.stateLayout.showLoading()
-                    loadData()
+                    _platform = it
+                    loadMediaList(_platform)
                 }
             }
         }
@@ -100,22 +71,31 @@ class SearchResultActivity:Template() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun loadData(reloadNumber:Int = 0){
+    private fun loadMediaList(platform: Platform,reloadNumber: Int = 0){
+        if(!implPlatforms.contains(platform)){
+            _binding.includeMain.stateLayout.empty("${_platform.name} not support query daily media list!")
+            return
+        }
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){
-                delay(1000)
+                delay((1000 * reloadNumber).toLong())
+            }
+            var reqParams:Any = ""
+            when(platform){
+                Platform.NetEaseCloud -> {
+                    reqParams = App.config.netEaseCloudMusicConfig.csrf_token.toString()
+                }
+                else -> {}
             }
             page++
-            val data = ServiceProxy.search(_platform,key,page,pageItemSize)
+            val data = ServiceProxy.getRecommendDaily(platform,reqParams)
             withContext(Dispatchers.Main){
                 if(data.exception != null){
                     if(reloadNumber == maxReloadCount){
-                        toast(data.message)
                         _binding.includeMain.stateLayout.error(data.exception)
                     }
                     else{
-                        page--
-                        loadData(reloadNumber+1)
+                        loadMediaList(platform,reloadNumber+1)
                     }
                 }
                 else{
@@ -126,10 +106,7 @@ class SearchResultActivity:Template() {
                     else{
                         adapter.addAll(data.data!!)
                     }
-
-                    if(data.data!!.size < pageItemSize){
-                        loadFinish = true
-                    }
+                    loadFinish = true
                     adapterHelper.trailingLoadState = LoadState.NotLoading(loadFinish)
                 }
             }

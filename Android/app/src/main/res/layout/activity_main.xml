@@ -123,9 +123,9 @@
                                     android:src="@drawable/ic_recommend"
                                     android:background="?android:attr/selectableItemBackground"
                                     app:layout_constraintLeft_toRightOf="@id/btn_leaderboard"
-                                    app:layout_constraintRight_toLeftOf="@id/btn_download"/>
+                                    app:layout_constraintRight_toLeftOf="@id/btn_daily_media"/>
                                 <ImageButton
-                                    android:id="@+id/btn_download"
+                                    android:id="@+id/btn_daily_media"
                                     android:layout_width="0dp"
                                     android:layout_height="match_parent"
                                     android:src="@drawable/ic_local"

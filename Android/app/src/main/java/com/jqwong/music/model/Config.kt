@@ -25,6 +25,52 @@ class Config(
     var kuWoMusicConfig: KuWoMusicConfig,
     var memFireDbConfig: MemFireDbConfig
 ){
+    companion object{
+        fun default():Config{
+            return Config(
+                okhttp_request_timeout = 3000,
+                ffmpeg_parse_timeout = 3000,
+                data_sync_platform = Platform.NetEaseCloud,
+                default_search_platform = Platform.KuWo,
+                auto_change_platform = true,
+                priority_auto_change_platform = Platform.KuWo,
+                ffmpeg_parse_quality_audition = FmgQuality.HQ,
+                ffmpeg_parse_quality_upload = FmgQuality.SQ,
+                netEaseCloudMusicConfig = NetEaseCloudMusicConfig(
+                    csrf_token = "",
+                    music_a = "",
+                    quality = NetEaseCloudMusicConfig.qualities.get("无损")!!,
+                    uid = "",
+                    name = ""
+                ),
+                qqMusicConfig = QQMusicConfig(
+                    cookies = HashMap<String,String>()
+                ),
+                kuGouMusicConfig = KuGouMusicConfig(
+                    cookies = HashMap<String,String>()
+                ),
+                kuWoMusicConfig = KuWoMusicConfig(
+                    cookies = HashMap<String,String>(),
+                    quality = KuWoMusicConfig.qualities.getOrDefault("flac","flac")
+                ),
+                memFireDbConfig = MemFireDbConfig(
+                    url = "",
+                    apiKey = "",
+                    user = null,
+                    upload_favorite_artist = true,
+                    upload_exception = true,
+                    upload_video_bind_lyric_info = true
+                )
+            )
+        }
+        fun fromJson(json:String):Config{
+            val moshi = Moshi.Builder()
+                .addLast(KotlinJsonAdapterFactory())//使用kotlin反射处理，要加上这个
+                .build()
+            val adapter = moshi.adapter(Config::class.java)
+            return adapter.fromJson(json)!!
+        }
+    }
     fun save(ctx: Context){
         val moshi = Moshi.Builder()
             .addLast(KotlinJsonAdapterFactory())

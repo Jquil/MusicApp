@@ -39,6 +39,14 @@ class ServiceProxy {
         }
 
         @RequiresApi(Build.VERSION_CODES.O)
+        suspend fun getRecommendDaily(platform:Platform, data: Any): Response<List<Media>> {
+            if(!services.containsKey(platform)){
+                return notSupportPlatform(this::getRecommendDaily.name,platform)
+            }
+            return services.get(platform)!!.getRecommendDaily(data)
+        }
+
+        @RequiresApi(Build.VERSION_CODES.O)
         suspend fun search(platform:Platform, key:String, page:Int, limit:Int): Response<List<Media>> {
             if(!services.containsKey(platform)){
                 return notSupportPlatform(this::search.name,platform)

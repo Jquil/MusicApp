@@ -9,6 +9,8 @@ data class Media(
     var video:Video?
 )
 
+
+
 fun List<Media>.copy():List<Media>{
     val list = mutableListOf<Media>()
     forEach {

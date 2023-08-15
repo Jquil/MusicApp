@@ -7,35 +7,24 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
 import androidx.annotation.RequiresApi
-import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.customview.customView
 import com.chad.library.adapter.base.BaseQuickAdapter
-import com.chad.library.adapter.base.QuickAdapterHelper
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R
-import com.jqwong.music.adapter.CustomLoadMoreAdapter
 import com.jqwong.music.adapter.LeaderBoardAdapter
-import com.jqwong.music.adapter.MediaAdapter
-import com.jqwong.music.app.App
-import com.jqwong.music.databinding.ActivityLeaderboardBinding
-import com.jqwong.music.event.MediaChangeEvent
-import com.jqwong.music.event.MediaLoadingEvent
 import com.jqwong.music.helper.*
 import com.jqwong.music.model.*
 import com.jqwong.music.service.ServiceProxy
-import com.jqwong.music.view.listener.DoubleClickListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
 class LeaderboardActivity:Template() {
     private val leaderboards:MutableMap<Platform,List<Leaderboard>> = mutableMapOf()
@@ -195,7 +184,7 @@ class LeaderboardActivity:Template() {
                                 this@apply.startAnimation()
                             }
                             this.showError()
-                            this.setErrorInfo(data.exception)
+                            this.error(data.exception)
                         }
                     }
                     else{
@@ -222,13 +211,7 @@ class LeaderboardActivity:Template() {
                 if(data.exception != null){
                     if(reloadNumber == maxReloadCount){
                         toast(data.message)
-                        _binding.includeMain.stateLayout.apply {
-                            onError {
-                                this@apply.startAnimation()
-                            }
-                            this.showError()
-                            this.setErrorInfo(data.exception)
-                        }
+                        _binding.includeMain.stateLayout.error(data.exception)
                     }
                     else{
                         page--
@@ -238,12 +221,7 @@ class LeaderboardActivity:Template() {
                 else{
                     if(page == 1){
                         adapter.submitList(data.data)
-                        _binding.includeMain.stateLayout.apply {
-                            onContent {
-                                this@apply.startAnimation()
-                            }
-                            this.showContent()
-                        }
+                        _binding.includeMain.stateLayout.content()
                     }
                     else{
                         adapter.addAll(data.data!!)

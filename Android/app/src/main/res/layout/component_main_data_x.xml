@@ -11,6 +11,7 @@
         android:layout_height="0dp"
         app:loading_layout="@layout/component_state_loading"
         app:error_layout="@layout/component_state_error"
+        app:empty_layout="@layout/component_state_empty"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
         <androidx.recyclerview.widget.RecyclerView

@@ -5,7 +5,8 @@ import android.os.Bundle
 import androidx.annotation.RequiresApi
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
-import com.jqwong.music.helper.setErrorInfo
+import com.jqwong.music.helper.content
+import com.jqwong.music.helper.error
 import com.jqwong.music.helper.startAnimation
 import com.jqwong.music.model.ExtraKey
 import com.jqwong.music.model.Platform
@@ -80,13 +81,7 @@ class UserSongSheetActivity:Template() {
                 if(result.exception != null){
                     if(reloadNumber == maxReloadCount){
                         toast(result.message)
-                        _binding.includeMain.stateLayout.apply {
-                            onError {
-                                this@apply.startAnimation()
-                            }
-                            this.showError()
-                            this.setErrorInfo(result.exception)
-                        }
+                        _binding.includeMain.stateLayout.error(result.exception)
                     }
                     else{
                         page--
@@ -96,12 +91,7 @@ class UserSongSheetActivity:Template() {
                 else{
                     if(page == 1){
                         adapter.submitList(result.data)
-                        _binding.includeMain.stateLayout.apply {
-                            onContent {
-                                this@apply.startAnimation()
-                            }
-                            this.showContent()
-                        }
+                        _binding.includeMain.stateLayout.content()
                     }
                     else{
                         adapter.addAll(result.data!!)

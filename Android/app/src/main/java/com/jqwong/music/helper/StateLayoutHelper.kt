@@ -1,7 +1,6 @@
 package com.jqwong.music.helper
 
 import android.widget.TextView
-import android.widget.Toast
 import com.drake.statelayout.StateLayout
 import com.jqwong.music.R
 import com.jqwong.music.model.ExceptionLog
@@ -13,14 +12,40 @@ fun StateLayout.startAnimation(){
     }
 }
 
-fun StateLayout.setErrorInfo(log:ExceptionLog){
-    val tv = findViewById<TextView>(R.id.tv_error)
-    val builder = StringBuilder()
-    builder.appendLine("stackTrace:")
-    log.exception.stackTrace.forEach {
-        builder.appendLine("${it.className}.${it.methodName}.${it.fileName}:${it.lineNumber}")
+fun StateLayout.error(log:ExceptionLog){
+    apply {
+        onError {
+            startAnimation()
+        }
+        showError()
+        val tv = findViewById<TextView>(R.id.tv_error)
+        val builder = StringBuilder()
+        builder.appendLine("stackTrace:")
+        log.exception.stackTrace.forEach {
+            builder.appendLine("${it.className}.${it.methodName}.${it.fileName}:${it.lineNumber}")
+        }
+        builder.appendLine("message:")
+        builder.appendLine(log.exception.message)
+        tv.text = builder.toString()
     }
-    builder.appendLine("message:")
-    builder.appendLine(log.exception.message)
-    tv.text = builder.toString()
+}
+
+fun StateLayout.content(){
+    apply {
+        onContent {
+            this@apply.startAnimation()
+        }
+        showContent()
+    }
+}
+
+fun StateLayout.empty(message:String){
+    apply {
+        onEmpty {
+            this@apply.startAnimation()
+        }
+        showEmpty()
+        val tv = findViewById<TextView>(R.id.tv_empty)
+        tv.text = message
+    }
 }

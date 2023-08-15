@@ -13,7 +13,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.children
@@ -198,13 +197,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                             withContext(Dispatchers.Main){
                                 if(result.exception != null){
                                     toast(result.exception.exception.message.toString())
-                                    stateLayout.apply {
-                                        onError {
-                                            this@apply.startAnimation()
-                                        }
-                                        this.showError()
-                                        this.setErrorInfo(result.exception)
-                                    }
+                                    stateLayout.error(result.exception)
                                 }
                                 else{
                                     uniKey = result.data!!

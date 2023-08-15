@@ -230,8 +230,31 @@ class NetEaseCloudService:IService {
         return getPlayList(this::getRecommendSongSheetData.name,id,page,limit,data.toString())
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override suspend fun getRecommendDaily(data: Any): Response<List<Media>> {
-        TODO("Not yet implemented")
+        val title = this::getRecommendDaily.name
+        val map = mapOf(
+            "csrf_token" to data.toString()
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.getDailySongs(params.toRam()).awaitResult()
+        return if(result.e != null)
+            error(title,result.e)
+        else{
+            val list = mutableListOf<Media>()
+            result.data!!.data.dailySongs.forEach {
+                list.add(it.convert())
+            }
+            Response(
+                title = title,
+                data = list,
+                support = true,
+                success = true,
+                message = "ok",
+                exception = null
+            )
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)

@@ -4,10 +4,8 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import com.jqwong.music.helper.toJson
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import java.io.*
 
 /**
  * @author: Jq
@@ -24,7 +22,8 @@ class Audio(
     time: Long?,
     play_url: String?,
     mv_url: String?,
-    has_mv: Boolean
+    has_mv: Boolean,
+    var changeInfo: AudioChangeInfo? = null
 ) : Song(platform, id, name,album_id, album, pic, artists, time, play_url, mv_url, has_mv) {
     companion object{
         fun convert(song:Song):Audio{
@@ -44,6 +43,13 @@ class Audio(
         }
     }
 }
+
+data class AudioChangeInfo(
+    var platform: Platform?,
+    var id:String?,
+    var url:String?,
+    var data:Any?
+)
 
 fun Audio.toJson():String{
     val moshi = Moshi.Builder()

@@ -27,8 +27,6 @@ import com.jqwong.music.model.*
 import com.jqwong.music.service.NetEaseCloudService
 import com.jqwong.music.service.ServiceProxy
 import com.jqwong.music.view.web.KuWoWebViewClient
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,16 +47,12 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         val sp = getSharedPreferences(Constant.CONFIG, MODE_PRIVATE)
         val strConfig = sp.getString(Constant.CONFIG,null)
         if(strConfig == null || strConfig == "") {
-            App.config = getDefaultConfig()
+            App.config = Config.default()
         }
         else {
             try {
-                val moshi = Moshi.Builder()
-                    .addLast(KotlinJsonAdapterFactory())//使用kotlin反射处理，要加上这个
-                    .build()
-                val adapter = moshi.adapter(Config::class.java)
-                val config = adapter.fromJson(strConfig)
-                App.config = config!!
+                val config = Config.fromJson(strConfig)
+                App.config = config
             }
             catch (e:Exception)
             {
@@ -69,7 +63,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                         time = TimeHelper.getTime()
                     )
                 )
-                App.config = getDefaultConfig()
+                App.config = Config.default()
             }
         }
 
@@ -170,6 +164,11 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                 putExtra(ExtraKey.Platform.name,App.config.default_search_platform.name)
             })
         }
+        _binding.btnDailyMedia.setOnClickListener {
+            startActivity(Intent(this,RecommendDailyActivity::class.java).apply {
+                putExtra(ExtraKey.Platform.name,App.config.default_search_platform.name)
+            })
+        }
 
         if(App.playListIsInitialized() && !(App.playList.data.isNullOrEmpty())){
             onMediaChangeEvent(MediaChangeEvent(App.playList.data.get(App.playList.index)))
@@ -185,43 +184,6 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
     override fun onStop() {
         App.config.save(this)
         super.onStop()
-    }
-    private fun getDefaultConfig():Config {
-        return Config(
-            okhttp_request_timeout = 3000,
-            ffmpeg_parse_timeout = 3000,
-            data_sync_platform = Platform.NetEaseCloud,
-            default_search_platform = Platform.KuWo,
-            auto_change_platform = true,
-            priority_auto_change_platform = Platform.KuWo,
-            ffmpeg_parse_quality_audition = FmgQuality.HQ,
-            ffmpeg_parse_quality_upload = FmgQuality.SQ,
-            netEaseCloudMusicConfig = NetEaseCloudMusicConfig(
-                csrf_token = "",
-                music_a = "",
-                quality = NetEaseCloudMusicConfig.qualities.get("无损")!!,
-                uid = "",
-                name = ""
-            ),
-            qqMusicConfig = QQMusicConfig(
-                cookies = HashMap<String,String>()
-            ),
-            kuGouMusicConfig = KuGouMusicConfig(
-                cookies = HashMap<String,String>()
-            ),
-            kuWoMusicConfig = KuWoMusicConfig(
-                cookies = HashMap<String,String>(),
-                quality = KuWoMusicConfig.qualities.getOrDefault("flac","flac")
-            ),
-            memFireDbConfig = MemFireDbConfig(
-                url = "",
-                apiKey = "",
-                user = null,
-                upload_favorite_artist = true,
-                upload_exception = true,
-                upload_video_bind_lyric_info = true
-            )
-        )
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -269,12 +231,10 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             _binding.layoutPlayBar.ibPlayStatus.visibility = View.VISIBLE
         }
     }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlayerStatusChangeEvent(event: PlayerStatusChangeEvent){
         _binding.layoutPlayBar.ibPlayStatus.setImageResource(if(event.playing) R.drawable.ic_pause else R.drawable.ic_play)
     }
-
     fun showContent(){
         _binding.stateLayout.apply {
             onContent {
