@@ -361,16 +361,28 @@ class NetEaseCloudService:IService {
             val list = mutableListOf<Lyric>()
             arr.forEach {
                 if(!it.isNullOrEmpty()){
-                    val strTime = it.substring(1,it.indexOf(']'))
-                    val text = it.substring(it.indexOf(']')+1)
-                    list.add(
-                        Lyric(
-                            text = text.trim(),
-                            time = strTime.toNetEaseCloudTime()
+                    val arr2 = it.split('[')
+                    var lyric = ""
+                    for(i in arr2.size-1 downTo 0){
+                        val arr2Item = arr2[i]
+                        if(!arr2Item.contains(']')){
+                            continue
+                        }
+                        val arr2Str = arr2Item.substring(0,arr2Item.indexOf(']'))
+                        if(i == arr2.size - 1){
+                            lyric = arr2Item.replace(arr2Str,"").replace("]","")
+                        }
+                        list.add(
+                            Lyric(
+                                text = lyric.trim(),
+                                time = arr2Str.toNetEaseCloudTime()
+                            )
                         )
-                    )
+                    }
                 }
             }
+            list.sortBy { item -> item.time }
+
             Response(
                 title = title,
                 success = true,

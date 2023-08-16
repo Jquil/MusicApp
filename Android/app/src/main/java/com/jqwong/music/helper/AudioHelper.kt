@@ -304,7 +304,8 @@ class AudioHelper {
             val platform = Platform.KuWo
             CoroutineScope(Dispatchers.IO).launch {
                 val service = ServiceProxy.getService(platform).data as KuWOService
-                val result = service.search(name,1,10)
+                val key = "${audio.name} ${artist.name}"
+                val result = service.search(key,1,10)
                 if(result.exception != null){
                     withContext(Dispatchers.Main){
                         call(null)
