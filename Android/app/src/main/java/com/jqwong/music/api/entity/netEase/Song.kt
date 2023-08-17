@@ -38,7 +38,8 @@ data class Song(
                 time = null,
                 play_url = null,
                 mv_url = null,
-                has_mv = mv == "0".toLong()
+                has_mv = mv != "0".toLong(),
+                mv_id = mv.toString()
             )
         )
     }
@@ -77,7 +78,8 @@ data class SongX(
                 time = null,
                 play_url = null,
                 mv_url = null,
-                has_mv = mvid == "0".toLong()
+                has_mv = mvid != "0".toLong(),
+                mv_id = mvid.toString()
             )
         )
     }

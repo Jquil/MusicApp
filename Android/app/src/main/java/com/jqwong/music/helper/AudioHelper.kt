@@ -213,7 +213,7 @@ class AudioHelper {
                             change(media.audio!!){
                                 if(it == null){
                                     App.playList.index++
-                                    start()
+                                    prepare()
                                 }
                                 else{
                                     media.audio!!.changeInfo = it

@@ -15,5 +15,6 @@ open class Song(
     val time:Long?,
     var play_url:String?,
     val mv_url:String?,
-    val has_mv:Boolean
+    val has_mv:Boolean,
+    val mv_id:String?,
 )

@@ -1,5 +1,6 @@
 package com.jqwong.music.view
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.media3.common.util.UnstableApi
@@ -19,7 +20,11 @@ import com.jqwong.music.model.Media
 import com.jqwong.music.model.Platform
 import com.jqwong.music.model.PlayList
 import com.jqwong.music.model.copy
+import com.jqwong.music.service.ServiceProxy
 import com.jqwong.music.view.listener.DoubleClickListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
@@ -54,10 +59,22 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
         _binding.includeMain.rvList.layoutManager = LinearLayoutManager(this)
         adapter = MediaAdapter()
         adapter.setOnItemClickListener(@UnstableApi object: BaseQuickAdapter.OnItemClickListener<Media>{
+            @SuppressLint("NewApi")
             override fun onClick(adapter: BaseQuickAdapter<Media, *>, view: View, position: Int) {
                 App.playList = PlayList(0,null,adapter.items.subList(position,adapter.items.size).copy())
                 adapter.notifyDataSetChanged()
                 AudioHelper.start()
+                CoroutineScope(Dispatchers.IO).launch {
+                    val item = adapter.getItem(position)!!
+                    if(item.audio!!.has_mv){
+                        var reqParams = item.audio!!.id
+                        if(_platform == Platform.NetEaseCloud){
+                            reqParams = item.audio!!.mv_id!!
+                        }
+                        val data = ServiceProxy.getMvUrl(_platform,reqParams)
+                        val code = 200
+                    }
+                }
             }
         })
         val loadMoreAdapter = CustomLoadMoreAdapter()

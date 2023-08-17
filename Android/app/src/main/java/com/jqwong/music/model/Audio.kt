@@ -23,8 +23,9 @@ class Audio(
     play_url: String?,
     mv_url: String?,
     has_mv: Boolean,
+    mv_id:String?,
     var changeInfo: AudioChangeInfo? = null
-) : Song(platform, id, name,album_id, album, pic, artists, time, play_url, mv_url, has_mv) {
+) : Song(platform, id, name,album_id, album, pic, artists, time, play_url, mv_url, has_mv,mv_id) {
     companion object{
         fun convert(song:Song):Audio{
             return Audio(
@@ -38,7 +39,8 @@ class Audio(
                 song.time,
                 song.play_url,
                 song.mv_url,
-                song.has_mv
+                song.has_mv,
+                song.mv_id
             )
         }
     }

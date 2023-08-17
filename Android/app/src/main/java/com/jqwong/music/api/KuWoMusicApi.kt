@@ -40,7 +40,7 @@ interface KuWoMusicApi {
     fun getRecommendSongSheetData(@Query("pid") pid:String, @Query("pn") pn:Int, @Query("rn") rn:Int):Call<BaseResponse<SongListX>>
 
     @GET("www/music/playUrl?type=mv&httpsStatus=1&reqId=db3f8670-e1f6-11eb-942d-33e288737b1d&plat=web_www&from=")
-    fun getMvUrl(@Query("mid") mid:String):BaseResponse<MvUrl>
+    fun getMvUrl(@Query("mid") mid:String):Call<BaseResponse<MvUrl>>
 
     @GET("artist/artist?httpsStatus=1&reqId=b06e62f0-f582-11eb-bd8d-c19fac490f25")
     fun getArtistInfo(@Query("artistid") artistid:String):Call<BaseResponse<Artist>>

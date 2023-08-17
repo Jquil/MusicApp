@@ -1,5 +1,6 @@
 package com.jqwong.music.service
 
+import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.jqwong.music.helper.TimeHelper
@@ -45,7 +46,6 @@ class ServiceProxy {
             }
             return services.get(platform)!!.getRecommendDaily(data)
         }
-
         @RequiresApi(Build.VERSION_CODES.O)
         suspend fun search(platform:Platform, key:String, page:Int, limit:Int): Response<List<Media>> {
             if(!services.containsKey(platform)){
@@ -81,7 +81,6 @@ class ServiceProxy {
             }
             return services.get(platform)!!.getLyrics(id)
         }
-
         @RequiresApi(Build.VERSION_CODES.O)
         suspend fun getRecommendSongSheetList(platform: Platform, data:Any):Response<List<SongSheet>>{
             if(!services.containsKey(platform)){
@@ -89,7 +88,6 @@ class ServiceProxy {
             }
             return services.get(platform)!!.getRecommendSongSheetList(data)
         }
-
         @RequiresApi(Build.VERSION_CODES.O)
         suspend fun getRecommendSongSheetData(platform:Platform,id:String, page:Int, limit:Int,data:Any,):Response<List<Media>>{
             if(!services.containsKey(platform)){
@@ -97,7 +95,6 @@ class ServiceProxy {
             }
             return services.get(platform)!!.getRecommendSongSheetData(id,page,limit,data)
         }
-
         @RequiresApi(Build.VERSION_CODES.O)
         suspend fun getUserSheetData(platform: Platform,page:Int,limit:Int, data:Any):Response<List<Media>>{
             if(!services.containsKey(platform)){
@@ -106,6 +103,13 @@ class ServiceProxy {
             return services.get(platform)!!.getUserSheetData(page,limit,data)
         }
 
+        @SuppressLint("NewApi")
+        suspend fun getMvUrl(platform: Platform, data: String):Response<String>{
+            if(!services.containsKey(platform)){
+                return notSupportPlatform(this::getMvUrl.name,platform)
+            }
+            return services.get(platform)!!.getMvUrl(data)
+        }
         @RequiresApi(Build.VERSION_CODES.O)
         private fun <T>notSupportPlatform(title:String, platform: Platform):Response<T>{
             return Response(

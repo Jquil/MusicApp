@@ -1,5 +1,6 @@
 package com.jqwong.music.service
 
+import android.annotation.SuppressLint
 import android.content.res.Resources.NotFoundException
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -296,8 +297,22 @@ class KuWOService:IService {
             )
         }
     }
+    @SuppressLint("NewApi")
     override suspend fun getMvUrl(id: String):Response<String> {
-        TODO("Not yet implemented")
+        val title = this::getMvUrl.name
+        val result = service.getMvUrl(id).awaitResult()
+        return if(result.e != null)
+            error(title,result.e)
+        else{
+            Response(
+                title = title,
+                success = true,
+                support = true,
+                message = "ok",
+                data = result.data!!.data.url,
+                exception = null
+            )
+        }
     }
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getLyrics(id: String) :Response<Lyrics>{

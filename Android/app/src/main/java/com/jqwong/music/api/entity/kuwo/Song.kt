@@ -51,7 +51,8 @@ data class Song(
             time = null,
             play_url = null,
             mv_url = null,
-            has_mv = hasmv == 1
+            has_mv = hasmv == 1,
+            mv_id = ""
         )
     }
 }

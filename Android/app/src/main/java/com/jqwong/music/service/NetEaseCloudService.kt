@@ -1,5 +1,6 @@
 package com.jqwong.music.service
 
+import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.jqwong.music.api.NetEaseCloudMusicApi
@@ -345,8 +346,28 @@ class NetEaseCloudService:IService {
         }
     }
 
-    override suspend fun getMvUrl(id: String): Response<String> {
-        TODO("Not yet implemented")
+    @SuppressLint("NewApi")
+    override suspend fun getMvUrl(data: String): Response<String> {
+        val title = this::getMvUrl.name
+        val map = mapOf(
+            "id" to data,
+            "r" to 1080
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.getMvUrl(params.toRam()).awaitResult()
+        return if(result.e != null)
+            error(title,result.e)
+        else{
+            return Response(
+                title = title,
+                support = true,
+                success = true,
+                data = result.data!!.data.url,
+                exception = null,
+                message = "ok"
+            )
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

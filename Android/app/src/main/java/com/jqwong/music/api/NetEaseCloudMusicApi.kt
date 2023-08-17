@@ -25,7 +25,6 @@ interface NetEaseCloudMusicApi {
 
     @POST("/weapi/v3/song/detail")
     fun getPlayList(@Body content:RequestBody):Call<BaseResponseO<List<Song>>>
-    // c:[{"id":1},],csrf
 
     @POST
     fun getPlayUrl(@Url url: String, @Query("params") params:String):Call<BaseResponseM<List<PlayUrl>>>
@@ -47,15 +46,13 @@ interface NetEaseCloudMusicApi {
 
     @POST("/weapi/v1/radio/get")
     fun personalFM(@Body content: RequestBody):Call<BaseResponseM<List<SongX>>>
-    // csrf_token
 
     @POST("/weapi/v3/discovery/recommend/songs")
     fun getDailySongs(@Body content: RequestBody):Call<BaseResponseM<DailySongs>>
-    // csrf_token
 
     @POST("/weapi/song/enhance/play/mv/url")
     fun getMvUrl(@Body content: RequestBody):Call<BaseResponseM<MvUrl>>
-    // {"id":"5436712","r":1080,"csrf_token":"4548003c8bdf353cfe2dfa20fc3b8136"}
+    // {"id":"5436712","r":1080}
 
     @POST("/weapi/user/playlist")
     fun getUserSheet(@Body content: RequestBody):Call<BaseResponseZ<List<UserSheet>>>
