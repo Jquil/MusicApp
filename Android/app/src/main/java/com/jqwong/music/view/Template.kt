@@ -2,9 +2,14 @@ package com.jqwong.music.view
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.arthenica.mobileffmpeg.Config
+import com.arthenica.mobileffmpeg.Config.RETURN_CODE_CANCEL
+import com.arthenica.mobileffmpeg.Config.RETURN_CODE_SUCCESS
+import com.arthenica.mobileffmpeg.FFmpeg
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.QuickAdapterHelper
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
@@ -27,6 +32,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.io.File
 
 /**
  * @author: Jq
@@ -64,17 +70,6 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
                 App.playList = PlayList(0,null,adapter.items.subList(position,adapter.items.size).copy())
                 adapter.notifyDataSetChanged()
                 AudioHelper.start()
-                CoroutineScope(Dispatchers.IO).launch {
-                    val item = adapter.getItem(position)!!
-                    if(item.audio!!.has_mv){
-                        var reqParams = item.audio!!.id
-                        if(_platform == Platform.NetEaseCloud){
-                            reqParams = item.audio!!.mv_id!!
-                        }
-                        val data = ServiceProxy.getMvUrl(_platform,reqParams)
-                        val code = 200
-                    }
-                }
             }
         })
         val loadMoreAdapter = CustomLoadMoreAdapter()

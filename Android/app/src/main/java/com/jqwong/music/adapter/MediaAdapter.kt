@@ -29,50 +29,40 @@ class MediaAdapter: BaseQuickAdapter<Media, QuickViewHolder>(){
         val tvDescription = holder.getView<TextView>(R.id.tv_description)
         val ivPic = holder.getView<ImageView>(R.id.iv_pic)
         val ivPlaying = holder.getView<ImageView>(R.id.iv_playing)
-        if(item?.audio != null){
-            val builder = StringBuilder()
-            item.audio?.artists?.forEach {
-                builder.append("${it.name}/")
-            }
-            if(builder.isNotEmpty()){
-                builder.deleteCharAt(builder.length-1)
-                item.audio?.album.let {
-                    if(!it.isNullOrEmpty()){
-                        builder.append(" - ")
-                    }
+        val builder = StringBuilder()
+        item?.artists?.forEach {
+            builder.append("${it.name}/")
+        }
+        if(builder.isNotEmpty()){
+            builder.deleteCharAt(builder.length-1)
+            item?.album.let {
+                if(!it.isNullOrEmpty()){
+                    builder.append(" - ")
                 }
             }
-            tvTitle.text = item.audio?.name
-            tvDescription.text = "${builder.toString()}${item.audio?.album}"
-            Glide.with(ivPic)
-                .asBitmap()
-                .load(item.audio?.pic)
-                .placeholder(R.drawable.ic_music)
-                .apply(RequestOptions.bitmapTransform(RoundedCorners(10)))
-                .into(ivPic)
         }
-        else{
-            // show video info
-        }
+        tvTitle.text = item?.name
+        tvDescription.text = "${builder}${item?.album}"
+        Glide.with(ivPic)
+            .asBitmap()
+            .load(item?.pic)
+            .placeholder(R.drawable.ic_music)
+            .apply(RequestOptions.bitmapTransform(RoundedCorners(10)))
+            .into(ivPic)
 
 
         if(App.playListIsInitialized()){
             val current = App.playList.data.get(App.playList.index)
-            if(current.audio != null && item!!.audio != null){
-                if(current.audio!!.id == item.audio!!.id && current.audio!!.name == item.audio!!.name){
-                    tvTitle.setTextColor(color_select)
-                    tvDescription.setTextColor(color_select)
-                    ivPlaying.visibility = View.VISIBLE
-                    ivPlaying.setImageResource(R.drawable.ic_playing)
-                }
-                else{
-                    tvTitle.setTextColor(color_default)
-                    tvDescription.setTextColor(color_default)
-                    ivPlaying.visibility = View.GONE
-                }
+            if(current.id == item!!.id && current.name == item.name){
+                tvTitle.setTextColor(color_select)
+                tvDescription.setTextColor(color_select)
+                ivPlaying.visibility = View.VISIBLE
+                ivPlaying.setImageResource(R.drawable.ic_playing)
             }
             else{
-
+                tvTitle.setTextColor(color_default)
+                tvDescription.setTextColor(color_default)
+                ivPlaying.visibility = View.GONE
             }
         }
     }

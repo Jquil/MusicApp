@@ -22,6 +22,7 @@ import com.jqwong.music.databinding.ActivityMainBinding
 import com.jqwong.music.event.*
 import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.helper.TimeHelper
+import com.jqwong.music.helper.content
 import com.jqwong.music.helper.startAnimation
 import com.jqwong.music.model.*
 import com.jqwong.music.service.NetEaseCloudService
@@ -189,15 +190,13 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaChangeEvent(event: MediaChangeEvent){
         val media = event.media
-        if(media.video == null){
-            _binding.layoutPlayBar.tvName.text = media.audio!!.name
-            Glide.with(_binding.layoutPlayBar.ivPic)
-                .asBitmap()
-                .load(media.audio!!.pic)
-                .placeholder(R.drawable.ic_music)
-                .apply(RequestOptions.bitmapTransform(RoundedCorners(10)))
-                .into(_binding.layoutPlayBar.ivPic)
-        }
+        _binding.layoutPlayBar.tvName.text = media.name
+        Glide.with(_binding.layoutPlayBar.ivPic)
+            .asBitmap()
+            .load(media.pic)
+            .placeholder(R.drawable.ic_music)
+            .apply(RequestOptions.bitmapTransform(RoundedCorners(10)))
+            .into(_binding.layoutPlayBar.ivPic)
         _binding.layoutPlayBar.lpiPlay.progress = 0
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -236,11 +235,6 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         _binding.layoutPlayBar.ibPlayStatus.setImageResource(if(event.playing) R.drawable.ic_pause else R.drawable.ic_play)
     }
     fun showContent(){
-        _binding.stateLayout.apply {
-            onContent {
-                this@apply.startAnimation()
-            }
-            this.showContent()
-        }
+        _binding.stateLayout.content()
     }
 }

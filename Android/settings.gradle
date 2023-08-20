@@ -1,5 +1,6 @@
 pluginManagement {
     repositories {
+        maven { url "http://maven.aliyun.com/nexus/content/groups/public/" ;allowInsecureProtocol = true }
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -8,9 +9,11 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven { url "http://maven.aliyun.com/nexus/content/groups/public/" ;allowInsecureProtocol = true}
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
+
     }
 }
 rootProject.name = "music"

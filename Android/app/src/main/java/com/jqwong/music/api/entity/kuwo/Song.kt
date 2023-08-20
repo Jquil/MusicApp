@@ -31,8 +31,8 @@ data class Song(
         @field:Json(name = "down") val down:Int
     )
 
-    fun convert():com.jqwong.music.model.Song{
-        return com.jqwong.music.model.Song(
+    fun convert():com.jqwong.music.model.Media{
+        return com.jqwong.music.model.Media(
             platform = Platform.KuWo,
             id = rid.toString(),
             name = name,
@@ -51,8 +51,10 @@ data class Song(
             time = null,
             play_url = null,
             mv_url = null,
-            has_mv = hasmv == 1,
-            mv_id = ""
+            mv_id = musicrid,
+            is_local = false,
+            enable_media = null,
+            play_uri = null
         )
     }
 }

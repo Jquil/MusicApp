@@ -7,7 +7,7 @@ package com.jqwong.music.model
 enum class ExtraKey {
     Search,
     Platform,
-    Audio,
+    Media,
     SongSheet,
     Data
 }

@@ -14,6 +14,8 @@ import com.jqwong.music.event.MediaChangeEvent
 import com.jqwong.music.event.MediaPositionChangeEvent
 import com.jqwong.music.event.PlayerStatusChangeEvent
 import com.jqwong.music.helper.AudioHelper
+import com.jqwong.music.helper.content
+import com.jqwong.music.helper.empty
 import com.jqwong.music.helper.startAnimation
 import com.jqwong.music.model.current
 import com.jqwong.music.view.layoutManager.CenterLayoutManager
@@ -72,7 +74,7 @@ class LyricActivity:BaseActivity<ActivityLyricBinding>() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaChangeEvent(event:MediaChangeEvent){
         val media = App.playList.data.get(App.playList.index)
-        _binding.tvName.text = if(media.video == null) media.audio!!.name else media.video!!.title
+        _binding.tvName.text = media.name
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -82,24 +84,14 @@ class LyricActivity:BaseActivity<ActivityLyricBinding>() {
         }
         else{
             if(App.playList.lyrics == null){
-                _binding.stateLayout.apply {
-                    onEmpty {
-                        this@apply.startAnimation()
-                    }
-                    this.showEmpty()
-                }
+                _binding.stateLayout.empty("Sorry")
             }
             else{
                 val list = App.playList.lyrics
                 adapter.submitList(list!!.lyrics)
                 val current = list.current(AudioHelper.getPosition())
                 _binding.rvList.layoutManager!!.scrollToPosition(adapter.getItemPosition(current))
-                _binding.stateLayout.apply {
-                    onContent {
-                        this@apply.startAnimation()
-                    }
-                    this.showContent()
-                }
+                _binding.stateLayout.content()
             }
         }
     }

@@ -1,6 +1,5 @@
 package com.jqwong.music.api.entity.netEase
 
-import com.jqwong.music.model.Audio
 import com.jqwong.music.model.Media
 import com.jqwong.music.model.Platform
 import com.squareup.moshi.Json
@@ -26,21 +25,20 @@ data class Song(
             ))
         }
         return Media(
-            video = null,
-            audio = Audio(
-                platform = Platform.NetEaseCloud,
-                id = id.toString(),
-                name = name,
-                album = al.name,
-                album_id = al.id.toString(),
-                pic = al.picUrl,
-                artists = artists,
-                time = null,
-                play_url = null,
-                mv_url = null,
-                has_mv = mv != "0".toLong(),
-                mv_id = mv.toString()
-            )
+            platform = Platform.NetEaseCloud,
+            id = id.toString(),
+            name = name,
+            album = al.name,
+            album_id = al.id.toString(),
+            pic = al.picUrl,
+            artists = artists,
+            time = null,
+            play_url = null,
+            mv_url = null,
+            mv_id = mv.toString(),
+            is_local = false,
+            enable_media = null,
+            play_uri = null
         )
     }
 }
@@ -66,21 +64,20 @@ data class SongX(
             ))
         }
         return Media(
-            video = null,
-            audio = Audio(
-                platform = Platform.NetEaseCloud,
-                id = id.toString(),
-                name = name,
-                album = album.name,
-                album_id = album.id.toString(),
-                pic = album.picUrl,
-                artists = artists,
-                time = null,
-                play_url = null,
-                mv_url = null,
-                has_mv = mvid != "0".toLong(),
-                mv_id = mvid.toString()
-            )
+            platform = Platform.NetEaseCloud,
+            id = id.toString(),
+            name = name,
+            album = album.name,
+            album_id = album.id.toString(),
+            pic = album.picUrl,
+            artists = artists,
+            time = null,
+            play_url = null,
+            mv_url = null,
+            mv_id = mvid.toString(),
+            is_local = false,
+            enable_media = null,
+            play_uri = null
         )
     }
 }

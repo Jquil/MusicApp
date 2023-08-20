@@ -109,10 +109,7 @@ class KuWOService:IService {
         else{
             val list = mutableListOf<Media>()
             result.data!!.data.musicList.forEach {
-                list.add(Media(
-                    audio = Audio.convert(it.convert()),
-                    video = null
-                ))
+                list.add(it.convert())
             }
             return Response(
                 title = title,
@@ -134,10 +131,7 @@ class KuWOService:IService {
         else{
             val list = mutableListOf<Media>()
             result.data!!.data.list.forEach {
-                list.add(Media(
-                    audio = Audio.convert(it.convert()),
-                    video = null
-                ))
+                list.add(it.convert())
             }
             return Response(
                 title = title,
@@ -185,10 +179,7 @@ class KuWOService:IService {
         else{
             val list = mutableListOf<Media>()
             result.data!!.data.list.forEach {
-                list.add(Media(
-                    audio = Audio.convert(it.convert()),
-                    video = null
-                ))
+                list.add(it.convert())
             }
             return Response(
                 title = title,
@@ -237,10 +228,7 @@ class KuWOService:IService {
         else{
             val list = mutableListOf<Media>()
             result.data!!.data.musicList.forEach {
-                list.add(Media(
-                    audio = Audio.convert(it.convert()),
-                    video = null
-                ))
+                list.add(it.convert())
             }
             Response(
                 title = title,
