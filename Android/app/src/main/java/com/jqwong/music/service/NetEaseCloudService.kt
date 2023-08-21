@@ -154,8 +154,38 @@ class NetEaseCloudService:IService {
         }
     }
 
-    override suspend fun getArtistSongList(id: Long, page: Int, limit: Int): Response<List<Media>> {
-        TODO("Not yet implemented")
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    override suspend fun getArtistSongList(id: String, page: Int, limit: Int): Response<List<Media>> {
+        val title = this::getArtistSongList.name
+        val map = mapOf(
+            "id" to id.toString(),
+            "private_cloud" to "true",
+            "work_type" to "1",
+            "order" to "hot",
+            "offset" to (page-1)*limit,
+            "limit" to limit,
+            "csrf_token" to ""
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.getArtistSongList(params.toRam()).awaitResult()
+        return if(result.e != null){
+            return error(title,result.e)
+        }
+        else{
+            val list = mutableListOf<Media>()
+            result.data!!.songs.forEach {
+                list.add(it.convert())
+            }
+            return Response(
+                title = title,
+                success = true,
+                data = list,
+                exception = null,
+                message = "ok",
+                support = true
+            )
+        }
     }
 
     override suspend fun getArtistInfo(id: Long): Response<Artist> {

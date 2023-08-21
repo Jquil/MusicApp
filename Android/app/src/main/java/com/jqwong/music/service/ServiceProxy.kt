@@ -40,6 +40,14 @@ class ServiceProxy {
         }
 
         @RequiresApi(Build.VERSION_CODES.O)
+        suspend fun getArtistSongList(platform: Platform, id: String, page: Int, limit: Int):Response<List<Media>>{
+            if(!services.containsKey(platform)){
+                return notSupportPlatform(this::getArtistSongList.name,platform)
+            }
+            return services.get(platform)!!.getArtistSongList(id,page,limit)
+        }
+
+        @RequiresApi(Build.VERSION_CODES.O)
         suspend fun getRecommendDaily(platform:Platform, data: Any): Response<List<Media>> {
             if(!services.containsKey(platform)){
                 return notSupportPlatform(this::getRecommendDaily.name,platform)

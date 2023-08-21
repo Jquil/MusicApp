@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
@@ -23,8 +24,10 @@ class MediaAdapter: BaseQuickAdapter<Media, QuickViewHolder>(){
 
     private val color_select = Color.parseColor("#C04641")
     private val color_default = Color.parseColor("#FFFFFF")
+    private var selectMediaByLongClick:Media? = null
 
     override fun onBindViewHolder(holder: QuickViewHolder, position: Int, item: Media?) {
+        val wrapper = holder.getView<ConstraintLayout>(R.id.item_wrapper)
         val tvTitle = holder.getView<TextView>(R.id.tv_title)
         val tvDescription = holder.getView<TextView>(R.id.tv_description)
         val ivPic = holder.getView<ImageView>(R.id.iv_pic)
@@ -50,6 +53,12 @@ class MediaAdapter: BaseQuickAdapter<Media, QuickViewHolder>(){
             .apply(RequestOptions.bitmapTransform(RoundedCorners(10)))
             .into(ivPic)
 
+        wrapper.isLongClickable = true
+        wrapper.setOnLongClickListener {
+            selectMediaByLongClick = item
+            false
+        }
+
 
         if(App.playListIsInitialized()){
             val current = App.playList.data.get(App.playList.index)
@@ -73,5 +82,9 @@ class MediaAdapter: BaseQuickAdapter<Media, QuickViewHolder>(){
         viewType: Int
     ): QuickViewHolder {
         return QuickViewHolder(R.layout.item_media,parent)
+    }
+
+    fun getSelectMediaByLongClick():Media?{
+        return selectMediaByLongClick
     }
 }

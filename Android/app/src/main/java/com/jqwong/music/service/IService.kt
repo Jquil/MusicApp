@@ -13,7 +13,7 @@ interface IService {
     fun getPlatform():Platform
     suspend fun getLeaderboard():Response<List<Leaderboard>>
     suspend fun getLeaderboardSongList(id:String, page:Int, limit:Int):Response<List<Media>>
-    suspend fun getArtistSongList(id:Long, page:Int, limit:Int):Response<List<Media>>
+    suspend fun getArtistSongList(id:String, page:Int, limit:Int):Response<List<Media>>
     suspend fun getArtistInfo(id:Long):Response<Artist>
     suspend fun search(key:String, page:Int, limit:Int):Response<List<Media>>
     suspend fun getRecommendSongSheetList(data:Any):Response<List<SongSheet>>

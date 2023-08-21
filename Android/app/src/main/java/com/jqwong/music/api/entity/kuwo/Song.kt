@@ -28,7 +28,7 @@ data class Song(
     data class MvInfo(
         @field:Json(name = "play") val play:Int,
         @field:Json(name = "vid") val vid:Long,
-        @field:Json(name = "down") val down:Int
+        @field:Json(name = "down") val down:Int?
     )
 
     fun convert():com.jqwong.music.model.Media{
@@ -51,7 +51,7 @@ data class Song(
             time = null,
             play_url = null,
             mv_url = null,
-            mv_id = musicrid,
+            mv_id = rid.toString(),
             is_local = false,
             enable_media = null,
             play_uri = null

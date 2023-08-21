@@ -2,6 +2,7 @@ package com.jqwong.music.view
 
 import android.os.Build
 import android.os.Bundle
+import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -64,7 +65,7 @@ class RecommendSheetActivity:Template() {
         })
     }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_recommend_sheet,menu)
+        menuInflater.inflate(R.menu.menu_sheet,menu)
         return true
     }
 
@@ -99,7 +100,7 @@ class RecommendSheetActivity:Template() {
                 }
                 R.id.action_sheet -> {
                     MaterialDialog(this, BottomSheet()).show {
-                        customView(R.layout.dialog_select_sheet)
+                        customView(R.layout.dialog_select_common_x)
                         cornerRadius(20f)
                         view.setBackgroundResource(R.drawable.bg_dialog)
                         view.setTitleDefaultStyle(this@RecommendSheetActivity)
@@ -128,6 +129,24 @@ class RecommendSheetActivity:Template() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onCreateContextMenu(
+        menu: ContextMenu?,
+        v: View?,
+        menuInfo: ContextMenu.ContextMenuInfo?
+    ) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        menuInflater.inflate(R.menu.menu_sheet_item,menu)
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.action_artist -> {
+                gotoArtistActivity()
+            }
+        }
+        return super.onContextItemSelected(item)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

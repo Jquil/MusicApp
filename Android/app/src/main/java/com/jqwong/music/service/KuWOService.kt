@@ -122,9 +122,9 @@ class KuWOService:IService {
         }
     }
     @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun getArtistSongList(id: Long, page: Int, limit: Int):Response<List<Media>> {
+    override suspend fun getArtistSongList(id: String, page: Int, limit: Int):Response<List<Media>> {
         val title = this::getArtistSongList.name
-        val result = service.getArtistSongList(id.toString(),page,limit).awaitResult()
+        val result = service.getArtistSongList(id,page,limit).awaitResult()
         if(result.e != null){
             return error(title,result.e)
         }

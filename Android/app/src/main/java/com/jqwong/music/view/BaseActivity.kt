@@ -14,6 +14,7 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.customview.customView
 import com.jqwong.music.R
 import com.jqwong.music.helper.setTitleDefaultStyle
+import com.jqwong.music.model.Artist
 import com.jqwong.music.model.Platform
 import org.greenrobot.eventbus.EventBus
 
@@ -48,7 +49,7 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
     }
     protected fun changePlatform(list:List<Platform>,call:(platform:Platform)->Unit){
         MaterialDialog(this, BottomSheet()).show {
-            customView(R.layout.dialog_select_platform)
+            customView(R.layout.dialog_select_common)
             cornerRadius(20f)
             setTitle("")
             view.setBackgroundResource(R.drawable.bg_dialog)
@@ -64,6 +65,30 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
                     }
                 }
                 layout.addView(child)
+            }
+        }
+    }
+    protected fun selectArtist(list:List<Artist>, call:(artist:Artist)->Unit){
+        MaterialDialog(this, BottomSheet()).show {
+            customView(R.layout.dialog_select_common)
+            cornerRadius(20f)
+            setTitle("")
+            view.setBackgroundResource(R.drawable.bg_dialog)
+            view.setTitleDefaultStyle(this@BaseActivity)
+            val layout = view.contentLayout.findViewById<LinearLayout>(R.id.ll_wrapper)
+            var index = 0
+            list.forEach {
+                val name = it.name
+                val child = View.inflate(this@BaseActivity,R.layout.item_select_artist,null)
+                child.findViewById<TextView>(R.id.tv_name).let {
+                    it.text = name
+                    it.tag = index
+                    it.setOnClickListener {
+                        call.invoke(list.get(it.tag as Int))
+                    }
+                }
+                layout.addView(child)
+                index++
             }
         }
     }

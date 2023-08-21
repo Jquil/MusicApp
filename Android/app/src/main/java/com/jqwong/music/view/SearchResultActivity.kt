@@ -2,34 +2,22 @@ package com.jqwong.music.view
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.annotation.RequiresApi
-import androidx.media3.common.util.UnstableApi
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.chad.library.adapter.base.BaseQuickAdapter
-import com.chad.library.adapter.base.QuickAdapterHelper
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R
-import com.jqwong.music.adapter.CustomLoadMoreAdapter
-import com.jqwong.music.adapter.MediaAdapter
-import com.jqwong.music.app.App
-import com.jqwong.music.databinding.ActivitySearchResultBinding
-import com.jqwong.music.event.MediaChangeEvent
 import com.jqwong.music.helper.*
 import com.jqwong.music.model.*
 import com.jqwong.music.service.ServiceProxy
-import com.jqwong.music.view.listener.DoubleClickListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
 /**
  * @author: Jq
@@ -73,7 +61,7 @@ class SearchResultActivity:Template() {
         })
     }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_search_result,menu)
+        menuInflater.inflate(R.menu.menu_search,menu)
         return true
     }
 
@@ -97,6 +85,24 @@ class SearchResultActivity:Template() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onCreateContextMenu(
+        menu: ContextMenu?,
+        v: View?,
+        menuInfo: ContextMenu.ContextMenuInfo?
+    ) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        menuInflater.inflate(R.menu.menu_sheet_item,menu)
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.action_artist -> {
+                gotoArtistActivity()
+            }
+        }
+        return super.onContextItemSelected(item)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

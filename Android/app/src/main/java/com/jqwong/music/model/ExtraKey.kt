@@ -9,5 +9,6 @@ enum class ExtraKey {
     Platform,
     Media,
     SongSheet,
+    Artist,
     Data
 }

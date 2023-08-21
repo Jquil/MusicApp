@@ -1,6 +1,7 @@
 package com.jqwong.music.view
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -21,6 +22,8 @@ import com.jqwong.music.databinding.ActivityTemplateBinding
 import com.jqwong.music.event.MediaChangeEvent
 import com.jqwong.music.event.MediaLoadingEvent
 import com.jqwong.music.helper.AudioHelper
+import com.jqwong.music.model.Artist
+import com.jqwong.music.model.ExtraKey
 import com.jqwong.music.model.Media
 import com.jqwong.music.model.Platform
 import com.jqwong.music.model.PlayList
@@ -72,11 +75,13 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
                 AudioHelper.start()
             }
         })
+
         val loadMoreAdapter = CustomLoadMoreAdapter()
         adapterHelper = QuickAdapterHelper.Builder(adapter)
             .setTrailingLoadStateAdapter(loadMoreAdapter)
             .build()
         _binding.includeMain.rvList.adapter = adapterHelper.adapter
+        registerForContextMenu(_binding.includeMain.rvList)
     }
 
     override fun useEventBus(): Boolean {
@@ -85,6 +90,30 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
 
     override fun statusBarColor(): Int {
         return R.color.background
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterForContextMenu(_binding.includeMain.rvList)
+    }
+
+    protected fun gotoArtistActivity(){
+        fun go(artist: Artist){
+            startActivity(Intent(this,ArtistActivity::class.java).apply {
+                putExtra(ExtraKey.Artist.name,artist.toJson())
+            })
+        }
+        val media = adapter.getSelectMediaByLongClick()
+        if(media != null){
+            if(media.artists.count() > 1){
+                selectArtist(media.artists){
+                    go(it)
+                }
+            }
+            else{
+                go(media.artists.first())
+            }
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

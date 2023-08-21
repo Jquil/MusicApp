@@ -15,7 +15,6 @@ import retrofit2.http.Url
 interface NetEaseCloudMusicApi {
     @POST
     fun search(@Url url:String, @Query("params") params:String):Call<BaseResponse<SongList>>
-    // https://interface.music.163.com/eapi/cloudsearch/pc
 
     @POST("api/toplist")
     fun getLeaderboard():Call<BaseResponseX<List<Leaderboard>>>
@@ -30,7 +29,7 @@ interface NetEaseCloudMusicApi {
     fun getPlayUrl(@Url url: String, @Query("params") params:String):Call<BaseResponseM<List<PlayUrl>>>
 
     @POST("weapi/v1/artist/songs")
-    fun getArtistSongList(@Query("params") params:String,@Query("encSecKey")encSecKey:String):Call<BaseResponseO<List<Song>>>
+    fun getArtistSongList(@Body content:RequestBody):Call<BaseResponseO<List<Song>>>
 
     @POST("api/song/lyric?_nmclfl=1&tv=-1&lv=-1&rv=-1&kv=-1")
     fun getLyrics(@Query("id") id:String):Call<LyricResponse>
@@ -52,11 +51,9 @@ interface NetEaseCloudMusicApi {
 
     @POST("/weapi/song/enhance/play/mv/url")
     fun getMvUrl(@Body content: RequestBody):Call<BaseResponseM<MvUrl>>
-    // {"id":"5436712","r":1080}
 
     @POST("/weapi/user/playlist")
     fun getUserSheet(@Body content: RequestBody):Call<BaseResponseZ<List<UserSheet>>>
-    // {"uid":"32953014","limit":30,"offset":0,"includeVideo":true,"csrf_token":"4548003c8bdf353cfe2dfa20fc3b8136"}
 
     @POST("/weapi/nuser/account/get")
     fun getUserInfo(@Body content: RequestBody):Call<UserResponse>

@@ -33,6 +33,7 @@
         <activity android:name=".view.RecommendSheetActivity"/>
         <activity android:name=".view.UserSongSheetActivity"/>
         <activity android:name=".view.RecommendDailyActivity"/>
+        <activity android:name=".view.ArtistActivity"/>
     </application>
 
 </manifest>

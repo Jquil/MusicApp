@@ -2,51 +2,42 @@ package com.jqwong.music.view
 
 import android.os.Build
 import android.os.Bundle
-import android.view.ContextMenu
-import android.view.MenuItem
-import android.view.View
 import androidx.annotation.RequiresApi
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
-import com.jqwong.music.R
 import com.jqwong.music.helper.content
 import com.jqwong.music.helper.error
+import com.jqwong.music.model.Artist
 import com.jqwong.music.model.ExtraKey
 import com.jqwong.music.model.Platform
-import com.jqwong.music.model.SongSheet
 import com.jqwong.music.service.ServiceProxy
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-/**
- * @author: Jq
- * @date: 8/13/2023
- */
-class UserSongSheetActivity:Template() {
+class ArtistActivity:Template() {
 
-    private lateinit var songSheet:SongSheet
-    private lateinit var _params:Any
+    private lateinit var artist: Artist
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
-        intent.getStringExtra(ExtraKey.Platform.name).let {
+        intent.getStringExtra(ExtraKey.Artist.name).let {
             if(it == null || it == ""){
-                toast("platform is null")
+                toast("artist is null")
                 finish()
             }
-            _platform = Platform.valueOf(it!!)
+            artist = Artist.fromJson(it!!)
+            _platform = artist.platform
         }
-        intent.getStringExtra(ExtraKey.SongSheet.name).let {
-            if(it == null || it == ""){
-                toast("platform is null")
-                finish()
-            }
-            songSheet = SongSheet.fromJsom(it!!)
+        var name = artist.name
+        if(artist.platform == Platform.KuWo && name.contains('&')){
+            val arr = name.split('&')
+            name = arr.first()
         }
-        intent.getStringExtra(ExtraKey.Data.name).let{
-            _params = it!!
-        }
-        supportActionBar?.title = songSheet.name
+        supportActionBar?.title = name
         _binding.includeMain.stateLayout.showLoading()
         loadMediaList()
     }
@@ -72,14 +63,8 @@ class UserSongSheetActivity:Template() {
                 delay((1000 * reloadNumber).toLong())
             }
             page++
-            var reqParams:Any = ""
-            when(_platform){
-                Platform.NetEaseCloud -> {
-                    reqParams = "${songSheet.id};${_params}"
-                }
-                else -> {}
-            }
-            val result = ServiceProxy.getUserSheetData(_platform,page,pageItemSize,reqParams)
+
+            val result = ServiceProxy.getArtistSongList(_platform,artist.id,page,pageItemSize)
             withContext(Dispatchers.Main){
                 if(result.exception != null){
                     if(reloadNumber == maxReloadCount){
@@ -107,26 +92,5 @@ class UserSongSheetActivity:Template() {
                 }
             }
         }
-    }
-
-    override fun onCreateContextMenu(
-        menu: ContextMenu?,
-        v: View?,
-        menuInfo: ContextMenu.ContextMenuInfo?
-    ) {
-        super.onCreateContextMenu(menu, v, menuInfo)
-        menuInflater.inflate(R.menu.menu_sheet_user_item,menu)
-    }
-
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
-            R.id.action_artist -> {
-                gotoArtistActivity()
-            }
-            R.id.action_remove -> {
-
-            }
-        }
-        return super.onContextItemSelected(item)
     }
 }

@@ -2,6 +2,7 @@ package com.jqwong.music.view
 
 import android.os.Build
 import android.os.Bundle
+import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -74,7 +75,7 @@ class LeaderboardActivity:Template() {
             when(item.itemId) {
                 R.id.action_leaderboard -> {
                     MaterialDialog(this, BottomSheet()).show {
-                        customView(R.layout.dialog_select_leaderboard)
+                        customView(R.layout.dialog_select_common_x)
                         cornerRadius(20f)
                         view.setBackgroundResource(R.drawable.bg_dialog)
                         view.setTitleDefaultStyle(this@LeaderboardActivity)
@@ -158,6 +159,24 @@ class LeaderboardActivity:Template() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onCreateContextMenu(
+        menu: ContextMenu?,
+        v: View?,
+        menuInfo: ContextMenu.ContextMenuInfo?
+    ) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        menuInflater.inflate(R.menu.menu_sheet_item,menu)
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.action_artist -> {
+                gotoArtistActivity()
+            }
+        }
+        return super.onContextItemSelected(item)
     }
 
     private fun getFirstLeaderboard(data:List<Leaderboard>):Leaderboard{
