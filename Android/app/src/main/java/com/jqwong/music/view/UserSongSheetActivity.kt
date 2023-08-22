@@ -9,6 +9,8 @@ import androidx.annotation.RequiresApi
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R
+import com.jqwong.music.app.App
+import com.jqwong.music.event.CollectOrCancelMediaEvent
 import com.jqwong.music.helper.content
 import com.jqwong.music.helper.error
 import com.jqwong.music.model.ExtraKey
@@ -16,6 +18,7 @@ import com.jqwong.music.model.Platform
 import com.jqwong.music.model.SongSheet
 import com.jqwong.music.service.ServiceProxy
 import kotlinx.coroutines.*
+import org.greenrobot.eventbus.EventBus
 
 /**
  * @author: Jq
@@ -118,13 +121,23 @@ class UserSongSheetActivity:Template() {
         menuInflater.inflate(R.menu.menu_sheet_user_item,menu)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_artist -> {
                 gotoArtistActivity()
             }
             R.id.action_remove -> {
-
+                val media = adapter.getSelectMediaByLongClick() ?: return false
+                collectOrCancelMedia(_platform,songSheet,media,false){
+                    if(it){
+                        adapter.remove(media)
+                    }
+                }
+            }
+            R.id.action_collect -> {
+                val media = adapter.getSelectMediaByLongClick() ?: return false
+                collectOrCancelMedia(_platform,null,media,true){}
             }
         }
         return super.onContextItemSelected(item)

@@ -11,6 +11,7 @@ import com.jqwong.music.model.*
  */
 interface IService {
     fun getPlatform():Platform
+    suspend fun collectOrCancelSong(collect:Boolean,data: Any):Response<Boolean>
     suspend fun getLeaderboard():Response<List<Leaderboard>>
     suspend fun getLeaderboardSongList(id:String, page:Int, limit:Int):Response<List<Media>>
     suspend fun getArtistSongList(id:String, page:Int, limit:Int):Response<List<Media>>

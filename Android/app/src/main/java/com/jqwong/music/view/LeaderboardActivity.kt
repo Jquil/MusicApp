@@ -170,10 +170,15 @@ class LeaderboardActivity:Template() {
         menuInflater.inflate(R.menu.menu_sheet_item,menu)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_artist -> {
                 gotoArtistActivity()
+            }
+            R.id.action_collect -> {
+                val media = adapter.getSelectMediaByLongClick() ?: return false
+                collectOrCancelMedia(_platform,null,media,true){}
             }
         }
         return super.onContextItemSelected(item)

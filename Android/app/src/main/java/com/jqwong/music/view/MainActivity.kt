@@ -113,6 +113,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
 
                         })
                         adapter.submitList(result.data)
+                        App.userSheets.put(platform,result.data)
                         _binding.llSheet.addView(view)
                     }
                 }

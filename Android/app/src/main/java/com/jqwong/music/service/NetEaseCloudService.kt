@@ -61,6 +61,45 @@ class NetEaseCloudService:IService {
         return Platform.NetEaseCloud
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    override suspend fun collectOrCancelSong(collect: Boolean, data: Any): Response<Boolean> {
+        val title = this::collectOrCancelSong.name
+        val arr = data.toString().split(';')
+        if(arr.count() != 3)
+            return error("data is invalid")
+        val map = mapOf(
+            "op" to if(collect) "add" else "del",
+            "pid" to arr[0],
+            "trackIds" to "[\"${arr[1]}\"]",
+            "imme" to "true",
+            "csrf_token" to arr[2]
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.collectOrCancelSong(params.toRam()).awaitResult()
+        return if(result.e != null)
+            error(title,result.e)
+        else{
+            var msg = "execute success!"
+            var success = true
+            if(result.data!!.code != 200){
+                success = false
+                msg = "execute failed!!"
+            }
+            if(result.data.message != null){
+                msg = result.data.message
+            }
+            return Response(
+                title = title,
+                support = true,
+                success = success,
+                data = null,
+                exception = null,
+                message = msg
+            )
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getLeaderboard(): Response<List<Leaderboard>> {
         val title = this::getLeaderboard.name

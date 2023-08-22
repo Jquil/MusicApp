@@ -2,8 +2,10 @@ package com.jqwong.music.view
 
 import android.os.Build
 import android.os.Bundle
+import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.annotation.RequiresApi
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
@@ -28,6 +30,7 @@ class RecommendDailyActivity:Template() {
         Platform.NetEaseCloud
     )
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
         _platform = Platform.valueOf(intent.getStringExtra(ExtraKey.Platform.name)!!)
@@ -111,5 +114,28 @@ class RecommendDailyActivity:Template() {
                 }
             }
         }
+    }
+
+    override fun onCreateContextMenu(
+        menu: ContextMenu?,
+        v: View?,
+        menuInfo: ContextMenu.ContextMenuInfo?
+    ) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        menuInflater.inflate(R.menu.menu_sheet_item,menu)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.action_artist -> {
+                gotoArtistActivity()
+            }
+            R.id.action_collect -> {
+                val media = adapter.getSelectMediaByLongClick() ?: return false
+                collectOrCancelMedia(_platform,null,media,true){}
+            }
+        }
+        return super.onContextItemSelected(item)
     }
 }

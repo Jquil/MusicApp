@@ -38,6 +38,13 @@ class ServiceProxy {
                 )
             }
         }
+        @RequiresApi(Build.VERSION_CODES.O)
+        suspend fun collectOrCancelSong(platform: Platform, collect: Boolean, data: Any): Response<Boolean> {
+            if(!services.containsKey(platform)){
+                return notSupportPlatform(this::collectOrCancelSong.name,platform)
+            }
+            return services.get(platform)!!.collectOrCancelSong(collect,data)
+        }
 
         @RequiresApi(Build.VERSION_CODES.O)
         suspend fun getArtistSongList(platform: Platform, id: String, page: Int, limit: Int):Response<List<Media>>{

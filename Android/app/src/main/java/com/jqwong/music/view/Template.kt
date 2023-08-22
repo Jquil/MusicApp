@@ -19,6 +19,7 @@ import com.jqwong.music.adapter.CustomLoadMoreAdapter
 import com.jqwong.music.adapter.MediaAdapter
 import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivityTemplateBinding
+import com.jqwong.music.event.CollectOrCancelMediaEvent
 import com.jqwong.music.event.MediaChangeEvent
 import com.jqwong.music.event.MediaLoadingEvent
 import com.jqwong.music.helper.AudioHelper
@@ -51,7 +52,6 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
     override fun initData(savedInstanceState: Bundle?) {
 
     }
-
     override fun intView() {
         setSupportActionBar(_binding.includeToolbar.toolbar)
         _binding.includeToolbar.toolbar.setOnLongClickListener {
@@ -83,20 +83,16 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
         _binding.includeMain.rvList.adapter = adapterHelper.adapter
         registerForContextMenu(_binding.includeMain.rvList)
     }
-
     override fun useEventBus(): Boolean {
         return true
     }
-
     override fun statusBarColor(): Int {
         return R.color.background
     }
-
     override fun onDestroy() {
         super.onDestroy()
         unregisterForContextMenu(_binding.includeMain.rvList)
     }
-
     protected fun gotoArtistActivity(){
         fun go(artist: Artist){
             startActivity(Intent(this,ArtistActivity::class.java).apply {
@@ -115,14 +111,16 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
             }
         }
     }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaChangeEvent(event: MediaChangeEvent){
         adapter.notifyDataSetChanged()
     }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaLoadingEvent(event: MediaLoadingEvent){
+        _binding.includeToolbar.cpiLoading.visibility = if(event.finish) View.GONE else View.VISIBLE
+    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onCollectOrCancelMediaEvent(event: CollectOrCancelMediaEvent){
         _binding.includeToolbar.cpiLoading.visibility = if(event.finish) View.GONE else View.VISIBLE
     }
 }

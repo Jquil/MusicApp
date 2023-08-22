@@ -57,4 +57,7 @@ interface NetEaseCloudMusicApi {
 
     @POST("/weapi/nuser/account/get")
     fun getUserInfo(@Body content: RequestBody):Call<UserResponse>
+
+    @POST("/weapi/playlist/manipulate/tracks")
+    fun collectOrCancelSong(@Body content: RequestBody):Call<BaseResponseG>
 }

@@ -34,3 +34,8 @@ data class BaseResponseO<T>(
     @field:Json(name = "code") val code:Int,
 )
 
+@JsonClass(generateAdapter = true)
+data class BaseResponseG(
+    @field:Json(name = "code") val code:Int,
+    @field:Json(name = "message") val message:String?,
+)

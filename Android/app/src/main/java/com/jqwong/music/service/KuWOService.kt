@@ -58,6 +58,10 @@ class KuWOService:IService {
         return Platform.KuWo
     }
 
+    override suspend fun collectOrCancelSong(collect: Boolean, data: Any): Response<Boolean> {
+        return notSupport(this::collectOrCancelSong.name)
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getLeaderboard(): Response<List<Leaderboard>> {
         val title = this::getLeaderboard.name

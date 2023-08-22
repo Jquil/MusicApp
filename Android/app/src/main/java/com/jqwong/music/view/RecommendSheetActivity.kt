@@ -18,10 +18,12 @@ import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R
 import com.jqwong.music.adapter.SongSheetAdapter
 import com.jqwong.music.app.App
+import com.jqwong.music.event.CollectOrCancelMediaEvent
 import com.jqwong.music.helper.*
 import com.jqwong.music.model.*
 import com.jqwong.music.service.ServiceProxy
 import kotlinx.coroutines.*
+import org.greenrobot.eventbus.EventBus
 
 /**
  * @author: Jq
@@ -74,7 +76,9 @@ class RecommendSheetActivity:Template() {
         if(_binding.includeMain.stateLayout.loaded) {
             when (item.itemId) {
                 R.id.action_refresh -> {
-
+                    _binding.includeMain.stateLayout.showLoading()
+                    page = 0
+                    loadMediaList(_platform,currentSheet.id)
                 }
                 R.id.action_change_platform -> {
                     changePlatform(listOf(Platform.KuWo,Platform.NetEaseCloud)) {
@@ -99,31 +103,12 @@ class RecommendSheetActivity:Template() {
                     }
                 }
                 R.id.action_sheet -> {
-                    MaterialDialog(this, BottomSheet()).show {
-                        customView(R.layout.dialog_select_common_x)
-                        cornerRadius(20f)
-                        view.setBackgroundResource(R.drawable.bg_dialog)
-                        view.setTitleDefaultStyle(this@RecommendSheetActivity)
-                        val adapter = SongSheetAdapter()
-                        val rvList = view.contentLayout.findViewById<RecyclerView>(R.id.rv_list)
-                        rvList.layoutManager = LinearLayoutManager(this@RecommendSheetActivity)
-                        rvList.adapter = adapter
-                        adapter.submitList(sheets.get(_platform))
-                        adapter.setOnItemClickListener(object:BaseQuickAdapter.OnItemClickListener<SongSheet>{
-                            @RequiresApi(Build.VERSION_CODES.O)
-                            override fun onClick(
-                                adapter: BaseQuickAdapter<SongSheet, *>,
-                                view: View,
-                                position: Int
-                            ) {
-                                val item = adapter.getItem(position)!!
-                                page = 0
-                                currentSheet = item
-                                supportActionBar?.title = item.name
-                                _binding.includeMain.stateLayout.showLoading()
-                                loadMediaList(_platform,item.id,0)
-                            }
-                        })
+                    selectSheet(sheets.get(_platform)!!){
+                        page = 0
+                        currentSheet = it
+                        supportActionBar?.title = it.name
+                        _binding.includeMain.stateLayout.showLoading()
+                        loadMediaList(_platform,it.id,0)
                     }
                 }
             }
@@ -140,10 +125,15 @@ class RecommendSheetActivity:Template() {
         menuInflater.inflate(R.menu.menu_sheet_item,menu)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_artist -> {
                 gotoArtistActivity()
+            }
+            R.id.action_collect -> {
+                val media = adapter.getSelectMediaByLongClick() ?: return false
+                collectOrCancelMedia(_platform,null,media,true){}
             }
         }
         return super.onContextItemSelected(item)
