@@ -125,7 +125,7 @@ class UserSongSheetActivity:Template() {
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_artist -> {
-                gotoArtistActivity()
+                gotoArtistActivity(adapter.getSelectMediaByLongClick())
             }
             R.id.action_remove -> {
                 val media = adapter.getSelectMediaByLongClick() ?: return false
@@ -138,6 +138,10 @@ class UserSongSheetActivity:Template() {
             R.id.action_collect -> {
                 val media = adapter.getSelectMediaByLongClick() ?: return false
                 collectOrCancelMedia(_platform,null,media,true){}
+            }
+            R.id.action_change_platform -> {
+                val media = adapter.getSelectMediaByLongClick() ?: return false
+                changePlatform(_platform,media.name)
             }
         }
         return super.onContextItemSelected(item)

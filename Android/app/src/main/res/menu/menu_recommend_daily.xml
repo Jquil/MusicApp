@@ -6,4 +6,9 @@
         android:orderInCategory="100"
         android:title="@string/change_platform"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_lyric"
+        android:orderInCategory="100"
+        android:title="@string/lyric"
+        app:showAsAction="never" />
 </menu>

@@ -10,4 +10,9 @@
     <item
         android:id="@+id/action_remove"
         android:title="@string/remove"/>
+    <item
+        android:id="@+id/action_change_platform"
+        android:orderInCategory="100"
+        android:title="@string/change_platform"
+        app:showAsAction="never" />
 </menu>

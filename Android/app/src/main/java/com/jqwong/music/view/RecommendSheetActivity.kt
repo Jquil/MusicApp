@@ -75,6 +75,9 @@ class RecommendSheetActivity:Template() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean{
         if(_binding.includeMain.stateLayout.loaded) {
             when (item.itemId) {
+                R.id.action_lyric -> {
+                    gotoLyricActivity()
+                }
                 R.id.action_refresh -> {
                     _binding.includeMain.stateLayout.showLoading()
                     page = 0
@@ -129,11 +132,15 @@ class RecommendSheetActivity:Template() {
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_artist -> {
-                gotoArtistActivity()
+                gotoArtistActivity(adapter.getSelectMediaByLongClick())
             }
             R.id.action_collect -> {
                 val media = adapter.getSelectMediaByLongClick() ?: return false
                 collectOrCancelMedia(_platform,null,media,true){}
+            }
+            R.id.action_change_platform -> {
+                val media = adapter.getSelectMediaByLongClick() ?: return false
+                changePlatform(_platform,media.name)
             }
         }
         return super.onContextItemSelected(item)

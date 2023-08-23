@@ -7,4 +7,9 @@
     <item
         android:id="@+id/action_collect"
         android:title="@string/collect"/>
+    <item
+        android:id="@+id/action_change_platform"
+        android:orderInCategory="100"
+        android:title="@string/change_platform"
+        app:showAsAction="never" />
 </menu>

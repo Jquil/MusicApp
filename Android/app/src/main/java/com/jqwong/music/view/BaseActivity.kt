@@ -1,5 +1,6 @@
 package com.jqwong.music.view
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -23,6 +24,7 @@ import com.jqwong.music.app.App
 import com.jqwong.music.event.CollectOrCancelMediaEvent
 import com.jqwong.music.helper.setTitleDefaultStyle
 import com.jqwong.music.model.Artist
+import com.jqwong.music.model.ExtraKey
 import com.jqwong.music.model.Media
 import com.jqwong.music.model.Platform
 import com.jqwong.music.model.SongSheet
@@ -135,6 +137,37 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
                     val item = adapter.getItem(position)!!
                     call(item)
                 }
+            })
+        }
+    }
+
+    protected fun gotoArtistActivity(media: Media?){
+        fun go(artist: Artist){
+            startActivity(Intent(this,ArtistActivity::class.java).apply {
+                putExtra(ExtraKey.Artist.name,artist.toJson())
+            })
+        }
+        if(media != null){
+            if(media.artists.count() > 1){
+                selectArtist(media.artists){
+                    go(it)
+                }
+            }
+            else{
+                go(media.artists.first())
+            }
+        }
+    }
+    protected fun gotoLyricActivity(){
+        startActivity(Intent(this,LyricActivity::class.java))
+    }
+    protected fun changePlatform(platform: Platform,key:String){
+        changePlatform(listOf(Platform.KuWo,Platform.NetEaseCloud)){
+            if(platform == it)
+                return@changePlatform
+            startActivity(Intent(this,SearchResultActivity::class.java).apply {
+                putExtra(ExtraKey.Search.name,key)
+                putExtra(ExtraKey.Platform.name,it.name)
             })
         }
     }

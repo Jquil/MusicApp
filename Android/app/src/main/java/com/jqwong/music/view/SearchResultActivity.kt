@@ -73,6 +73,9 @@ class SearchResultActivity:Template() {
                 page = 0
                 loadData()
             }
+            R.id.action_lyric -> {
+                gotoLyricActivity()
+            }
             R.id.action_change_platform -> {
                 changePlatform(listOf(Platform.KuWo,Platform.NetEaseCloud)){
                     if(it == _platform)
@@ -99,7 +102,7 @@ class SearchResultActivity:Template() {
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_artist -> {
-                gotoArtistActivity()
+                gotoArtistActivity(adapter.getSelectMediaByLongClick())
             }
         }
         return super.onContextItemSelected(item)

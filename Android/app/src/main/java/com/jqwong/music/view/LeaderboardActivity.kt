@@ -151,6 +151,9 @@ class LeaderboardActivity:Template() {
                         }
                     }
                 }
+                R.id.action_lyric -> {
+                    gotoArtistActivity(adapter.getSelectMediaByLongClick())
+                }
                 R.id.action_refresh -> {
                     _binding.includeMain.stateLayout.showLoading()
                     page = 0
@@ -173,12 +176,13 @@ class LeaderboardActivity:Template() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
-            R.id.action_artist -> {
-                gotoArtistActivity()
-            }
             R.id.action_collect -> {
                 val media = adapter.getSelectMediaByLongClick() ?: return false
                 collectOrCancelMedia(_platform,null,media,true){}
+            }
+            R.id.action_change_platform -> {
+                val media = adapter.getSelectMediaByLongClick() ?: return false
+                changePlatform(_platform,media.name)
             }
         }
         return super.onContextItemSelected(item)

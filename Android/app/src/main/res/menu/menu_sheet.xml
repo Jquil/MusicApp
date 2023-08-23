@@ -12,6 +12,11 @@
         android:title="@string/sheet"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_lyric"
+        android:orderInCategory="100"
+        android:title="@string/lyric"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_refresh"
         android:orderInCategory="100"
         android:title="@string/refresh"

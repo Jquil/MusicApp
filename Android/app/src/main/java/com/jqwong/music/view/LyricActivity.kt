@@ -1,7 +1,10 @@
 package com.jqwong.music.view
 
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
+import androidx.annotation.RequiresApi
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -99,6 +102,30 @@ class LyricActivity:BaseActivity<ActivityLyricBinding>() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_lyric,menu)
         return true
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onOptionsItemSelected(item: MenuItem): Boolean{
+        when(item.itemId){
+            R.id.action_artist -> {
+                if(App.playListIsInitialized() && App.playList.data.isNotEmpty()){
+                    val media = App.playList.current()
+                    gotoArtistActivity(media)
+                }
+            }
+            R.id.action_collect -> {
+                if(App.playListIsInitialized() && App.playList.data.isNotEmpty()){
+                    val media = App.playList.current()
+                    collectOrCancelMedia(media.platform,null,media,true){}
+                }
+            }
+            R.id.action_change_platform -> {
+                if(App.playListIsInitialized() && App.playList.data.isNotEmpty()){
+                    val media = App.playList.current()
+                    changePlatform(media.platform,media.name)
+                }
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

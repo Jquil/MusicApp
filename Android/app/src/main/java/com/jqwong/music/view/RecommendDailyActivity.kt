@@ -60,6 +60,9 @@ class RecommendDailyActivity:Template() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onOptionsItemSelected(item: MenuItem): Boolean{
         when(item.itemId){
+            R.id.action_lyric -> {
+                gotoLyricActivity()
+            }
             R.id.action_change_platform -> {
                 changePlatform(implPlatforms.toList()) {
                     if (it == _platform)
@@ -129,11 +132,15 @@ class RecommendDailyActivity:Template() {
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_artist -> {
-                gotoArtistActivity()
+                gotoArtistActivity(adapter.getSelectMediaByLongClick())
             }
             R.id.action_collect -> {
                 val media = adapter.getSelectMediaByLongClick() ?: return false
                 collectOrCancelMedia(_platform,null,media,true){}
+            }
+            R.id.action_change_platform -> {
+                val media = adapter.getSelectMediaByLongClick() ?: return false
+                changePlatform(_platform,media.name)
             }
         }
         return super.onContextItemSelected(item)
