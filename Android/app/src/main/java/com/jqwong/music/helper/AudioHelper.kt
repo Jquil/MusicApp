@@ -288,7 +288,12 @@ class AudioHelper {
                 for (i in 0 until pfMap.count()){
                     val pf = pfMap[i]
                     if(!medias.containsKey(pf)){
-                        medias.put(pf, getSimilarMedia(pf,media.name,media.artists.first().name))
+                        var name = media.name
+                        if(name.contains('(')){
+                            val arr = name.split('(')
+                            name = arr.first()
+                        }
+                        medias.put(pf, getSimilarMedia(pf,name,media.artists.first().name))
                     }
                     val item = medias.get(pf)
                     if(item != null){
@@ -381,7 +386,7 @@ class AudioHelper {
             if(result.exception != null)
                 return null
             result.data!!.forEach {
-                if(it.name == name && it.artists.toName().contains(artist))
+                if(it.name.contains(name) && it.artists.toName().contains(artist))
                     return it
             }
             return null

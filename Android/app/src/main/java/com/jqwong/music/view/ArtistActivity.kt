@@ -2,9 +2,12 @@ package com.jqwong.music.view
 
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.annotation.RequiresApi
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
+import com.jqwong.music.R
 import com.jqwong.music.helper.content
 import com.jqwong.music.helper.error
 import com.jqwong.music.model.Artist
@@ -92,5 +95,31 @@ class ArtistActivity:Template() {
                 }
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_artist,menu)
+        return true
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.action_change_platform->{
+                changePlatform(_platform,artist.name)
+            }
+            R.id.action_lyric->{
+                gotoLyricActivity()
+            }
+            R.id.action_collect->{
+
+            }
+            R.id.action_refresh->{
+                page=0
+                _binding.includeMain.stateLayout.showLoading()
+                loadMediaList()
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 }
