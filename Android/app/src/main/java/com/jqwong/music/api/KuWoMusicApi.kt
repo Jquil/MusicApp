@@ -1,15 +1,6 @@
 package com.jqwong.music.api
 
-import com.jqwong.music.api.entity.kuwo.Artist
-import com.jqwong.music.api.entity.kuwo.BaseResponse
-import com.jqwong.music.api.entity.kuwo.BaseResponseX
-import com.jqwong.music.api.entity.kuwo.Leaderboard
-import com.jqwong.music.api.entity.kuwo.Lyrics
-import com.jqwong.music.api.entity.kuwo.MvUrl
-import com.jqwong.music.api.entity.kuwo.RecommendSongSheet
-import com.jqwong.music.api.entity.kuwo.SongList
-import com.jqwong.music.api.entity.kuwo.SongListM
-import com.jqwong.music.api.entity.kuwo.SongListX
+import com.jqwong.music.api.entity.kuwo.*
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.GET
@@ -23,6 +14,9 @@ import retrofit2.http.Url
 interface KuWoMusicApi {
     @GET("www/search/searchMusicBykeyWord?httpsStatus=1&reqId=23016430-e1eb-11eb-a2ee-bf024dbfa4c7")
     fun search(@Query("key") key:String, @Query("pn") pn:Int, @Query("rn") rn:Int):Call<BaseResponse<SongListM>>
+
+    @GET
+    fun search2(@Url url:String):Call<SearchResult>
 
     @GET("www/bang/bang/bangMenu?httpsStatus=1&reqId=e617e730-e1f7-11eb-942d-33e288737b1d")
     fun getLeaderboard():Call<BaseResponse<List<Leaderboard>>>

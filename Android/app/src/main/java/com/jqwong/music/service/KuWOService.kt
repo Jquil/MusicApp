@@ -175,6 +175,7 @@ class KuWOService:IService {
     }
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun search(key: String, page: Int, limit: Int): Response<List<Media>> {
+        return search2(key, page, limit)
         val title = this::search.name
         val result = service.search(key,page,limit).awaitResult()
         if(result.e != null){
@@ -192,6 +193,29 @@ class KuWOService:IService {
                 data = list,
                 exception = null,
                 support = true
+            )
+        }
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun search2(key: String, page: Int, limit: Int):Response<List<Media>>{
+        // 页号从0开始
+        val title = this::search2.name
+        val url = "http://search.kuwo.cn/r.s?user=f48dc8a39ac2e306&android_id=f48dc8a39ac2e306&prod=kwplayer_ar_10.5.5.0&corp=kuwo&newver=3&vipver=10.5.5.0&source=kwplayer_ar_10.5.5.0_40.apk&p2p=1&q36=53289f4ed27862f4749ad5aa10001bc17506&loginUid=0&loginSid=0&notrace=0&client=kt&all=${key}&pn=${page-1}&rn=${limit}&uid=2587008462&ver=kwplayer_ar_10.5.5.0&vipver=1&show_copyright_off=1&newver=3&correct=1&ft=music&cluster=0&strategy=2012&encoding=utf8&rformat=json&vermerge=1&mobi=1&searchapi=6&issubtitle=1&province=&city=&latitude=&longtitude=&userIP=2409:8a55:3884:9a30:c1d6:f9ef:b35a:ab65&spPrivilege=0"
+        val result = service.search2(url).awaitResult()
+        return if(result.e != null)
+            error(title,result.e)
+        else{
+            val list = mutableListOf<Media>()
+            result.data!!.abslist.forEach {
+                list.add(it.convert())
+            }
+            return Response(
+                title = title,
+                support = true,
+                success = true,
+                data = list,
+                exception = null,
+                message = "ok",
             )
         }
     }
