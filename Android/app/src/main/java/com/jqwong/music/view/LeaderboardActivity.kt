@@ -34,7 +34,8 @@ class LeaderboardActivity:Template() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
-        intent.getStringExtra(ExtraKey.Platform.name).let {
+        supportActionBar?.title = "排行榜"
+            intent.getStringExtra(ExtraKey.Platform.name).let {
             if(it == null || it == ""){
                 toast("platform is null")
                 finish()
@@ -45,7 +46,7 @@ class LeaderboardActivity:Template() {
         getLeaderBoards(_platform, callback = {
             leaderboards.put(_platform,it)
             currentLeaderboard = getFirstLeaderboard(it)
-            supportActionBar?.title = currentLeaderboard.name
+            supportActionBar?.subtitle = currentLeaderboard.name
             loadMediaList(_platform,currentLeaderboard.id!!)
         })
     }
@@ -99,7 +100,7 @@ class LeaderboardActivity:Template() {
                                 else{
                                     page = 0
                                     currentLeaderboard = item
-                                    supportActionBar?.title = item.name
+                                    supportActionBar?.subtitle = currentLeaderboard.name
                                     _binding.includeMain.stateLayout.showLoading()
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                         loadMediaList(_platform,item.id.toString(),0)
@@ -135,17 +136,17 @@ class LeaderboardActivity:Template() {
                         _binding.includeMain.stateLayout.showLoading()
                         if(leaderboards.containsKey(_platform)){
                             currentLeaderboard = getFirstLeaderboard(leaderboards.get(_platform)!!)
-                            supportActionBar?.title = currentLeaderboard.name
+                            supportActionBar?.subtitle = currentLeaderboard.name
                             loadMediaList(_platform,currentLeaderboard.id!!)
                         }
                         else{
-                            supportActionBar?.title = ""
+                            supportActionBar?.subtitle = ""
                             _binding.includeToolbar.cpiLoading.visibility = View.VISIBLE
                             getLeaderBoards(_platform,{
                                 _binding.includeToolbar.cpiLoading.visibility = View.GONE
                                 leaderboards.put(_platform,it)
                                 currentLeaderboard = getFirstLeaderboard(leaderboards.get(_platform)!!)
-                                supportActionBar?.title = currentLeaderboard.name
+                                supportActionBar?.subtitle = currentLeaderboard.name
                                 loadMediaList(_platform,currentLeaderboard.id!!)
                             })
                         }

@@ -224,8 +224,7 @@ class AudioHelper {
         private fun getPlayQuality(platform: Platform):Any{
             when(platform){
                 Platform.KuWo-> return "flac"
-                Platform.NetEaseCloud->return App.config.netEaseCloudMusicConfig.quality
-                Platform.KuGou-> return ""
+                Platform.NetEaseCloud->return App.config.netEaseCloudConfig.quality
                 else -> return ""
             }
         }

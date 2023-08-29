@@ -185,7 +185,7 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
                     var reqParams:Any = ""
                     when(platform){
                         Platform.NetEaseCloud -> {
-                            reqParams = "${it.id};${media.id};${App.config.netEaseCloudMusicConfig.csrf_token}"
+                            reqParams = "${it.id};${media.id};${App.config.netEaseCloudConfig.csrf_token}"
                         }
                         else -> {}
                     }
@@ -211,7 +211,7 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
             var reqParams:Any = ""
             when(platform){
                 Platform.NetEaseCloud -> {
-                    reqParams = "${sheet!!.id};${media.id};${App.config.netEaseCloudMusicConfig.csrf_token}"
+                    reqParams = "${sheet!!.id};${media.id};${App.config.netEaseCloudConfig.csrf_token}"
                 }
                 else -> {}
             }

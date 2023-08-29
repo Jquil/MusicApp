@@ -29,13 +29,14 @@ class SearchResultActivity:Template() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
+        supportActionBar?.title = "搜索"
         intent.getStringExtra(ExtraKey.Search.name).let {
             if(it == null || it == ""){
                 toast("search key is null")
                 finish()
             }
             key = it.toString()
-            supportActionBar?.title = key
+            supportActionBar?.subtitle = key
         }
         intent.getStringExtra(ExtraKey.Platform.name).let {
             if(it == null || it == ""){

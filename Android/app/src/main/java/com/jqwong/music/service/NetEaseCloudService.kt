@@ -32,11 +32,13 @@ class NetEaseCloudService:IService {
                 val req = it.request()
                 var token = ""
                 var role = "MUSIC_A=bf8bfeabb1aa84f9c8c3906c04a04fb864322804c83f5d607e91a04eae463c9436bd1a17ec353cf780b396507a3f7464e8a60f4bbc019437993166e004087dd32d1490298caf655c2353e58daa0bc13cc7d5c198250968580b12c1b8817e3f5c807e650dd04abd3fb8130b7ae43fcc5b;"
-                if(!App.config.netEaseCloudMusicConfig.csrf_token.isNullOrEmpty()){
-                    token = "csrf=${App.config.netEaseCloudMusicConfig.csrf_token};"
-                }
-                if(!App.config.netEaseCloudMusicConfig.music_a.isNullOrEmpty()){
-                    role = "MUSIC_U=${App.config.netEaseCloudMusicConfig.music_a};"
+                App.config.netEaseCloudConfig.let {
+                    if(!it.csrf_token.isNullOrEmpty()){
+                        token = "csrf=${it.csrf_token};"
+                    }
+                    if(!it.music_a.isNullOrEmpty()){
+                        role = "MUSIC_U=${it.music_a};"
+                    }
                 }
                 val builder = req.newBuilder()
                     .header("Content-Type","application/x-www-form-urlencoded")
@@ -557,12 +559,14 @@ class NetEaseCloudService:IService {
                 success = true,
                 data = LoginResponse(
                     success = result.data!!.code == 803,
-                    data = NetEaseCloudMusicConfig(
+                    data = Config.NetEaseCloudConfig(
                         csrf_token = token,
                         music_a = musicA,
                         quality = "",
                         uid = "",
-                        name = ""
+                        name = "",
+                        sync_user_sheet = false,
+                        cookie = mutableMapOf()
                     ),
                     message = result.data.message
                 ),
@@ -573,7 +577,7 @@ class NetEaseCloudService:IService {
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    suspend fun getUserInfo(token:String):Response<NetEaseCloudMusicConfig>{
+    suspend fun getUserInfo(token:String):Response<Config.NetEaseCloudConfig>{
         val title = this::getUserInfo.name
         val map = mapOf(
             "csrf_token" to token
@@ -589,12 +593,14 @@ class NetEaseCloudService:IService {
                 title = title,
                 success = true,
                 support = true,
-                data = NetEaseCloudMusicConfig(
+                data = Config.NetEaseCloudConfig(
                     uid = profile.userId.toString(),
                     name = profile.nickname,
-                    csrf_token = null,
-                    music_a = null,
-                    quality = ""
+                    csrf_token = "",
+                    music_a = "",
+                    quality = "",
+                    sync_user_sheet = false,
+                    cookie = mutableMapOf()
                 ),
                 exception = null,
                 message = "ok"

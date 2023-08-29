@@ -34,7 +34,7 @@ class RecommendDailyActivity:Template() {
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
         _platform = Platform.valueOf(intent.getStringExtra(ExtraKey.Platform.name)!!)
-        supportActionBar?.title = "Daily media"
+        supportActionBar?.title = "每日推荐歌曲"
         _binding.includeMain.stateLayout.showLoading()
         loadMediaList(_platform)
     }
@@ -89,7 +89,7 @@ class RecommendDailyActivity:Template() {
             var reqParams:Any = ""
             when(platform){
                 Platform.NetEaseCloud -> {
-                    reqParams = App.config.netEaseCloudMusicConfig.csrf_token.toString()
+                    reqParams = App.config.netEaseCloudConfig.csrf_token.toString()
                 }
                 else -> {}
             }

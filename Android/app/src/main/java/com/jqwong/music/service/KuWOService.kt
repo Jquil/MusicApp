@@ -35,7 +35,7 @@ class KuWOService:IService {
                 val req = it.request()
                 val builder = req.newBuilder()
                 if(!FILTER_LIST.contains(req.url().host())){
-                    App.config.kuWoMusicConfig.cookies.forEach { s, s2 ->
+                    App.config.kuWoConfig.cookies.forEach { s, s2 ->
                         builder.header(s,s2)
                     }
                 }

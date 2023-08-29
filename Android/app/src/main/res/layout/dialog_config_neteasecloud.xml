@@ -150,7 +150,7 @@
             android:id="@+id/btn_login"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Login"
+            android:text="登录"
             android:textColor="@color/white"
             android:background="@drawable/bg_button"
             android:layout_marginRight="15dp"
@@ -159,7 +159,7 @@
             android:id="@+id/btn_save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save"
+            android:text="保存"
             android:textColor="@color/white"
             android:background="@drawable/bg_button"
             app:spinning_bar_padding="6dp"/>

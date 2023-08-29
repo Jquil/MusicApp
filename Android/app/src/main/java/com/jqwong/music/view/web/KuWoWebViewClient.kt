@@ -13,13 +13,13 @@ class KuWoWebViewClient: WebViewClient() {
         request: WebResourceRequest?
     ): WebResourceResponse? {
         val url = request?.url?.toString()
-        if(url != null && url.contains("/api/www/") && App.config.kuWoMusicConfig.cookies.isNullOrEmpty()){
+        if(url != null && url.contains("/api/www/") && App.config.kuWoConfig.cookies.isNullOrEmpty()){
             request.requestHeaders?.forEach {
-                App.config.kuWoMusicConfig.cookies.put(it.key,it.value)
+                App.config.kuWoConfig.cookies.put(it.key,it.value)
             }
             val cm = CookieManager.getInstance()
             val cookie = cm.getCookie("http://kuwo.cn")
-            App.config.kuWoMusicConfig.cookies.put("Cookie",cookie)
+            App.config.kuWoConfig.cookies.put("Cookie",cookie)
         }
         return super.shouldInterceptRequest(view, request)
     }

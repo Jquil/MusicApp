@@ -5,12 +5,8 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.view.View
+import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
@@ -27,9 +23,8 @@ import com.jqwong.music.R
 import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivitySettingBinding
 import com.jqwong.music.helper.*
+import com.jqwong.music.model.Config
 import com.jqwong.music.model.ExceptionLog
-import com.jqwong.music.model.FmgQuality
-import com.jqwong.music.model.NetEaseCloudMusicConfig
 import com.jqwong.music.model.Platform
 import com.jqwong.music.service.NetEaseCloudService
 import com.jqwong.music.service.ServiceProxy
@@ -47,54 +42,39 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
     @SuppressLint("RestrictedApi")
     override fun intView() {
         setSupportActionBar(_binding.includeToolbar.toolbar)
-        supportActionBar?.title = "Setting"
-        _binding.includeToolbar.toolbar.setNavigationOnClickListener {
-            finish()
+        supportActionBar?.title = "设置"
+        _binding.includeToolbar.toolbar.setNavigationOnClickListener(object : View.OnClickListener {
+            override fun onClick(p0: View?) {
+                finish()
+            }
+        })
+        App.config.let {
+            _binding.inputOkhttpRequestTimeout.setText(it.okhttp_request_timeout.toString())
+            _binding.inputMaxRetryCount.setText(it.retry_max_count.toString())
+            _binding.smExitClearCache.isChecked = it.exit_clear_cache
+            _binding.smAutoChangePlatform.isChecked = it.allow_auto_change_platform
+            _binding.smUseFfmpeg.isChecked = it.allow_use_ffmpeg_parse
+            _binding.smUseFfmpegOnlyWifi.isChecked = it.only_wifi_use_ffmpeg_parse
+            (_binding.menuDefaultSearchPlatform.editText as? AutoCompleteTextView)?.let{
+                setDropdownDefaultBackground(it)
+                val list = mutableListOf<String>()
+                for(item in Platform.values()){
+                    list.add(item.name)
+                }
+                it.setAdapter(ArrayAdapter(this,R.layout.item_drop_down_text, list))
+                it.hint = App.config.default_search_platform.name
+            }
         }
-        _binding.inputOkhttpRequestTimeout.setText(App.config.okhttp_request_timeout.toString())
-        _binding.inputFfmpegParseTimeout.setText(App.config.ffmpeg_parse_timeout.toString())
-        val fmgQualities = mutableListOf<String>()
-        for(item in FmgQuality.values()){
-            fmgQualities.add(item.name)
-        }
-        val adapterFmgQuality = ArrayAdapter(this,R.layout.item_drop_down_text,fmgQualities)
-        (_binding.menuFpgQualityAudition.editText as? AutoCompleteTextView)?.let {
-            setDropdownDefaultBackground(it)
-            it.setAdapter(adapterFmgQuality)
-            it.hint = (App.config.ffmpeg_parse_quality_audition.name)
-        }
-        (_binding.menuFpgQualityUpload.editText as? AutoCompleteTextView)?.let{
-            setDropdownDefaultBackground(it)
-            it.setAdapter(adapterFmgQuality)
-            it.hint = App.config.ffmpeg_parse_quality_upload.name
-        }
-
-        (_binding.menuDefaultSearchSource.editText as? AutoCompleteTextView)?.let{
-            setDropdownDefaultBackground(it)
-            it.setAdapter(ArrayAdapter(this,R.layout.item_drop_down_text, listOf(Platform.KuWo,Platform.NetEaseCloud)))
-            it.hint = App.config.default_search_platform.name
-        }
-        (_binding.menuSyncPlatformData.editText as? AutoCompleteTextView)?.let{
-            setDropdownDefaultBackground(it)
-            it.setAdapter(ArrayAdapter(this,R.layout.item_drop_down_text, listOf(Platform.NetEaseCloud)))
-            it.hint = App.config.data_sync_platform.name
-        }
-        (_binding.menuAutoChangePlatform.editText as? AutoCompleteTextView)?.let{
-            setDropdownDefaultBackground(it)
-            it.setAdapter(ArrayAdapter(this,R.layout.item_drop_down_text, listOf(Platform.KuWo,Platform.NetEaseCloud)))
-            it.hint = App.config.priority_auto_change_platform.name
-        }
-        _binding.smAutoChangePlatform.isChecked = App.config.auto_change_platform
         _binding.linkConfigKuwo.setOnClickListener {
-            MaterialDialog(this,BottomSheet()).show {
+            MaterialDialog(this, BottomSheet()).show {
                 customView(R.layout.dialog_config_kuwo)
                 cornerRadius(20f)
                 view.setBackgroundResource(R.drawable.bg_dialog)
-                title(text = "Kuwo config")
+                title(text = "酷我音乐配置")
                 view.setTitleDefaultStyle(this@SettingActivity)
                 val wrapper = view.contentLayout.findViewById<LinearLayout>(R.id.ll_wrapper_cookie)
                 var number = 1
-                App.config.kuWoMusicConfig.cookies.forEach {
+                App.config.kuWoConfig.cookies.forEach {
                     val iv = layoutInflater.inflate(R.layout.item_cookie,null)
                     iv.findViewById<TextView>(R.id.tv_number).text = "#$number"
                     iv.findViewById<TextInputEditText>(R.id.input_name).setText(it.key)
@@ -126,10 +106,10 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                                 map.put(name.toString(), value.toString())
                             }
                         }
-                        App.config.kuWoMusicConfig.cookies.clear()
-                        App.config.kuWoMusicConfig.cookies.putAll(map)
+                        App.config.kuWoConfig.cookies.clear()
+                        App.config.kuWoConfig.cookies.putAll(map)
                         App.config.save(this@SettingActivity)
-                        loadingButtonFinishAnimation(it,true,"save success")
+                        loadingButtonFinishAnimation(it,true,"保存成功")
                     }
                     catch (e:Exception){
                         val log = ExceptionLog(
@@ -138,7 +118,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                             time = TimeHelper.getTime()
                         )
                         App.exceptions.add(log)
-                        loadingButtonFinishAnimation(it,false,"save failed: ${log.exception.message}")
+                        loadingButtonFinishAnimation(it,false,"保存失败: ${log.exception.message}")
                     }
                 }
             }
@@ -155,9 +135,9 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                     setDropdownDefaultBackground(it)
                     val list = mutableListOf<String>()
                     var hint = ""
-                    NetEaseCloudMusicConfig.qualities.forEach {
+                    Config.NetEaseCloudConfig.qualities.forEach {
                         list.add(it.key)
-                        if(it.value == App.config.netEaseCloudMusicConfig.quality){
+                        if(it.value == App.config.netEaseCloudConfig.quality){
                             hint = it.key
                         }
                     }
@@ -168,7 +148,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                 val tvName = view.contentLayout.findViewById<TextView>(R.id.tv_name)
                 val tvToken = view.contentLayout.findViewById<TextView>(R.id.tv_token)
                 val tvMusicA = view.contentLayout.findViewById<TextView>(R.id.tv_music_a)
-                App.config.netEaseCloudMusicConfig.let {
+                App.config.netEaseCloudConfig.let {
                     tvUid.text = it.uid
                     tvName.text = it.name
                     tvToken.text = it.csrf_token
@@ -224,9 +204,9 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                                         loadingButtonFinishAnimation(it,false,result.exception.exception.message.toString())
                                     }
                                     else{
-                                        val config = result.data!!.data as NetEaseCloudMusicConfig
-                                        App.config.netEaseCloudMusicConfig.csrf_token = config.csrf_token
-                                        App.config.netEaseCloudMusicConfig.music_a = config.music_a
+                                        val config = result.data!!.data as Config.NetEaseCloudConfig
+                                        App.config.netEaseCloudConfig.csrf_token = config.csrf_token
+                                        App.config.netEaseCloudConfig.music_a = config.music_a
                                         tvToken.setText(config.csrf_token)
                                         tvMusicA.setText(config.music_a)
                                         withContext(Dispatchers.IO){
@@ -247,13 +227,13 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                 }
                 view.contentLayout.findViewById<CircularProgressButton>(R.id.btn_save).setOnClickListener {
                     (it as CircularProgressButton).startAnimation()
-                    App.config.netEaseCloudMusicConfig.let {
+                    App.config.netEaseCloudConfig.let {
                         it.uid = tvUid.text.toString()
                         it.name = tvName.text.toString()
                         it.music_a = tvMusicA.text.toString()
                         it.csrf_token = tvToken.text.toString()
                     }
-                    loadingButtonFinishAnimation(it,true,"save success")
+                    loadingButtonFinishAnimation(it,true,"保存成功")
                 }
             }
         }
@@ -266,54 +246,19 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
     }
     override fun onDestroy() {
         super.onDestroy()
-        _binding.inputOkhttpRequestTimeout.text.toString().let {
-            var value:Long = 0
-            if (it != ""){
-                value = it.toLong()
-            }
-            if(value != App.config.okhttp_request_timeout){
-                App.config.okhttp_request_timeout = value
-                // reset okhttp timeout
-            }
-        }
-        _binding.inputFfmpegParseTimeout.text.toString().let {
-            var value:Long = 0
-            if(it != ""){
-                value = it.toLong()
-            }
-            App.config.ffmpeg_parse_timeout = value
-        }
-        _binding.menuFpgQualityAudition.editText?.text.toString().let {
-            if(it != ""){
-                val value = FmgQuality.valueOf(it)
-                App.config.ffmpeg_parse_quality_audition = value
+        App.config.let {
+            it.okhttp_request_timeout = _binding.inputOkhttpRequestTimeout.text.toString().toLong()
+            it.retry_max_count = _binding.inputMaxRetryCount.text.toString().toInt()
+            it.exit_clear_cache = _binding.smExitClearCache.isChecked
+            it.allow_auto_change_platform = _binding.smAutoChangePlatform.isChecked
+            it.only_wifi_use_ffmpeg_parse = _binding.smUseFfmpegOnlyWifi.isChecked
+            it.allow_use_ffmpeg_parse = _binding.smUseFfmpeg.isChecked
+            _binding.menuDefaultSearchPlatform.editText.let {
+                if(!it?.text.isNullOrEmpty()){
+                    App.config.default_search_platform = Platform.valueOf(it?.text.toString())
+                }
             }
         }
-        _binding.menuFpgQualityUpload.editText?.text.toString().let {
-            if(it != ""){
-                val value = FmgQuality.valueOf(it)
-                App.config.ffmpeg_parse_quality_upload = value
-            }
-        }
-        _binding.menuDefaultSearchSource.editText?.text.toString().let {
-            if(it != ""){
-                val value = Platform.valueOf(it)
-                App.config.default_search_platform = value
-            }
-        }
-        _binding.menuSyncPlatformData.editText?.text.toString().let {
-            if(it != ""){
-                val value = Platform.valueOf(it)
-                App.config.data_sync_platform = value
-            }
-        }
-        _binding.menuAutoChangePlatform.editText?.text.toString().let {
-            if(it != ""){
-                val value = Platform.valueOf(it)
-                App.config.priority_auto_change_platform = value
-            }
-        }
-        App.config.auto_change_platform = _binding.smAutoChangePlatform.isChecked
     }
     private fun setDropdownDefaultBackground(view:AutoCompleteTextView){
         view.setDropDownBackgroundDrawable(ColorDrawable(ContextCompat.getColor(this,R.color.dropdown_menu_background)))

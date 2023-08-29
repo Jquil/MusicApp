@@ -37,6 +37,7 @@ class RecommendSheetActivity:Template() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
+        supportActionBar?.title = "每日推荐歌单"
         intent.getStringExtra(ExtraKey.Platform.name).let {
             if(it == null || it == ""){
                 toast("platform is null")
@@ -48,7 +49,7 @@ class RecommendSheetActivity:Template() {
         getRecommendSheets(_platform, callback = {
             sheets.put(_platform,it)
             currentSheet = it.first()
-            supportActionBar?.title = currentSheet.name
+            supportActionBar?.subtitle = currentSheet.name
             loadMediaList(_platform,currentSheet.id)
         })
     }
@@ -91,7 +92,7 @@ class RecommendSheetActivity:Template() {
                             val item = sheets.get(it)!!.first()
                             page = 0
                             currentSheet = item
-                            supportActionBar?.title = item.name
+                            supportActionBar?.subtitle = item.name
                             loadMediaList(_platform,item.id,0)
                         }
                         else{
@@ -99,7 +100,7 @@ class RecommendSheetActivity:Template() {
                                 sheets.put(_platform,it)
                                 currentSheet = it.first()
                                 page = 0
-                                supportActionBar?.title = currentSheet.name
+                                supportActionBar?.subtitle = currentSheet.name
                                 loadMediaList(_platform,currentSheet.id)
                             })
                         }
@@ -109,7 +110,7 @@ class RecommendSheetActivity:Template() {
                     selectSheet(sheets.get(_platform)!!){
                         page = 0
                         currentSheet = it
-                        supportActionBar?.title = it.name
+                        supportActionBar?.subtitle = it.name
                         _binding.includeMain.stateLayout.showLoading()
                         loadMediaList(_platform,it.id,0)
                     }
@@ -155,7 +156,7 @@ class RecommendSheetActivity:Template() {
             var reqParams:Any = ""
             when(platform){
                 Platform.NetEaseCloud -> {
-                    reqParams = App.config.netEaseCloudMusicConfig.csrf_token.toString()
+                    reqParams = App.config.netEaseCloudConfig.csrf_token.toString()
                 }
                 else -> {
 
@@ -201,7 +202,7 @@ class RecommendSheetActivity:Template() {
             var reqParams:Any = ""
             when(platform){
                 Platform.NetEaseCloud->{
-                    reqParams = App.config.netEaseCloudMusicConfig.csrf_token!!
+                    reqParams = App.config.netEaseCloudConfig.csrf_token 
                 }
                 else -> {
 

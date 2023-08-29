@@ -32,6 +32,7 @@ class UserSongSheetActivity:Template() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
+        supportActionBar?.title = "我的歌单"
         intent.getStringExtra(ExtraKey.Platform.name).let {
             if(it == null || it == ""){
                 toast("platform is null")
@@ -49,7 +50,7 @@ class UserSongSheetActivity:Template() {
         intent.getStringExtra(ExtraKey.Data.name).let{
             _params = it!!
         }
-        supportActionBar?.title = songSheet.name
+        supportActionBar?.subtitle = songSheet.name
         _binding.includeMain.stateLayout.showLoading()
         loadMediaList()
     }

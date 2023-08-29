@@ -75,57 +75,48 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         _binding.wvView.loadUrl("http://kuwo.cn")
 
         // 初始化用户平台歌单
-        CoroutineScope(Dispatchers.IO).launch {
-            ServiceProxy.all().forEach {
-                var data:Any = ""
-                var jumpParams = ""
-                when(it::class.java){
-                    NetEaseCloudService::class.java ->{
-                        App.config.netEaseCloudMusicConfig.let {
-                            data = "${it.uid};${it.csrf_token}"
-                            jumpParams = it.csrf_token!!
+        App.config.netEaseCloudConfig.let {
+            if(it.sync_user_sheet && !it.csrf_token.isNullOrEmpty()){
+                val platform = Platform.NetEaseCloud
+                CoroutineScope(Dispatchers.IO).launch {
+                    val service = ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService
+                    val reqParams = "${it.uid};${it.csrf_token}"
+                    val result = service.getUserSheet(reqParams)
+                    if(result.exception == null && result.support && result.data != null){
+                        withContext(Dispatchers.Main){
+                            val adapter = SongSheetAdapter()
+                            adapter.showPic = true
+                            val view = layoutInflater.inflate(R.layout.component_sheet,null)
+                            val rv = view.findViewById<RecyclerView>(R.id.rv_list)
+                            rv.isNestedScrollingEnabled = false
+                            rv.layoutManager = LinearLayoutManager(this@MainActivity)
+                            rv.adapter = adapter
+                            adapter.setOnItemClickListener(object:BaseQuickAdapter.OnItemClickListener<SongSheet>{
+                                override fun onClick(
+                                    adapter: BaseQuickAdapter<SongSheet, *>,
+                                    view: View,
+                                    position: Int
+                                ) {
+                                    startActivity(Intent(this@MainActivity,UserSongSheetActivity::class.java).apply {
+                                        putExtra(ExtraKey.Platform.name,platform.name)
+                                        putExtra(ExtraKey.SongSheet.name,adapter.getItem(position)!!.toJson())
+                                        putExtra(ExtraKey.Data.name,it.csrf_token)
+                                    })
+                                }
+
+                            })
+                            adapter.submitList(result.data)
+                            App.userSheets.put(platform,result.data)
+                            _binding.llSheet.addView(view)
+                            _binding.stateLayout.content()
                         }
                     }
                 }
-                val result = it.getUserSheet(data)
-                val platform = it.getPlatform()
-                if(result.exception == null && result.support && result.data != null){
-                    withContext(Dispatchers.Main){
-                        val adapter = SongSheetAdapter()
-                        adapter.showPic = true
-                        val view = layoutInflater.inflate(R.layout.component_sheet,null)
-                        val rv = view.findViewById<RecyclerView>(R.id.rv_list)
-                        rv.isNestedScrollingEnabled = false
-                        rv.layoutManager = LinearLayoutManager(this@MainActivity)
-                        rv.adapter = adapter
-                        adapter.setOnItemClickListener(object:BaseQuickAdapter.OnItemClickListener<SongSheet>{
-                            override fun onClick(
-                                adapter: BaseQuickAdapter<SongSheet, *>,
-                                view: View,
-                                position: Int
-                            ) {
-                                startActivity(Intent(this@MainActivity,UserSongSheetActivity::class.java).apply {
-                                    putExtra(ExtraKey.Platform.name,platform.name)
-                                    putExtra(ExtraKey.SongSheet.name,adapter.getItem(position)!!.toJson())
-                                    putExtra(ExtraKey.Data.name,jumpParams)
-                                })
-                            }
-
-                        })
-                        adapter.submitList(result.data)
-                        App.userSheets.put(platform,result.data)
-                        _binding.llSheet.addView(view)
-                    }
-                }
-
-                if(it == ServiceProxy.all().last()){
-                    withContext(Dispatchers.Main){
-                        showContent()
-                    }
-                }
+            }
+            else{
+                _binding.stateLayout.content()
             }
         }
-
     }
     override fun intView() {
         _binding.btnDrawer.setOnClickListener {
@@ -234,8 +225,5 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlayerStatusChangeEvent(event: PlayerStatusChangeEvent){
         _binding.layoutPlayBar.ibPlayStatus.setImageResource(if(event.playing) R.drawable.ic_pause else R.drawable.ic_play)
-    }
-    fun showContent(){
-        _binding.stateLayout.content()
     }
 }

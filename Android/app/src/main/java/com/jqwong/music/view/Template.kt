@@ -56,7 +56,6 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
             override fun onClick(v: View?) {
                 finish()
             }
-
         })
         _binding.includeMain.rvList.layoutManager = LinearLayoutManager(this)
         adapter = MediaAdapter()

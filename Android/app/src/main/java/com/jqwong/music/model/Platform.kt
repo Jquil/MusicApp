@@ -7,7 +7,18 @@ package com.jqwong.music.model
 enum class Platform {
     NetEaseCloud,
     QQ,
-    KuGou,
     KuWo,
-    Bilibili
 }
+
+enum class ChangePlatformMode{
+    OnlyFromPlayUrl,
+    OnlyFromParseMv,
+    AllOfTheAbove
+}
+
+class ChangePlatformItem(
+    val index:Int,
+    val platform: Platform,
+    val enable:Boolean,
+    val mode: ChangePlatformMode
+)
