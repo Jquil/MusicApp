@@ -8,4 +8,6 @@
     <string name="sheet">Sheet</string>
     <string name="remove">Remove</string>
     <string name="lyric">Lyric</string>
+    <string name="phone">电话号码</string>
+    <string name="qr">二维码</string>
 </resources>

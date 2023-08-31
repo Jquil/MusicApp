@@ -94,10 +94,10 @@ class RecommendDailyActivity:Template() {
                 else -> {}
             }
             page++
-            val data = ServiceProxy.getRecommendDaily(platform,reqParams)
+            val data = ServiceProxy.getService(platform).data?.getRecommendDaily(reqParams)!!
             withContext(Dispatchers.Main){
                 if(data.exception != null){
-                    if(reloadNumber == maxReloadCount){
+                    if(reloadNumber == App.config.retry_max_count){
                         _binding.includeMain.stateLayout.error(data.exception)
                     }
                     else{

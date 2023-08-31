@@ -1,5 +1,6 @@
 package com.jqwong.music.view
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.view.ContextMenu
@@ -18,6 +19,7 @@ import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R
 import com.jqwong.music.adapter.LeaderBoardAdapter
+import com.jqwong.music.app.App
 import com.jqwong.music.helper.*
 import com.jqwong.music.model.*
 import com.jqwong.music.service.ServiceProxy
@@ -31,6 +33,7 @@ class LeaderboardActivity:Template() {
     private val leaderboards:MutableMap<Platform,List<Leaderboard>> = mutableMapOf()
     private lateinit var currentLeaderboard:Leaderboard
 
+    @SuppressLint("SuspiciousIndentation")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
@@ -50,7 +53,6 @@ class LeaderboardActivity:Template() {
             loadMediaList(_platform,currentLeaderboard.id!!)
         })
     }
-
     override fun intView() {
         super.intView()
         adapterHelper.trailingLoadStateAdapter?.setOnLoadMoreListener(object: TrailingLoadStateAdapter.OnTrailingListener{
@@ -64,12 +66,10 @@ class LeaderboardActivity:Template() {
             }
         })
     }
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_leaderboard,menu)
         return true
     }
-
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if(_binding.includeMain.stateLayout.loaded){
@@ -164,7 +164,6 @@ class LeaderboardActivity:Template() {
         }
         return super.onOptionsItemSelected(item)
     }
-
     override fun onCreateContextMenu(
         menu: ContextMenu?,
         v: View?,
@@ -173,7 +172,6 @@ class LeaderboardActivity:Template() {
         super.onCreateContextMenu(menu, v, menuInfo)
         menuInflater.inflate(R.menu.menu_sheet_item,menu)
     }
-
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
@@ -188,7 +186,6 @@ class LeaderboardActivity:Template() {
         }
         return super.onContextItemSelected(item)
     }
-
     private fun getFirstLeaderboard(data:List<Leaderboard>):Leaderboard{
         val lb = data.first()
         return if(lb.children != null){
@@ -197,17 +194,16 @@ class LeaderboardActivity:Template() {
             lb
         }
     }
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun getLeaderBoards(platform: Platform, callback:(List<Leaderboard>) -> Unit, reloadNumber: Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){
                 delay((1000 * reloadNumber).toLong())
             }
-            val data = ServiceProxy.getLeaderboard(platform)
+            val data = ServiceProxy.getService(platform).data?.getLeaderboard()!!
             withContext(Dispatchers.Main){
                 if(data.exception != null){
-                    if(reloadNumber == maxReloadCount){
+                    if(reloadNumber == App.config.retry_max_count){
                         _binding.includeMain.stateLayout.apply {
                             onError {
                                 this@apply.startAnimation()
@@ -227,7 +223,6 @@ class LeaderboardActivity:Template() {
             }
         }
     }
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun loadMediaList(platform: Platform, id:String, reloadNumber:Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
@@ -235,10 +230,10 @@ class LeaderboardActivity:Template() {
                 delay((1000 * reloadNumber).toLong())
             }
             page++
-            val data = ServiceProxy.getLeaderboardSongList(platform,id,page,pageItemSize)
+            val data = ServiceProxy.getService(platform).data?.getLeaderboardSongList(id,page,pageItemSize)!!
             withContext(Dispatchers.Main){
                 if(data.exception != null){
-                    if(reloadNumber == maxReloadCount){
+                    if(reloadNumber == App.config.retry_max_count){
                         toast(data.message)
                         _binding.includeMain.stateLayout.error(data.exception)
                     }

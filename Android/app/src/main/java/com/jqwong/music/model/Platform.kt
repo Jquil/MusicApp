@@ -11,14 +11,26 @@ enum class Platform {
 }
 
 enum class ChangePlatformMode{
-    OnlyFromPlayUrl,
-    OnlyFromParseMv,
-    AllOfTheAbove
+    OnlyFromPlayUrl(){
+        override fun toString(): String {
+            return "Url"
+        }
+    },
+    OnlyFromParseMv(){
+        override fun toString(): String {
+            return "MV"
+        }
+    },
+    AllOfTheAbove(){
+        override fun toString(): String {
+            return "以上都使用"
+        }
+    }
 }
 
 class ChangePlatformItem(
-    val index:Int,
-    val platform: Platform,
-    val enable:Boolean,
-    val mode: ChangePlatformMode
+    var index:Int,
+    var platform: Platform,
+    var enable:Boolean,
+    var mode: ChangePlatformMode
 )

@@ -9,26 +9,39 @@ import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.appcompat.widget.AppCompatButton
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.children
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.customview.customView
+import com.chad.library.adapter.base.dragswipe.QuickDragAndSwipe
 import com.drake.statelayout.StateLayout
 import com.github.leandroborgesferreira.loadingbutton.customViews.CircularProgressButton
+import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.jqwong.music.R
+import com.jqwong.music.adapter.PlatformPriorityAdapter
 import com.jqwong.music.app.App
 import com.jqwong.music.databinding.ActivitySettingBinding
+import com.jqwong.music.event.SyncUserSheetEvent
 import com.jqwong.music.helper.*
+import com.jqwong.music.model.ChangePlatformItem
 import com.jqwong.music.model.Config
 import com.jqwong.music.model.ExceptionLog
 import com.jqwong.music.model.Platform
 import com.jqwong.music.service.NetEaseCloudService
 import com.jqwong.music.service.ServiceProxy
 import kotlinx.coroutines.*
+import org.greenrobot.eventbus.EventBus
+
 
 /**
  * @author: Jq
@@ -63,6 +76,36 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                 }
                 it.setAdapter(ArrayAdapter(this,R.layout.item_drop_down_text, list))
                 it.hint = App.config.default_search_platform.name
+            }
+        }
+        _binding.tvConfigAutoChangePlatform.setOnClickListener {
+            MaterialDialog(this, BottomSheet()).show {
+                customView(R.layout.dialog_config_platform_priority)
+                cornerRadius(20f)
+                view.setBackgroundResource(R.drawable.bg_dialog)
+                title(text = "自动切换平台配置")
+                view.setTitleDefaultStyle(this@SettingActivity)
+                val rv = view.contentLayout.findViewById<RecyclerView>(R.id.rv_list)
+                rv.layoutManager = LinearLayoutManager(this@SettingActivity)
+                val adapter = PlatformPriorityAdapter()
+                val list = App.config.change_platform_priority.toList()
+                list.sortedBy { item -> item.index }
+                adapter.submitList(App.config.change_platform_priority)
+                rv.adapter = adapter
+                val quickDragAndSwipe = QuickDragAndSwipe()
+                    .setDragMoveFlags(ItemTouchHelper.UP or ItemTouchHelper.DOWN)
+                quickDragAndSwipe.attachToRecyclerView(rv)
+                    .setDataCallback(adapter)
+                view.contentLayout.findViewById<AppCompatButton>(R.id.btn_save).setOnClickListener {
+                    val nList = mutableListOf<ChangePlatformItem>()
+                    for (i in 0 until adapter.items.size){
+                        adapter.items[i].index = i
+                        nList.add(adapter.items[i])
+                    }
+                    App.config.change_platform_priority = nList
+                    App.config.save(this@SettingActivity)
+                    toast("保存成功")
+                }
             }
         }
         _binding.linkConfigKuwo.setOnClickListener {
@@ -128,7 +171,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                 customView(R.layout.dialog_config_neteasecloud)
                 cornerRadius(20f)
                 view.setBackgroundResource(R.drawable.bg_dialog)
-                title(text = "NetEaseCloud config")
+                title(text = "网易云配置")
                 view.setTitleDefaultStyle(this@SettingActivity)
                 val menuQuality = view.contentLayout.findViewById<TextInputLayout>(R.id.menu_quality)
                 (menuQuality.editText as? AutoCompleteTextView)?.let{
@@ -148,54 +191,81 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                 val tvName = view.contentLayout.findViewById<TextView>(R.id.tv_name)
                 val tvToken = view.contentLayout.findViewById<TextView>(R.id.tv_token)
                 val tvMusicA = view.contentLayout.findViewById<TextView>(R.id.tv_music_a)
+                val swSync = view.contentLayout.findViewById<SwitchMaterial>(R.id.smSyncSheet)
                 App.config.netEaseCloudConfig.let {
-                    tvUid.text = it.uid
-                    tvName.text = it.name
-                    tvToken.text = it.csrf_token
-                    tvMusicA.text = it.music_a
+                    tvUid.text = it.uid.ifEmpty { "??" }
+                    tvName.text = it.name.ifEmpty { "??" }
+                    tvToken.text = it.csrf_token.ifEmpty { "??" }
+                    tvMusicA.text = it.music_a.ifEmpty { "??" }
+                    swSync.isChecked = it.sync_user_sheet
                 }
+
+                // 点击[login]弹出dialog,可以使用手机号码&扫码登陆
                 view.contentLayout.findViewById<CircularProgressButton>(R.id.btn_login).setOnClickListener {
-                    // 逻辑: 生成二维码,由用户使用网易云App扫描并确认授权 => 获取到用户信息以及token
                     MaterialDialog(this@SettingActivity,BottomSheet()).show {
-                        customView(R.layout.dialog_login_netease)
+                        customView(R.layout.dialog_login_neteasecloud)
                         cornerRadius(20f)
-                        title(text = "QR Code")
+                        title(text = "登陆")
                         view.setBackgroundResource(R.drawable.bg_dialog)
                         view.setTitleDefaultStyle(this@SettingActivity)
-                        val stateLayout = view.contentLayout.findViewById<StateLayout>(R.id.state_layout)
-                        stateLayout.showLoading()
+                        val tbLayout = view.contentLayout.findViewById<TabLayout>(R.id.tl_type)
+                        val wrapperPhone = view.contentLayout.findViewById<ConstraintLayout>(R.id.cl_wrapper_phone)
+                        val wrapperQr = view.contentLayout.findViewById<ConstraintLayout>(R.id.cl_wrapper_qr)
                         val ivQr = view.contentLayout.findViewById<ImageView>(R.id.iv_qr)
-                        val btnAuthentication = view.contentLayout.findViewById<CircularProgressButton>(R.id.btn_authentication)
-                        var uniKey = ""
-                        // 显示二维码
-                        CoroutineScope(Dispatchers.IO).launch {
-                            val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).getLoginUniKey()
-                            } else {
-                                TODO("VERSION.SDK_INT < TIRAMISU")
-                            }
-                            withContext(Dispatchers.Main){
-                                if(result.exception != null){
-                                    toast(result.exception.exception.message.toString())
-                                    stateLayout.error(result.exception)
+                        val btnAuthQr = view.contentLayout.findViewById<CircularProgressButton>(R.id.btn_authentication_qr)
+                        val qrStateLayout = view.contentLayout.findViewById<StateLayout>(R.id.state_layout_qr)
+                        var qrUniKey = ""
+                        tbLayout.addOnTabSelectedListener(object:TabLayout.OnTabSelectedListener{
+                            override fun onTabSelected(tab: TabLayout.Tab?) {
+                                when(tab?.text){
+                                    this@SettingActivity.getString(R.string.qr) -> {
+                                        // 申请UniKey并生成二维码
+                                        wrapperPhone.visibility = View.GONE
+                                        wrapperQr.visibility = View.VISIBLE
+                                        qrStateLayout.showLoading()
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                                (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).getLoginUniKey()
+                                            } else {
+                                                TODO("VERSION.SDK_INT < TIRAMISU")
+                                            }
+                                            withContext(Dispatchers.Main){
+                                                if(result.exception != null){
+                                                    toast(result.exception.exception.message.toString())
+                                                    qrStateLayout.error(result.exception)
+                                                }
+                                                else{
+                                                    qrUniKey = result.data!!
+                                                    val url = "https://music.163.com/login?codekey=${result.data}"
+                                                    ivQr.setImageBitmap(QrHelper.createQRCodeBitmap(url,250,250,"UTF-8","L","1",
+                                                        Color.BLACK,Color.WHITE))
+                                                    qrStateLayout.showContent()
+                                                }
+                                            }
+                                        }
+                                    }
+                                    this@SettingActivity.getString(R.string.phone) -> {
+                                        wrapperPhone.visibility = View.VISIBLE
+                                        wrapperQr.visibility = View.GONE
+                                    }
                                 }
-                                else{
-                                    uniKey = result.data!!
-                                    val url = "https://music.163.com/login?codekey=${result.data}"
-                                    ivQr.setImageBitmap(QrHelper.createQRCodeBitmap(url,250,250,"UTF-8","L","1",
-                                        Color.BLACK,Color.WHITE))
-                                    stateLayout.showContent()
-                                }
                             }
-                        }
-                        // 用户认证
-                        btnAuthentication.setOnClickListener {
-                            if(uniKey.isNullOrEmpty())
+
+                            override fun onTabUnselected(tab: TabLayout.Tab?) {
+
+                            }
+
+                            override fun onTabReselected(tab: TabLayout.Tab?) {
+
+                            }
+                        })
+                        btnAuthQr.setOnClickListener {
+                            if(qrUniKey.isEmpty())
                                 return@setOnClickListener
                             (it as CircularProgressButton).startAnimation()
                             CoroutineScope(Dispatchers.IO).launch {
                                 val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).loginCheck(uniKey)
+                                    (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).loginCheck(qrUniKey)
                                 } else {
                                     TODO("VERSION.SDK_INT < TIRAMISU")
                                 }
@@ -205,34 +275,37 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                                     }
                                     else{
                                         val config = result.data!!.data as Config.NetEaseCloudConfig
-                                        App.config.netEaseCloudConfig.csrf_token = config.csrf_token
-                                        App.config.netEaseCloudConfig.music_a = config.music_a
-                                        tvToken.setText(config.csrf_token)
-                                        tvMusicA.setText(config.music_a)
+                                        tvToken.text = config.csrf_token
+                                        tvMusicA.text = config.music_a
                                         withContext(Dispatchers.IO){
-                                            val result = (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).getUserInfo(config.csrf_token!!)
+                                            val result = (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).getUserInfo(config.csrf_token)
                                             withContext(Dispatchers.Main){
                                                 if(result.data != null){
-                                                    tvUid.text = result.data.uid
-                                                    tvName.text = result.data.name
+                                                    tvUid.setText(result.data.uid)
+                                                    tvName.setText(result.data.name)
                                                 }
                                             }
                                         }
-                                        loadingButtonFinishAnimation(it,true,"authentication success")
+                                        loadingButtonFinishAnimation(it,true,"认证成功")
                                     }
                                 }
                             }
                         }
                     }
                 }
+
+                // 保存
                 view.contentLayout.findViewById<CircularProgressButton>(R.id.btn_save).setOnClickListener {
                     (it as CircularProgressButton).startAnimation()
                     App.config.netEaseCloudConfig.let {
                         it.uid = tvUid.text.toString()
                         it.name = tvName.text.toString()
-                        it.music_a = tvMusicA.text.toString()
                         it.csrf_token = tvToken.text.toString()
+                        it.music_a = tvMusicA.text.toString()
+                        it.sync_user_sheet = swSync.isChecked
                     }
+                    EventBus.getDefault().post(SyncUserSheetEvent(Platform.NetEaseCloud,App.config.netEaseCloudConfig.sync_user_sheet){success, message ->  })
+                    App.config.save(this@SettingActivity)
                     loadingButtonFinishAnimation(it,true,"保存成功")
                 }
             }

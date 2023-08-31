@@ -10,6 +10,7 @@ import androidx.annotation.RequiresApi
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R
+import com.jqwong.music.app.App
 import com.jqwong.music.helper.*
 import com.jqwong.music.model.*
 import com.jqwong.music.service.ServiceProxy
@@ -116,10 +117,10 @@ class SearchResultActivity:Template() {
                 delay(1000)
             }
             page++
-            val data = ServiceProxy.search(_platform,key,page,pageItemSize)
+            val data = ServiceProxy.getService(_platform).data?.search(key,page,pageItemSize)!!
             withContext(Dispatchers.Main){
                 if(data.exception != null){
-                    if(reloadNumber == maxReloadCount){
+                    if(reloadNumber == App.config.retry_max_count){
                         toast(data.message)
                         _binding.includeMain.stateLayout.error(data.exception)
                     }

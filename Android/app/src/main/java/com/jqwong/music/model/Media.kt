@@ -21,7 +21,6 @@ data class Media(
     var pic:String,
     var time:Long?,
     var play_url:String?,
-    var play_uri:String?,
     var mv_id:String?,
     var mv_url:String?,
     var is_local:Boolean,
@@ -43,17 +42,9 @@ data class Media(
             putString(ExtraKey.Media.name,toJson())
         }
         val builder = MediaItem.Builder()
-        if(isLocal()){
-            builder.setUri(play_uri)
-            if(enable_media != null){
-                builder.setUri(enable_media!!.play_uri)
-            }
-        }
-        else{
-            builder.setUri(play_url)
-            if(enable_media != null){
-                builder.setUri(enable_media!!.play_url)
-            }
+        builder.setUri(play_url)
+        if(enable_media != null){
+            builder.setUri(enable_media!!.play_url)
         }
         builder.setMediaMetadata(MediaMetadata.Builder()
             .setExtras(bundle)
@@ -64,12 +55,6 @@ data class Media(
             .setArtworkUri(Uri.parse(pic))
             .build())
         return builder.build()
-    }
-
-    fun isLocal():Boolean{
-        if(enable_media != null)
-            return enable_media!!.is_local
-        return is_local
     }
 
     fun toJson():String{

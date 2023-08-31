@@ -68,7 +68,6 @@ data class Song2(
             artists = artist,
             pic = "https://img4.kuwo.cn/star/albumcover/${web_albumpic_short}",
             time = 0,
-            play_uri = "",
             play_url = "",
             mv_id = id,
             mv_url = "",

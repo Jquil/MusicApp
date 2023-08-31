@@ -163,7 +163,6 @@ class AudioHelper {
                 _player.seekToPrevious()
             }
         }
-
         fun next(){
             if(this::_player.isInitialized){
                 _player.seekToNext()
@@ -209,7 +208,6 @@ class AudioHelper {
                     if(next.platform == media.platform){
                         media.let {
                             next.play_url = it.play_url
-                            next.play_uri = it.play_uri
                             next.is_local = it.is_local
                         }
                         _player.addMediaItem(next.build())
@@ -239,8 +237,8 @@ class AudioHelper {
                 if(reloadNumber != 0){
                     delay(1500)
                 }
-                val result = ServiceProxy.getLyrics(platform,id)
-                withContext(Dispatchers.IO){
+                val result = ServiceProxy.getService(platform).data?.getLyrics(id)!!
+                withContext(Dispatchers.Main){
                     if(result.exception != null){
                         if(reloadNumber == MAX_RELOAD_COUNT){
                             Toast.makeText(_ctx,result.exception.exception.message.toString(),Toast.LENGTH_SHORT).show()
@@ -257,7 +255,6 @@ class AudioHelper {
                 }
             }
         }
-
         @RequiresApi(Build.VERSION_CODES.O)
         private fun getMedia(index:Int, call:(success:Boolean, media:Media?) -> Unit){
             CoroutineScope(Dispatchers.IO).launch{
@@ -307,66 +304,64 @@ class AudioHelper {
                     }
                 }
 
-                // 获取uri
-                run _break@{
-                    medias.entries.forEach {
-                        if(it.value != null){
-                            val item = it.value!!
-                            item.is_local = true
-                            val file = "${item.platform.name}-${item.id}.aac"
-                            val dir = "${_ctx.cacheDir.path}/media/"
-                            val path = "${dir}${file}"
-                            val fDir = File(dir)
-                            if(!fDir.exists()){
-                                fDir.mkdir()
-                            }
-                            else{
-                                val fList = fDir.listFiles()
-                                for (i in 0 until fList.size){
-                                    if(fList.get(i).path == path){
-                                        item.play_uri = path
-                                        withContext(Dispatchers.Main){
-                                            call(true,item)
+                if(App.config.allow_use_ffmpeg_parse){
+                    if(App.config.only_wifi_use_ffmpeg_parse && !WifiHelper.isConnected(_ctx)){
+                        // 只允许wifi连接但手机没连接wifi, 不允许使用ffmpeg解析
+                    }
+                    else{
+                        // 获取uri
+                        run _break@{
+                            medias.entries.forEach {
+                                if(it.value != null){
+                                    val item = it.value!!
+                                    item.is_local = true
+                                    val file = "${item.platform.name}-${item.id}.aac"
+                                    val dir = "${_ctx.cacheDir.path}/media/"
+                                    val path = "${dir}${file}"
+                                    val fDir = File(dir)
+                                    if(!fDir.exists()){
+                                        fDir.mkdir()
+                                    }
+                                    else{
+                                        val fList = fDir.listFiles()
+                                        for (i in 0 until fList.size){
+                                            if(fList.get(i).path == path){
+                                                item.play_url = path
+                                                withContext(Dispatchers.Main){
+                                                    call(true,item)
+                                                }
+                                                return@launch
+                                            }
                                         }
-                                        return@launch
                                     }
-                                }
-                            }
-                            val result = ServiceProxy.getMvUrl(item.platform,item.mv_id!!)
-                            if(result.exception == null && !result.data.isNullOrEmpty()){
-                                item.mv_url = result.data
-                                //val cmd = "-i ${result.data} -f mp3 -vn ${path}"
-                                val cmd = "-i ${result.data} -vn -acodec copy ${path}"
-                                val rc = FFmpeg.execute(cmd)
-                                if (rc == Config.RETURN_CODE_SUCCESS) {
-                                    item.play_uri = path
-                                    withContext(Dispatchers.Main){
-                                        call(true,item)
+                                    val result = ServiceProxy.getService(item.platform).data?.getMvUrl(item.mv_id!!)!!
+                                    if(result.exception == null && !result.data.isNullOrEmpty()){
+                                        item.mv_url = result.data
+                                        val parseResult = FFmPegHelper.getAudio(result.data,path)
+                                        if(parseResult.first){
+                                            item.play_url = path
+                                            withContext(Dispatchers.Main){
+                                                call(true,item)
+                                            }
+                                            return@launch
+                                        }
                                     }
-                                    return@launch
-                                }else if (rc == Config.RETURN_CODE_CANCEL) {
-                                    Log.i(Config.TAG, "Command execution cancelled by user.");
-                                } else {
-                                    Log.i(Config.TAG, String.format("Command execution failed with rc=%d and the output below.", rc));
-                                    Config.printLastCommandOutput(Log.INFO);
                                 }
                             }
                         }
                     }
                 }
-
                 withContext(Dispatchers.Main){
                     call(false,null)
                 }
             }
         }
-
         @RequiresApi(Build.VERSION_CODES.O)
         private suspend fun getPlayUrl(media: Media, quality:Any, maxReload:Int, reload:Int = 0):String?{
             if(reload != 0){
                 delay((reload * 1000).toLong())
             }
-            val result = ServiceProxy.getPlayUrl(media.platform,media.id,quality)
+            val result = ServiceProxy.getService(media.platform).data?.getPlayUrl(media.id,quality)!!
             if(result.exception != null){
                 if(reload == maxReload){
                     return null
@@ -377,11 +372,10 @@ class AudioHelper {
             }
             return result.data
         }
-
         @RequiresApi(Build.VERSION_CODES.O)
         private suspend fun getSimilarMedia(platform: Platform, name:String, artist:String,):Media?{
             val key = "${name} ${artist}"
-            val result = ServiceProxy.search(platform,key,1,10)
+            val result = ServiceProxy.getService(platform).data?.search(key,1,10)!!
             if(result.exception != null)
                 return null
             result.data!!.forEach {
@@ -391,12 +385,10 @@ class AudioHelper {
             return null
         }
     }
-
     class PositionListener : Runnable {
         override fun run() {
             EventBus.getDefault().post(MediaPositionChangeEvent(_player.currentPosition))
             _h.postDelayed(this, 100)
         }
-
     }
 }

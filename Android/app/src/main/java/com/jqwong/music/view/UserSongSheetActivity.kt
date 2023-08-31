@@ -83,10 +83,10 @@ class UserSongSheetActivity:Template() {
                 }
                 else -> {}
             }
-            val result = ServiceProxy.getUserSheetData(_platform,page,pageItemSize,reqParams)
+            val result = ServiceProxy.getService(_platform).data?.getUserSheetData(page,pageItemSize,reqParams)!!
             withContext(Dispatchers.Main){
                 if(result.exception != null){
-                    if(reloadNumber == maxReloadCount){
+                    if(reloadNumber == App.config.retry_max_count){
                         toast(result.message)
                         _binding.includeMain.stateLayout.error(result.exception)
                     }

@@ -148,7 +148,7 @@
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:paddingRight="10dp"
-                                android:text="播放失败时自动切换音源"
+                                android:text="播放失败时自动切换平台"
                                 android:textColor="@color/white"/>
                             <com.google.android.material.switchmaterial.SwitchMaterial
                                 android:id="@+id/sm_auto_change_platform"
@@ -161,6 +161,7 @@
                             android:layout_marginTop="10dp"
                             android:orientation="horizontal">
                             <TextView
+                                android:id="@+id/tv_config_auto_change_platform"
                                 android:layout_width="0dp"
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"

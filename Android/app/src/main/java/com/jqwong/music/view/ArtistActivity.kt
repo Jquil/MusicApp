@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R
+import com.jqwong.music.app.App
 import com.jqwong.music.helper.content
 import com.jqwong.music.helper.error
 import com.jqwong.music.model.Artist
@@ -67,10 +68,10 @@ class ArtistActivity:Template() {
             }
             page++
 
-            val result = ServiceProxy.getArtistSongList(_platform,artist.id,page,pageItemSize)
+            val result = ServiceProxy.getService(_platform).data?.getArtistSongList(artist.id,page,pageItemSize)!!
             withContext(Dispatchers.Main){
                 if(result.exception != null){
-                    if(reloadNumber == maxReloadCount){
+                    if(reloadNumber == App.config.retry_max_count){
                         toast(result.message)
                         _binding.includeMain.stateLayout.error(result.exception)
                     }

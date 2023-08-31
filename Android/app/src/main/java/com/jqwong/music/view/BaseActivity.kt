@@ -44,7 +44,6 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
     protected lateinit var _binding:T
     private var useEventBus:Boolean = false
     protected val pageItemSize = 20
-    protected val maxReloadCount = 3
     abstract fun initData(savedInstanceState: Bundle?)
     abstract fun intView()
     abstract fun useEventBus():Boolean
@@ -189,7 +188,7 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
                         }
                         else -> {}
                     }
-                    val result = ServiceProxy.collectOrCancelSong(platform,true,reqParams)
+                    val result = ServiceProxy.getService(platform).data?.collectOrCancelSong(true,reqParams)!!
                     withContext(Dispatchers.Main){
                         var msg = ""
                         if(result.exception != null){
@@ -217,7 +216,7 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
             }
             EventBus.getDefault().post(CollectOrCancelMediaEvent(false))
             CoroutineScope(Dispatchers.IO).launch {
-                val result = ServiceProxy.collectOrCancelSong(platform,false,reqParams)
+                val result = ServiceProxy.getService(platform).data?.collectOrCancelSong(false,reqParams)!!
                 withContext(Dispatchers.Main){
                     if(result.exception != null){
                         toast(result.exception.exception.message.toString())

@@ -16,7 +16,7 @@
             android:id="@+id/tv_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="platform"
+            android:text=""
             android:textColor="@color/white"
             android:padding="10dp"
             app:layout_constraintTop_toTopOf="parent"

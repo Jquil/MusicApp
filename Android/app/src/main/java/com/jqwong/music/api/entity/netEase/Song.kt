@@ -38,7 +38,6 @@ data class Song(
             mv_id = mv.toString(),
             is_local = false,
             enable_media = null,
-            play_uri = null
         )
     }
 }
@@ -77,7 +76,6 @@ data class SongX(
             mv_id = mvid.toString(),
             is_local = false,
             enable_media = null,
-            play_uri = null
         )
     }
 }

@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.view.GravityCompat
 import androidx.media3.common.util.UnstableApi
@@ -55,8 +56,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                 val config = Config.fromJson(strConfig)
                 App.config = config
             }
-            catch (e:Exception)
-            {
+            catch (e:Exception){
                 App.exceptions.add(
                     ExceptionLog(
                         title = "反序列化配置文件",
@@ -67,56 +67,17 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                 App.config = Config.default()
             }
         }
-
         // 加载酷我平台Headers
         _binding.wvView.settings.javaScriptEnabled = true
         _binding.wvView.settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188"
         _binding.wvView.webViewClient = KuWoWebViewClient()
         _binding.wvView.loadUrl("http://kuwo.cn")
 
-        // 初始化用户平台歌单
-        App.config.netEaseCloudConfig.let {
-            if(it.sync_user_sheet && !it.csrf_token.isNullOrEmpty()){
-                val platform = Platform.NetEaseCloud
-                CoroutineScope(Dispatchers.IO).launch {
-                    val service = ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService
-                    val reqParams = "${it.uid};${it.csrf_token}"
-                    val result = service.getUserSheet(reqParams)
-                    if(result.exception == null && result.support && result.data != null){
-                        withContext(Dispatchers.Main){
-                            val adapter = SongSheetAdapter()
-                            adapter.showPic = true
-                            val view = layoutInflater.inflate(R.layout.component_sheet,null)
-                            val rv = view.findViewById<RecyclerView>(R.id.rv_list)
-                            rv.isNestedScrollingEnabled = false
-                            rv.layoutManager = LinearLayoutManager(this@MainActivity)
-                            rv.adapter = adapter
-                            adapter.setOnItemClickListener(object:BaseQuickAdapter.OnItemClickListener<SongSheet>{
-                                override fun onClick(
-                                    adapter: BaseQuickAdapter<SongSheet, *>,
-                                    view: View,
-                                    position: Int
-                                ) {
-                                    startActivity(Intent(this@MainActivity,UserSongSheetActivity::class.java).apply {
-                                        putExtra(ExtraKey.Platform.name,platform.name)
-                                        putExtra(ExtraKey.SongSheet.name,adapter.getItem(position)!!.toJson())
-                                        putExtra(ExtraKey.Data.name,it.csrf_token)
-                                    })
-                                }
-
-                            })
-                            adapter.submitList(result.data)
-                            App.userSheets.put(platform,result.data)
-                            _binding.llSheet.addView(view)
-                            _binding.stateLayout.content()
-                        }
-                    }
-                }
-            }
-            else{
-                _binding.stateLayout.content()
-            }
-        }
+        onSyncUserSheetEvent(SyncUserSheetEvent(Platform.NetEaseCloud,App.config.netEaseCloudConfig.sync_user_sheet){success, message ->
+            if(!success)
+                toast(message)
+            _binding.stateLayout.content()
+        })
     }
     override fun intView() {
         _binding.btnDrawer.setOnClickListener {
@@ -179,6 +140,74 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         super.onStop()
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onSyncUserSheetEvent(event: SyncUserSheetEvent) {
+        fun addView(platform:Platform,list:List<SongSheet>,jumpParams:String){
+            val adapter = SongSheetAdapter()
+            adapter.showPic = true
+            val view = layoutInflater.inflate(R.layout.component_sheet,null)
+            view.tag = platform.name
+            val rv = view.findViewById<RecyclerView>(R.id.rv_list)
+            val tv = view.findViewById<TextView>(R.id.tv_name)
+            tv.text = platform.name
+            rv.isNestedScrollingEnabled = false
+            rv.layoutManager = LinearLayoutManager(this@MainActivity)
+            rv.adapter = adapter
+            adapter.setOnItemClickListener(object:BaseQuickAdapter.OnItemClickListener<SongSheet>{
+                override fun onClick(
+                    adapter: BaseQuickAdapter<SongSheet, *>,
+                    view: View,
+                    position: Int
+                ) {
+                    startActivity(Intent(this@MainActivity,UserSongSheetActivity::class.java).apply {
+                        putExtra(ExtraKey.Platform.name,platform.name)
+                        putExtra(ExtraKey.SongSheet.name,adapter.getItem(position)!!.toJson())
+                        putExtra(ExtraKey.Data.name,jumpParams)
+                    })
+                }
+            })
+            adapter.submitList(list)
+            _binding.llSheet.addView(view)
+        }
+        val platform = event.platform
+        if (!event.sync) {
+            val child = _binding.llSheet.findViewWithTag<View>(platform.name)
+            if(child != null){
+                _binding.llSheet.removeView(child)
+            }
+            event.callback(true,"")
+            return
+        }
+        if(App.userSheets.containsKey(platform)){
+            event.callback(true,"")
+            return
+        }
+        if (event.platform == Platform.NetEaseCloud) {
+            var reqParams: Any = ""
+            App.config.netEaseCloudConfig.let {
+                reqParams = "${it.uid};${it.csrf_token}"
+            }
+            if (reqParams == ";"){
+                event.callback(true,"")
+                return
+            }
+            CoroutineScope(Dispatchers.IO).launch {
+                val service = ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService
+                val result = service.getUserSheet(reqParams)
+                withContext(Dispatchers.Main) {
+                    if (result.exception == null && result.support && result.data != null) {
+                        addView(platform,result.data,App.config.netEaseCloudConfig.csrf_token)
+                        App.userSheets.put(platform,result.data)
+                        event.callback(true,"")
+                    }
+                    else{
+                        event.callback(false,result.exception?.exception?.message.toString())
+                    }
+                }
+            }
+        }
+    }
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaChangeEvent(event: MediaChangeEvent){
         val media = event.media

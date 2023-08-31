@@ -54,7 +54,6 @@ data class Song(
             mv_id = rid.toString(),
             is_local = false,
             enable_media = null,
-            play_uri = null
         )
     }
 }

@@ -163,10 +163,10 @@ class RecommendSheetActivity:Template() {
                 }
             }
             page++
-            val data = ServiceProxy.getRecommendSongSheetData(platform,id,page,pageItemSize,reqParams)
+            val data = ServiceProxy.getService(platform).data?.getRecommendSongSheetData(id,page,pageItemSize,reqParams)!!
             withContext(Dispatchers.Main){
                 if(data.exception != null){
-                    if(reloadNumber == maxReloadCount){
+                    if(reloadNumber == App.config.retry_max_count){
                         toast(data.message)
                         _binding.includeMain.stateLayout.error(data.exception)
                     }
@@ -208,10 +208,10 @@ class RecommendSheetActivity:Template() {
 
                 }
             }
-            val data = ServiceProxy.getRecommendSongSheetList(platform,reqParams)
+            val data = ServiceProxy.getService(platform).data?.getRecommendSongSheetList(reqParams)!!
             withContext(Dispatchers.Main){
                 if(data.exception != null){
-                    if(reloadNumber == maxReloadCount){
+                    if(reloadNumber == App.config.retry_max_count){
                         _binding.includeMain.stateLayout.error(data.exception)
                     }
                     else{
