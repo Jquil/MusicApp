@@ -257,6 +257,7 @@ class AudioHelper {
         }
         @RequiresApi(Build.VERSION_CODES.O)
         private fun getMedia(index:Int, call:(success:Boolean, media:Media?) -> Unit){
+            // 跟随配置动态请求
             CoroutineScope(Dispatchers.IO).launch{
                 if(index < 0 || index >= App.playList.data.count()){
                     withContext(Dispatchers.Main){
@@ -264,58 +265,73 @@ class AudioHelper {
                     }
                     return@launch
                 }
-                val media = App.playList.data.get(index)
-                val pfMap = mutableListOf(
-                    Platform.KuWo,
-                    Platform.NetEaseCloud,
-                )
-                for(i in pfMap.count()-1 downTo 0){
-                    if(pfMap.get(i) == media.platform){
-                        pfMap.removeAt(i)
+                var media = App.playList.data.get(index)
+
+                // 调整切换平台顺序,将当前音乐平台放在首位置
+                val list = mutableListOf<ChangePlatformItem>()
+                list.addAll(App.config.change_platform_priority)
+                for (i in 0 until list.size){
+                    if (list[i].platform == media.platform){
+                        val item = list[i]
+                        list.removeAt(i)
+                        list.add(0,item)
                         break
                     }
                 }
-                pfMap.add(0,media.platform)
-                val medias = mutableMapOf<Platform,Media?>(
-                    media.platform to media
-                )
 
-                // 获取url
-                for (i in 0 until pfMap.count()){
-                    val pf = pfMap[i]
-                    if(!medias.containsKey(pf)){
-                        var name = media.name
-                        if(name.contains('(')){
-                            val arr = name.split('(')
-                            name = arr.first()
-                        }
-                        medias.put(pf, getSimilarMedia(pf,name,media.artists.first().name))
+                // 生成请求队列
+                val queue = mutableMapOf<String,Media>()
+                val queueMv = mutableMapOf<String,Media>()
+                for (i in 0 until list.size){
+                    val item = list[i]
+                    if(!item.enable)
+                        continue
+                    if(media.platform != item.platform){
+                        val nMedia = getSimilarMedia(item.platform,media.name,media.artists.first().name)
+                            ?: continue
+                        media = nMedia
                     }
-                    val item = medias.get(pf)
-                    if(item != null){
-                        val url = getPlayUrl(item, getPlayQuality(pf),1)
-                        if(!url.isNullOrEmpty()){
-                            item.play_url = url
-                            withContext(Dispatchers.Main){
-                                call(true,item)
-                            }
-                            return@launch
+                    val key = "${media.platform.name}-${item.mode.name}"
+                    when(item.mode){
+                        ChangePlatformMode.OnlyFromPlayUrl -> {
+                            queue[key] = media
+                        }
+                        ChangePlatformMode.OnlyFromParseMv -> {
+                            queue[key] = media
+                        }
+                        ChangePlatformMode.AllOfTheAbove -> {
+                            // 优先请求播放地址, 但播放地址全部失效再来解析mv
+                            queue["${media.platform.name}-${ChangePlatformMode.OnlyFromPlayUrl.name}"] = media
+                            queueMv["${media.platform.name}-${ChangePlatformMode.OnlyFromParseMv.name}"] = media
                         }
                     }
                 }
+                queue.putAll(queueMv)
 
-                if(App.config.allow_use_ffmpeg_parse){
-                    if(App.config.only_wifi_use_ffmpeg_parse && !WifiHelper.isConnected(_ctx)){
-                        // 只允许wifi连接但手机没连接wifi, 不允许使用ffmpeg解析
-                    }
-                    else{
-                        // 获取uri
-                        run _break@{
-                            medias.entries.forEach {
-                                if(it.value != null){
-                                    val item = it.value!!
-                                    item.is_local = true
-                                    val file = "${item.platform.name}-${item.id}.aac"
+                // 开始请求
+                queue.keys.forEach {
+                    val arr = it.split('-')
+                    val platform = Platform.valueOf(arr[0])
+                    val mode = ChangePlatformMode.valueOf(arr[1])
+                    when(mode){
+                        ChangePlatformMode.OnlyFromPlayUrl -> {
+                            val url = getPlayUrl(media, getPlayQuality(platform),1)
+                            if(!url.isNullOrEmpty()){
+                                media.play_url = url
+                                withContext(Dispatchers.Main){
+                                    call(true,media)
+                                }
+                                return@launch
+                            }
+                        }
+                        ChangePlatformMode.OnlyFromParseMv -> {
+                            if(App.config.allow_use_ffmpeg_parse){
+                                if(App.config.only_wifi_use_ffmpeg_parse && !WifiHelper.isConnected(_ctx)){
+                                    // 只允许wifi连接但手机没连接wifi, 不允许使用ffmpeg解析
+                                }
+                                else{
+                                    media.is_local = true
+                                    val file = "${media.platform.name}-${media.id}.aac"
                                     val dir = "${_ctx.cacheDir.path}/media/"
                                     val path = "${dir}${file}"
                                     val fDir = File(dir)
@@ -324,24 +340,26 @@ class AudioHelper {
                                     }
                                     else{
                                         val fList = fDir.listFiles()
-                                        for (i in 0 until fList.size){
-                                            if(fList.get(i).path == path){
-                                                item.play_url = path
-                                                withContext(Dispatchers.Main){
-                                                    call(true,item)
+                                        if (fList != null) {
+                                            for (i in 0 until fList.size){
+                                                if(fList.get(i).path == path){
+                                                    media.play_url = path
+                                                    withContext(Dispatchers.Main){
+                                                        call(true,media)
+                                                    }
+                                                    return@launch
                                                 }
-                                                return@launch
                                             }
                                         }
                                     }
-                                    val result = ServiceProxy.getService(item.platform).data?.getMvUrl(item.mv_id!!)!!
+                                    val result = ServiceProxy.getService(media.platform).data?.getMvUrl(media.mv_id!!)!!
                                     if(result.exception == null && !result.data.isNullOrEmpty()){
-                                        item.mv_url = result.data
+                                        media.mv_url = result.data
                                         val parseResult = FFmPegHelper.getAudio(result.data,path)
                                         if(parseResult.first){
-                                            item.play_url = path
+                                            media.play_url = path
                                             withContext(Dispatchers.Main){
-                                                call(true,item)
+                                                call(true,media)
                                             }
                                             return@launch
                                         }
@@ -349,8 +367,11 @@ class AudioHelper {
                                 }
                             }
                         }
+                        else -> {}
                     }
                 }
+
+                // 全部请求失败
                 withContext(Dispatchers.Main){
                     call(false,null)
                 }
