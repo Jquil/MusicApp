@@ -68,7 +68,7 @@ class ArtistActivity:Template() {
             }
             page++
 
-            val result = ServiceProxy.getService(_platform).data?.getArtistSongList(artist.id,page,pageItemSize)!!
+            val result = ServiceProxy.get(_platform).data?.getArtistSongList(artist.id,page,pageItemSize)!!
             withContext(Dispatchers.Main){
                 if(result.exception != null){
                     if(reloadNumber == App.config.retry_max_count){

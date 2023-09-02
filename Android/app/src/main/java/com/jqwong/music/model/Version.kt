@@ -6,5 +6,5 @@ package com.jqwong.music.model
  */
 class Version(
     val version:String,
-    val log:String,
+    val number:Int,
 )

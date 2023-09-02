@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <include
+                android:id="@+id/include_toolbar"
+                layout="@layout/component_toolbar"/>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                app:layout_constraintTop_toBottomOf="@id/include_toolbar">
+                <TextView
+                    android:id="@+id/tv_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="36dp"
+                    android:text="关于"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:paddingBottom="20dp"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <TextView
+                    android:id="@+id/tv_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:text="1. 本软件为开源项目，数据来源于各官方音乐平台，因此不保证数据准确性 \n\n2. 该项目为本人报以学习为目的研究，不进行任何形式商业用途，若有侵犯到任何人的合法利益，请及时联系我，我将第一时间删库跑路\n\n3. 该项目运行时需要网络访问以及存储文件的权限，为了保证您的正常使用请授予需要的权限\n\n4. 为了保证隐私问题，您产生的数据只会保存于本地，以及上传至各官方音乐平台"
+                    app:layout_constraintTop_toBottomOf="@id/tv_title"/>
+
+                <TextView
+                    android:id="@+id/tv_content2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="45dp"
+                    android:text="您可以在这里找到项目源代码"
+                    android:textColor="@color/white"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_content"/>
+
+                <androidx.appcompat.widget.AppCompatImageButton
+                    android:id="@+id/btn_github"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@id/tv_content"
+                    app:layout_constraintLeft_toRightOf="@id/tv_content2"
+                    android:background="@color/background"
+                    android:padding="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="30dp"
+                    android:src="@drawable/ic_github"/>
+
+                <TextView
+                    android:id="@+id/tv_content3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:layout_marginTop="30dp"
+                    android:text="您可以使用邮箱联系我: "
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_content2"/>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_email"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="835292266@qq.com"
+                    android:textColor="@color/white"
+                    android:background="@color/background"
+                    android:textStyle="bold"
+                    android:textSize="20dp"
+                    android:textAllCaps="false"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_content3"/>
+
+
+                <com.github.leandroborgesferreira.loadingbutton.customViews.CircularProgressButton
+                    android:id="@+id/btn_upgrade"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:text="检查更新"
+                    android:background="@drawable/bg_button"
+                    app:spinning_bar_padding="10dp"
+                    android:layout_marginTop="65dp"
+                    android:layout_marginRight="15dp"
+                    app:layout_constraintTop_toBottomOf="@id/tv_content3"
+                    app:layout_constraintRight_toRightOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -153,7 +153,7 @@ class LeaderboardActivity:Template() {
                     }
                 }
                 R.id.action_lyric -> {
-                    gotoArtistActivity(adapter.getSelectMediaByLongClick())
+                    gotoLyricActivity()
                 }
                 R.id.action_refresh -> {
                     _binding.includeMain.stateLayout.showLoading()
@@ -200,7 +200,7 @@ class LeaderboardActivity:Template() {
             if(reloadNumber != 0){
                 delay((1000 * reloadNumber).toLong())
             }
-            val data = ServiceProxy.getService(platform).data?.getLeaderboard()!!
+            val data = ServiceProxy.get(platform).data?.getLeaderboard()!!
             withContext(Dispatchers.Main){
                 if(data.exception != null){
                     if(reloadNumber == App.config.retry_max_count){
@@ -230,7 +230,7 @@ class LeaderboardActivity:Template() {
                 delay((1000 * reloadNumber).toLong())
             }
             page++
-            val data = ServiceProxy.getService(platform).data?.getLeaderboardSongList(id,page,pageItemSize)!!
+            val data = ServiceProxy.get(platform).data?.getLeaderboardSongList(id,page,pageItemSize)!!
             withContext(Dispatchers.Main){
                 if(data.exception != null){
                     if(reloadNumber == App.config.retry_max_count){

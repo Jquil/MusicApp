@@ -45,7 +45,8 @@ data class Song(
                     name = artist,
                     id = artistid.toString(),
                     description = null,
-                    pic = null
+                    pic = null,
+                    alias = listOf()
                 )
             ),
             time = null,

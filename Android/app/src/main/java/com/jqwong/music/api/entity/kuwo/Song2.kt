@@ -35,7 +35,8 @@ data class Song2(
                     name = ARTIST,
                     pic = "https://star.kuwo.cn/star/starheads/${web_artistpic_short}",
                     description = "",
-                    platform = Platform.KuWo
+                    platform = Platform.KuWo,
+                    alias = listOf()
                 ))
             }
             else{
@@ -45,7 +46,8 @@ data class Song2(
                         name = arr1[i],
                         pic = "https://star.kuwo.cn/star/starheads/${web_artistpic_short}",
                         description = "",
-                        platform = Platform.KuWo
+                        platform = Platform.KuWo,
+                        alias = listOf()
                     ))
                 }
             }
@@ -56,7 +58,8 @@ data class Song2(
                 name = ARTIST,
                 pic = "https://star.kuwo.cn/star/starheads/${web_artistpic_short}",
                 description = "",
-                platform = Platform.KuWo
+                platform = Platform.KuWo,
+                alias = listOf()
             ))
         }
         return Media(

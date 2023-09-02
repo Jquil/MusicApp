@@ -11,7 +11,8 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class UserResponse(
     @field:Json(name = "code") val code:Int,
-    @field:Json(name = "profile") val profile: Profile
+    @field:Json(name = "profile") val profile: Profile?,
+    @field:Json(name = "message") val message: String?
 )
 
 

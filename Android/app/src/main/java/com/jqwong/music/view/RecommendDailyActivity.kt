@@ -14,7 +14,6 @@ import com.jqwong.music.app.App
 import com.jqwong.music.helper.content
 import com.jqwong.music.helper.empty
 import com.jqwong.music.helper.error
-import com.jqwong.music.helper.startAnimation
 import com.jqwong.music.model.ExtraKey
 import com.jqwong.music.model.Platform
 import com.jqwong.music.service.ServiceProxy
@@ -89,12 +88,12 @@ class RecommendDailyActivity:Template() {
             var reqParams:Any = ""
             when(platform){
                 Platform.NetEaseCloud -> {
-                    reqParams = App.config.netEaseCloudConfig.csrf_token.toString()
+                    reqParams = App.config.netEaseCloudConfig.csrf_token
                 }
                 else -> {}
             }
             page++
-            val data = ServiceProxy.getService(platform).data?.getRecommendDaily(reqParams)!!
+            val data = ServiceProxy.get(platform).data?.getRecommendDaily(reqParams)!!
             withContext(Dispatchers.Main){
                 if(data.exception != null){
                     if(reloadNumber == App.config.retry_max_count){
@@ -105,15 +104,20 @@ class RecommendDailyActivity:Template() {
                     }
                 }
                 else{
-                    if(page == 1){
-                        adapter.submitList(data.data)
-                        _binding.includeMain.stateLayout.content()
+                    if(!data.success && !data.support){
+                        _binding.includeMain.stateLayout.empty(data.message)
                     }
                     else{
-                        adapter.addAll(data.data!!)
+                        if(page == 1){
+                            adapter.submitList(data.data)
+                            _binding.includeMain.stateLayout.content()
+                        }
+                        else{
+                            adapter.addAll(data.data!!)
+                        }
+                        loadFinish = true
+                        adapterHelper.trailingLoadState = LoadState.NotLoading(loadFinish)
                     }
-                    loadFinish = true
-                    adapterHelper.trailingLoadState = LoadState.NotLoading(loadFinish)
                 }
             }
         }

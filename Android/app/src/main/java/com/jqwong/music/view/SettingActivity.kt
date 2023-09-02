@@ -10,6 +10,7 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatButton
+import androidx.appcompat.widget.AppCompatEditText
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -51,8 +52,9 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
     override fun initData(savedInstanceState: Bundle?) {
 
     }
-    @RequiresApi(Build.VERSION_CODES.O)
-    @SuppressLint("RestrictedApi")
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun intView() {
         setSupportActionBar(_binding.includeToolbar.toolbar)
         supportActionBar?.title = "设置"
@@ -212,9 +214,48 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                         val wrapperPhone = view.contentLayout.findViewById<ConstraintLayout>(R.id.cl_wrapper_phone)
                         val wrapperQr = view.contentLayout.findViewById<ConstraintLayout>(R.id.cl_wrapper_qr)
                         val ivQr = view.contentLayout.findViewById<ImageView>(R.id.iv_qr)
+                        val etPhone = view.contentLayout.findViewById<AppCompatEditText>(R.id.et_phone)
+                        val btnSendCode = view.contentLayout.findViewById<AppCompatButton>(R.id.btn_send_code)
                         val btnAuthQr = view.contentLayout.findViewById<CircularProgressButton>(R.id.btn_authentication_qr)
+                        val btnAuthPhone = view.contentLayout.findViewById<CircularProgressButton>(R.id.btn_authentication_phone)
                         val qrStateLayout = view.contentLayout.findViewById<StateLayout>(R.id.state_layout_qr)
+                        val etVerifyCode = view.contentLayout.findViewById<AppCompatEditText>(R.id.et_verify_code)
                         var qrUniKey = ""
+                        btnSendCode.setOnClickListener {
+                            val phone = etPhone.text.toString()
+                            if(phone.isEmpty()){
+                                toast("请输入手机号码")
+                                return@setOnClickListener
+                            }
+                            if(!RegexHelper.matchPhone(phone)){
+                                toast("请输入有效的手机号码")
+                                return@setOnClickListener
+                            }
+                            val btnSendCodeText = btnSendCode.text
+                            btnSendCode.isEnabled = false
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val service = ServiceProxy.get(Platform.NetEaseCloud).data as NetEaseCloudService
+                                val result = service.sendCodeByPhone(phone)
+                                withContext(Dispatchers.Main){
+                                    toast(result.message)
+                                }
+                                if(!result.success){
+                                    return@launch
+                                }
+                                var i = 60
+                                while (i >= 0){
+                                    withContext(Dispatchers.Main){
+                                        btnSendCode.text = "${i}s"
+                                    }
+                                    delay(1000)
+                                    i--
+                                }
+                                withContext(Dispatchers.Main){
+                                    btnSendCode.text = btnSendCodeText
+                                    btnSendCode.isEnabled = true
+                                }
+                            }
+                        }
                         tbLayout.addOnTabSelectedListener(object:TabLayout.OnTabSelectedListener{
                             override fun onTabSelected(tab: TabLayout.Tab?) {
                                 when(tab?.text){
@@ -225,7 +266,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                                         qrStateLayout.showLoading()
                                         CoroutineScope(Dispatchers.IO).launch {
                                             val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                                (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).getLoginUniKey()
+                                                (ServiceProxy.get(Platform.NetEaseCloud).data as NetEaseCloudService).getLoginUniKey()
                                             } else {
                                                 TODO("VERSION.SDK_INT < TIRAMISU")
                                             }
@@ -265,7 +306,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                             (it as CircularProgressButton).startAnimation()
                             CoroutineScope(Dispatchers.IO).launch {
                                 val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).loginCheck(qrUniKey)
+                                    (ServiceProxy.get(Platform.NetEaseCloud).data as NetEaseCloudService).loginCheck(qrUniKey)
                                 } else {
                                     TODO("VERSION.SDK_INT < TIRAMISU")
                                 }
@@ -274,19 +315,74 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                                         loadingButtonFinishAnimation(it,false,result.exception.exception.message.toString())
                                     }
                                     else{
-                                        val config = result.data!!.data as Config.NetEaseCloudConfig
-                                        tvToken.text = config.csrf_token
-                                        tvMusicA.text = config.music_a
-                                        withContext(Dispatchers.IO){
-                                            val result = (ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService).getUserInfo(config.csrf_token)
-                                            withContext(Dispatchers.Main){
-                                                if(result.data != null){
-                                                    tvUid.setText(result.data.uid)
-                                                    tvName.setText(result.data.name)
+                                        if(!result.data!!.success){
+                                            loadingButtonFinishAnimation(it,false,result.data.message)
+                                        }
+                                        else{
+                                            val config = result.data.data as Config.NetEaseCloudConfig
+                                            App.config.netEaseCloudConfig.let {
+                                                it.csrf_token = config.csrf_token
+                                                it.music_a = config.music_a
+                                            }
+                                            withContext(Dispatchers.IO){
+                                                val result2 = (ServiceProxy.get(Platform.NetEaseCloud).data as NetEaseCloudService).getUserInfo(config.csrf_token)
+                                                withContext(Dispatchers.Main){
+                                                    if(result2.data != null){
+                                                        tvUid.text = result2.data.uid
+                                                        tvName.text = result2.data.name
+                                                        tvToken.text = config.csrf_token
+                                                        tvMusicA.text = config.music_a
+                                                        loadingButtonFinishAnimation(it,true,"认证成功")
+                                                    }
+                                                    else{
+                                                        App.config.netEaseCloudConfig.let {
+                                                            it.csrf_token = ""
+                                                            it.music_a = ""
+                                                        }
+                                                        loadingButtonFinishAnimation(it,false,"获取用户信息失败")
+                                                    }
                                                 }
                                             }
                                         }
-                                        loadingButtonFinishAnimation(it,true,"认证成功")
+                                    }
+                                }
+                            }
+                        }
+                        btnAuthPhone.setOnClickListener {
+                            val phone = etPhone.text.toString()
+                            if(phone.isEmpty()){
+                                toast("请输入手机号码")
+                                return@setOnClickListener
+                            }
+                            if(!RegexHelper.matchPhone(phone)){
+                                toast("请输入有效的手机号码")
+                                return@setOnClickListener
+                            }
+                            val code = etVerifyCode.text.toString()
+                            if(code.isEmpty()){
+                                toast("请输入验证码")
+                                return@setOnClickListener
+                            }
+                            (it as CircularProgressButton).startAnimation()
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val service = ServiceProxy.get(Platform.NetEaseCloud).data as NetEaseCloudService
+                                val result = service.loginByPhone(phone,code)
+                                withContext(Dispatchers.Main){
+                                    if(result.exception != null){
+                                        loadingButtonFinishAnimation(it,false,result.exception.exception.message.toString())
+                                    }
+                                    else{
+                                        var msg = "登录成功"
+                                        if(!result.success){
+                                            msg = result.message
+                                        }
+                                        else{
+                                            tvUid.text = result.data!!.uid
+                                            tvName.text = result.data.name
+                                            tvToken.text = result.data.csrf_token
+                                            tvMusicA.text = result.data.music_a
+                                        }
+                                        loadingButtonFinishAnimation(it,result.success,msg)
                                     }
                                 }
                             }

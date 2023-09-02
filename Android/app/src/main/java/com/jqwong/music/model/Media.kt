@@ -57,6 +57,10 @@ data class Media(
         return builder.build()
     }
 
+    fun filename():String{
+        return "${platform.name}-${id}.aac"
+    }
+
     fun toJson():String{
         val moshi = Moshi.Builder()
             .addLast(KotlinJsonAdapterFactory())

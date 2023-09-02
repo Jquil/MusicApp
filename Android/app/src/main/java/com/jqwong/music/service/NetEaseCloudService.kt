@@ -9,6 +9,7 @@ import com.jqwong.music.helper.*
 import com.jqwong.music.model.*
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -33,16 +34,16 @@ class NetEaseCloudService:IService {
                 var token = ""
                 var role = "MUSIC_A=bf8bfeabb1aa84f9c8c3906c04a04fb864322804c83f5d607e91a04eae463c9436bd1a17ec353cf780b396507a3f7464e8a60f4bbc019437993166e004087dd32d1490298caf655c2353e58daa0bc13cc7d5c198250968580b12c1b8817e3f5c807e650dd04abd3fb8130b7ae43fcc5b;"
                 App.config.netEaseCloudConfig.let {
-                    if(!it.csrf_token.isNullOrEmpty()){
+                    if(!it.csrf_token.isEmpty()){
                         token = "csrf=${it.csrf_token};"
                     }
-                    if(!it.music_a.isNullOrEmpty()){
+                    if(!it.music_a.isEmpty()){
                         role = "MUSIC_U=${it.music_a};"
                     }
                 }
                 val builder = req.newBuilder()
                     .header("Content-Type","application/x-www-form-urlencoded")
-                    .header("Cookie","NMTID=f43b2a069050d510416f015d10cd2ae0;_ntes_nuid=0250cd17c80bf506719bd4e019c616b0;__remember_me=true;${token} ${role}")
+                    .header("Cookie","_ntes_nuid=0250cd17c80bf506719bd4e019c616b0;__remember_me=true;${token} ${role}")
                 it.proceed(builder.build())
             }
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
@@ -268,6 +269,8 @@ class NetEaseCloudService:IService {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override suspend fun getRecommendSongSheetList(data: Any): Response<List<SongSheet>> {
         val title = this::getRecommendSongSheetList.name
+        if(data.toString().isNullOrEmpty())
+            return noAuthResponse(title)
         val map = mapOf(
             "csrf_token" to data
         )
@@ -305,6 +308,8 @@ class NetEaseCloudService:IService {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override suspend fun getRecommendDaily(data: Any): Response<List<Media>> {
         val title = this::getRecommendDaily.name
+        if(data.toString().isEmpty())
+            return noAuthResponse(title)
         val map = mapOf(
             "csrf_token" to data.toString()
         )
@@ -334,7 +339,7 @@ class NetEaseCloudService:IService {
         // uid:String, token:String
         val title = this::getUserSheet.name
         if(data.toString().isNullOrEmpty())
-            return notSupport(title)
+            return noAuthResponse(title)
         val arr = data.toString().split(';')
         val uid = arr[0]
         val token = arr[1]
@@ -380,7 +385,7 @@ class NetEaseCloudService:IService {
     override suspend fun getUserSheetData(page:Int, limit:Int, data: Any): Response<List<Media>> {
         val title = this::getUserSheetData.name
         if(data.toString().isNullOrEmpty())
-            return notSupport(title)
+            return noAuthResponse(title)
         val arr = data.toString().split(';')
         if(arr.count() != 2)
             return notSupport(title)
@@ -406,11 +411,13 @@ class NetEaseCloudService:IService {
         return if(result.e != null)
             error(title,result.e)
         else{
+            val first = result.data!!.data.first()
+            val success = first.time > 60000
             return Response(
                 title = title,
                 support = true,
-                success = true,
-                data = result.data!!.data.first().url,
+                success = success,
+                data = first.url,
                 exception = null,
                 message = "ok"
             )
@@ -589,13 +596,14 @@ class NetEaseCloudService:IService {
             error(title,result.e)
         else {
             val profile = result.data!!.profile
+
             Response(
                 title = title,
-                success = true,
+                success = profile != null,
                 support = true,
                 data = Config.NetEaseCloudConfig(
-                    uid = profile.userId.toString(),
-                    name = profile.nickname,
+                    uid = profile?.userId.toString(),
+                    name = profile?.nickname.toString(),
                     csrf_token = "",
                     music_a = "",
                     quality = "",
@@ -606,6 +614,122 @@ class NetEaseCloudService:IService {
                 message = "ok"
             )
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    suspend fun sendCodeByPhone(phone:String):Response<Boolean>{
+        val title = this::sendCodeByPhone.name
+        val map = mapOf(
+            "ctcode" to "86",
+            "cellphone" to phone,
+            "csrf_token" to ""
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.sendCodeByPhone(params.toRam()).awaitResult()
+        return if(result.e != null){
+            error(title,result.e)
+        }
+        else{
+            return Response(
+                title = title,
+                support = true,
+                success = result.data!!.code == 200,
+                message = if(result.data.code == 200) "发送成功" else "发送失败",
+                exception = null,
+                data = null
+            )
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    suspend fun loginByPhone(phone: String, code:String):Response<Config.NetEaseCloudConfig>{
+        val title = this::loginByPhone.name
+        val map = mapOf(
+            "countrycode" to "86",
+            "phone" to phone,
+            "captcha" to code,
+            "rememberLogin" to "true",
+            "csrf_token" to ""
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.loginByPhone(params.toRam()).awaitResult()
+        return if (result.e != null){
+            error(title,result.e)
+        }
+        else{
+            val parseHeader = parseHeader(result.header)
+            val config = Config.NetEaseCloudConfig(
+                sync_user_sheet = false,
+                uid = "",
+                name = "",
+                csrf_token = "",
+                music_a = "",
+                quality = "",
+                cookie = mutableMapOf()
+            )
+            if(parseHeader.first){
+                config.csrf_token = parseHeader.second
+                config.music_a = parseHeader.third
+            }
+            if(result.data!!.profile != null){
+                result.data.profile.let {
+                    config.uid = it!!.userId.toString()
+                    config.name = it.nickname
+                }
+            }
+            return Response(
+                title = title,
+                success = result.data.code == 200,
+                support = true,
+                exception = null,
+                message = if(result.data.message.isNullOrEmpty()) "" else result.data.message,
+                data = config
+            )
+        }
+    }
+
+    private fun parseHeader(header:Headers?):Triple<Boolean,String,String>{
+        var token = ""
+        var musicA = ""
+        if(header == null)
+            return Triple(false,token,musicA)
+        header.let {
+            it.values("set-cookie").forEach {
+                if(it.contains("__csrf")){
+                    val arr = it.split(';')
+                    arr.forEach {
+                        if(it.contains("__csrf")){
+                            token = it.replace("__csrf=","")
+                            return@forEach
+                        }
+                    }
+                }
+                if(it.contains("MUSIC_U")){
+                    val arr = it.split(';')
+                    arr.forEach {
+                        if(it.contains("MUSIC_U")){
+                            musicA = it.replace("MUSIC_U=","")
+                            return@forEach
+                        }
+                    }
+                }
+            }
+        }
+        return Triple(token.isNotEmpty() && musicA.isNotEmpty(),token,musicA)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun <T>noAuthResponse(title:String):Response<T>{
+        return Response(
+            title = title,
+            message = "骚瑞,您没有认证用户无法使用该功能",
+            success = false,
+            support = false,
+            data = null,
+            exception = null
+        )
     }
 
     @Suppress("Since15")

@@ -11,6 +11,7 @@ class Artist(
     val id:String,
     val name:String,
     val pic:String?,
+    val alias:List<String>,
     val description:String?,
     val platform: Platform
 ){
@@ -40,4 +41,33 @@ fun List<Artist>.toName():String{
     }
     builder.deleteCharAt(builder.length-1)
     return builder.toString()
+}
+
+fun List<Artist>.compare(artist:List<Artist>):Boolean{
+    var count = 0
+    val list = mutableListOf<Artist>()
+    list.addAll(artist)
+    forEach {
+        for (i in list.count()-1 downTo 0){
+            val item = list[i]
+            if(item.name == it.name){
+                count++
+                list.removeAt(i)
+                break
+            }
+        }
+    }
+    return count == count()
+}
+
+fun List<Artist>.exist(artists: List<Artist>):Boolean{
+    forEach {
+        val name = it.name
+        val alias = it.alias
+        artists.forEach {
+            if(name.equals(it.name) || alias.contains(it.name) || it.alias.contains(name))
+                return true
+        }
+    }
+    return false
 }

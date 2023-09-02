@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
@@ -158,6 +159,9 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
         }
     }
     protected fun gotoLyricActivity(){
+        if(!App.playListIsInitialized() || App.playList.lyrics == null){
+            return
+        }
         startActivity(Intent(this,LyricActivity::class.java))
     }
     protected fun changePlatform(platform: Platform,key:String){
@@ -188,7 +192,7 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
                         }
                         else -> {}
                     }
-                    val result = ServiceProxy.getService(platform).data?.collectOrCancelSong(true,reqParams)!!
+                    val result = ServiceProxy.get(platform).data?.collectOrCancelSong(true,reqParams)!!
                     withContext(Dispatchers.Main){
                         var msg = ""
                         if(result.exception != null){
@@ -216,7 +220,7 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
             }
             EventBus.getDefault().post(CollectOrCancelMediaEvent(false))
             CoroutineScope(Dispatchers.IO).launch {
-                val result = ServiceProxy.getService(platform).data?.collectOrCancelSong(false,reqParams)!!
+                val result = ServiceProxy.get(platform).data?.collectOrCancelSong(false,reqParams)!!
                 withContext(Dispatchers.Main){
                     if(result.exception != null){
                         toast(result.exception.exception.message.toString())
@@ -245,8 +249,7 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
         intView()
         initData(savedInstanceState)
         useEventBus = useEventBus()
-        if(useEventBus)
-        {
+        if(useEventBus) {
             EventBus.getDefault().register(this)
         }
     }

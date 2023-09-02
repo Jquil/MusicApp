@@ -10,7 +10,6 @@ import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R
 import com.jqwong.music.app.App
-import com.jqwong.music.event.CollectOrCancelMediaEvent
 import com.jqwong.music.helper.content
 import com.jqwong.music.helper.error
 import com.jqwong.music.model.ExtraKey
@@ -18,7 +17,6 @@ import com.jqwong.music.model.Platform
 import com.jqwong.music.model.SongSheet
 import com.jqwong.music.service.ServiceProxy
 import kotlinx.coroutines.*
-import org.greenrobot.eventbus.EventBus
 
 /**
  * @author: Jq
@@ -83,7 +81,7 @@ class UserSongSheetActivity:Template() {
                 }
                 else -> {}
             }
-            val result = ServiceProxy.getService(_platform).data?.getUserSheetData(page,pageItemSize,reqParams)!!
+            val result = ServiceProxy.get(_platform).data?.getUserSheetData(page,pageItemSize,reqParams)!!
             withContext(Dispatchers.Main){
                 if(result.exception != null){
                     if(reloadNumber == App.config.retry_max_count){

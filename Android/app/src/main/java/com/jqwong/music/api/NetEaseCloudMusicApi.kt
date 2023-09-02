@@ -60,4 +60,10 @@ interface NetEaseCloudMusicApi {
 
     @POST("/weapi/playlist/manipulate/tracks")
     fun collectOrCancelSong(@Body content: RequestBody):Call<BaseResponseG>
+
+    @POST("/weapi/sms/captcha/sent")
+    fun sendCodeByPhone(@Body content:RequestBody):Call<BaseResponseM<Boolean>>
+
+    @POST("/weapi/login/cellphone")
+    fun loginByPhone(@Body content: RequestBody):Call<UserResponse>
 }

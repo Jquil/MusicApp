@@ -1,6 +1,5 @@
 package com.jqwong.music.service
 
-import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.jqwong.music.helper.TimeHelper
@@ -17,8 +16,8 @@ class ServiceProxy {
             Platform.NetEaseCloud to NetEaseCloudService()
         )
         @RequiresApi(Build.VERSION_CODES.O)
-        fun getService(platform: Platform):Response<IService>{
-            val title = this::getService.name
+        fun get(platform: Platform):Response<IService>{
+            val title = this::get.name
             return if(!services.containsKey(platform)){
                 notSupportPlatform(title,platform)
             }

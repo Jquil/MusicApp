@@ -161,7 +161,8 @@ class KuWOService:IService {
                 name = data.name,
                 pic = data.pic,
                 description = data.info,
-                platform = Platform.KuWo
+                platform = Platform.KuWo,
+                alias = listOf()
             )
             Response(
                 title = title,

@@ -1,12 +1,12 @@
 package com.jqwong.music.view
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.RequiresApi
 import androidx.media3.common.util.UnstableApi
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jqwong.music.R
 import com.jqwong.music.adapter.LyricAdapter
@@ -19,7 +19,6 @@ import com.jqwong.music.event.PlayerStatusChangeEvent
 import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.helper.content
 import com.jqwong.music.helper.empty
-import com.jqwong.music.helper.startAnimation
 import com.jqwong.music.model.current
 import com.jqwong.music.view.layoutManager.CenterLayoutManager
 import org.greenrobot.eventbus.Subscribe
@@ -87,7 +86,7 @@ class LyricActivity:BaseActivity<ActivityLyricBinding>() {
         }
         else{
             if(App.playList.lyrics == null){
-                _binding.stateLayout.empty("Sorry")
+                _binding.stateLayout.empty("骚瑞, 我没有找到歌词噢...")
             }
             else{
                 val list = App.playList.lyrics
@@ -128,14 +127,24 @@ class LyricActivity:BaseActivity<ActivityLyricBinding>() {
         return super.onOptionsItemSelected(item)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaPositionChangeEvent(event:MediaPositionChangeEvent){
         val current = App.playList.lyrics!!.current(event.position)
-        if(adapter.currentIsInitialized() && adapter.current.time == current.time)
+        if(!adapter.currentIsInitialized()){
+            adapter.current = current
+            adapter.notifyDataSetChanged()
+        }
+        if(adapter.current.time == current.time)
             return
+        val prevPosition = adapter.getItemPosition(adapter.current)
         adapter.current = current
-        _binding.rvList.layoutManager?.let {
-            it.smoothScrollToPosition(_binding.rvList, RecyclerView.State(),adapter.getItemPosition(adapter.current))
+        val position = adapter.getItemPosition(current)
+        if(Math.abs(position - prevPosition) > 5){
+            _binding.rvList.layoutManager?.scrollToPosition(position)
+        }
+        else{
+            _binding.rvList.layoutManager?.smoothScrollToPosition(_binding.rvList, RecyclerView.State(),position)
         }
         adapter.notifyDataSetChanged()
     }

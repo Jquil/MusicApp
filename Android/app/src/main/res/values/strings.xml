@@ -1,13 +1,13 @@
 <resources>
-    <string name="change_platform">Change Platform</string>
-    <string name="refresh">Refresh</string>
-    <string name="leaderboard">Leaderboard</string>
-    <string name="favorite">Favorite</string>
-    <string name="collect">Collect</string>
-    <string name="artist">Artist</string>
-    <string name="sheet">Sheet</string>
-    <string name="remove">Remove</string>
-    <string name="lyric">Lyric</string>
+    <string name="change_platform">切换平台</string>
+    <string name="refresh">刷新</string>
+    <string name="leaderboard">排行榜</string>
+    <string name="favorite">喜爱</string>
+    <string name="collect">收藏</string>
+    <string name="artist">歌手</string>
+    <string name="sheet">歌单</string>
+    <string name="remove">移除</string>
+    <string name="lyric">歌词</string>
     <string name="phone">电话号码</string>
     <string name="qr">二维码</string>
 </resources>

@@ -16,12 +16,17 @@ data class Song(
     fun convert():Media{
         val artists = mutableListOf<com.jqwong.music.model.Artist>()
         ar.forEach {
+            val alias = mutableListOf<String>()
+            if(it.alias != null){
+                alias.addAll(it.alias)
+            }
             artists.add(com.jqwong.music.model.Artist(
                 id = it.id.toString(),
                 name = it.name,
                 pic = null,
                 description = null,
-                platform = Platform.NetEaseCloud
+                platform = Platform.NetEaseCloud,
+                alias = alias
             ))
         }
         return Media(
@@ -51,31 +56,4 @@ data class SongX(
     @field:Json(name = "album") val album: Album,
     @field:Json(name = "mvid") val mvid:Long,
 ){
-    fun convert():Media{
-        val artists = mutableListOf<com.jqwong.music.model.Artist>()
-        artists.forEach {
-            artists.add(com.jqwong.music.model.Artist(
-                id = it.id.toString(),
-                name = it.name,
-                pic = null,
-                description = null,
-                platform = Platform.NetEaseCloud
-            ))
-        }
-        return Media(
-            platform = Platform.NetEaseCloud,
-            id = id.toString(),
-            name = name,
-            album = album.name,
-            album_id = album.id.toString(),
-            pic = album.picUrl,
-            artists = artists,
-            time = null,
-            play_url = null,
-            mv_url = null,
-            mv_id = mvid.toString(),
-            is_local = false,
-            enable_media = null,
-        )
-    }
 }

@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.media3.common.MediaMetadata
@@ -12,8 +11,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
-import com.arthenica.mobileffmpeg.Config
-import com.arthenica.mobileffmpeg.FFmpeg
 import com.jqwong.music.app.App
 import com.jqwong.music.event.*
 import com.jqwong.music.model.*
@@ -136,7 +133,6 @@ class AudioHelper {
             val current = App.playList.data.get(App.playList.index)
             EventBus.getDefault().post(MediaChangeEvent(current))
             EventBus.getDefault().post(MediaLoadingEvent(false))
-            // 做缓存处理，避免重复请求
             getMedia(App.playList.index){success, media ->
                 if(!success || media == null){
                     App.playList.index++
@@ -144,7 +140,7 @@ class AudioHelper {
                 }
                 else{
                     var playMedia = current
-                    if(current.platform == media.platform){
+                    if(current.platform == media.platform && current.id == media.id){
                         playMedia = media
                     }
                     else{
@@ -235,9 +231,9 @@ class AudioHelper {
         ){
             CoroutineScope(Dispatchers.IO).launch {
                 if(reloadNumber != 0){
-                    delay(1500)
+                    //(1500)
                 }
-                val result = ServiceProxy.getService(platform).data?.getLyrics(id)!!
+                val result = ServiceProxy.get(platform).data?.getLyrics(id)!!
                 withContext(Dispatchers.Main){
                     if(result.exception != null){
                         if(reloadNumber == MAX_RELOAD_COUNT){
@@ -280,94 +276,103 @@ class AudioHelper {
                 }
 
                 // 生成请求队列
-                val queue = mutableMapOf<String,Media>()
-                val queueMv = mutableMapOf<String,Media>()
+                val tskList = mutableListOf<String>()
+                val tskList2 = mutableListOf<String>()
                 for (i in 0 until list.size){
                     val item = list[i]
                     if(!item.enable)
                         continue
-                    if(media.platform != item.platform){
-                        val nMedia = getSimilarMedia(item.platform,media.name,media.artists.first().name)
-                            ?: continue
-                        media = nMedia
-                    }
-                    val key = "${media.platform.name}-${item.mode.name}"
+                    val key = "${item.platform.name}-${item.mode.name}"
                     when(item.mode){
                         ChangePlatformMode.OnlyFromPlayUrl -> {
-                            queue[key] = media
+                            tskList.add(key)
                         }
                         ChangePlatformMode.OnlyFromParseMv -> {
-                            queue[key] = media
+                            tskList.add(key)
                         }
                         ChangePlatformMode.AllOfTheAbove -> {
                             // 优先请求播放地址, 但播放地址全部失效再来解析mv
-                            queue["${media.platform.name}-${ChangePlatformMode.OnlyFromPlayUrl.name}"] = media
-                            queueMv["${media.platform.name}-${ChangePlatformMode.OnlyFromParseMv.name}"] = media
+                            tskList.add("${item.platform.name}-${ChangePlatformMode.OnlyFromPlayUrl.name}")
+                            tskList2.add("${item.platform.name}-${ChangePlatformMode.OnlyFromParseMv.name}")
                         }
                     }
                 }
-                queue.putAll(queueMv)
+                tskList.addAll(tskList2)
 
                 // 开始请求
-                queue.keys.forEach {
+                val mediaList = mutableMapOf<Platform,List<Media>>()
+                tskList.forEach {
                     val arr = it.split('-')
                     val platform = Platform.valueOf(arr[0])
                     val mode = ChangePlatformMode.valueOf(arr[1])
-                    when(mode){
-                        ChangePlatformMode.OnlyFromPlayUrl -> {
-                            val url = getPlayUrl(media, getPlayQuality(platform),1)
-                            if(!url.isNullOrEmpty()){
-                                media.play_url = url
-                                withContext(Dispatchers.Main){
-                                    call(true,media)
-                                }
-                                return@launch
-                            }
+                    if(!mediaList.containsKey(platform)){
+                        if(media.platform == platform){
+                            mediaList.put(platform, listOf(media))
                         }
-                        ChangePlatformMode.OnlyFromParseMv -> {
-                            if(App.config.allow_use_ffmpeg_parse){
-                                if(App.config.only_wifi_use_ffmpeg_parse && !WifiHelper.isConnected(_ctx)){
-                                    // 只允许wifi连接但手机没连接wifi, 不允许使用ffmpeg解析
+                        else{
+                            mediaList.put(platform, getSimilarMediaList(platform,media))
+                        }
+                    }
+                    mediaList.get(platform)!!.forEach {
+                        when(mode){
+                            ChangePlatformMode.OnlyFromPlayUrl -> {
+                                var url = getPlayUrl(it, getPlayQuality(platform),1)
+                                if(!url.isNullOrEmpty()){
+                                    if(it.platform == Platform.NetEaseCloud){
+                                        url = "${url}?id=id.mp3"
+                                    }
+                                    it.play_url = url
+                                    withContext(Dispatchers.Main){
+                                        call(true,it)
+                                    }
+                                    return@launch
                                 }
-                                else{
-                                    media.is_local = true
-                                    val file = "${media.platform.name}-${media.id}.aac"
-                                    val dir = "${_ctx.cacheDir.path}/media/"
-                                    val path = "${dir}${file}"
-                                    val fDir = File(dir)
-                                    if(!fDir.exists()){
-                                        fDir.mkdir()
+                            }
+                            ChangePlatformMode.OnlyFromParseMv -> {
+                                if(App.config.allow_use_ffmpeg_parse){
+                                    if(App.config.only_wifi_use_ffmpeg_parse && !WifiHelper.isConnected(_ctx)){
+                                        // 只允许wifi连接但手机没连接wifi, 不允许使用ffmpeg解析
                                     }
                                     else{
-                                        val fList = fDir.listFiles()
-                                        if (fList != null) {
-                                            for (i in 0 until fList.size){
-                                                if(fList.get(i).path == path){
-                                                    media.play_url = path
-                                                    withContext(Dispatchers.Main){
-                                                        call(true,media)
+                                        it.is_local = true
+                                        val file = it.filename()
+                                        val dir = "${_ctx.cacheDir.path}/media/"
+                                        val path = "${dir}${file}"
+                                        val fDir = File(dir)
+                                        if(!fDir.exists()){
+                                            fDir.mkdir()
+                                        }
+                                        else{
+                                            val fList = fDir.listFiles()
+                                            if (fList != null) {
+                                                for (i in 0 until fList.size){
+                                                    if(fList.get(i).path == path){
+                                                        it.play_url = path
+                                                        withContext(Dispatchers.Main){
+                                                            call(true,it)
+                                                        }
+                                                        return@launch
                                                     }
-                                                    return@launch
                                                 }
                                             }
                                         }
-                                    }
-                                    val result = ServiceProxy.getService(media.platform).data?.getMvUrl(media.mv_id!!)!!
-                                    if(result.exception == null && !result.data.isNullOrEmpty()){
-                                        media.mv_url = result.data
-                                        val parseResult = FFmPegHelper.getAudio(result.data,path)
-                                        if(parseResult.first){
-                                            media.play_url = path
-                                            withContext(Dispatchers.Main){
-                                                call(true,media)
+                                        val result = ServiceProxy.get(it.platform).data?.getMvUrl(it.mv_id!!)!!
+                                        if(result.exception == null && !result.data.isNullOrEmpty()){
+                                            it.mv_url = result.data
+                                            val parseResult = FFmPegHelper.getAudio(result.data,path)
+                                            if(parseResult.first){
+                                                it.play_url = path
+                                                withContext(Dispatchers.Main){
+                                                    call(true,it)
+                                                }
+                                                return@launch
                                             }
-                                            return@launch
                                         }
                                     }
                                 }
                             }
+                            else->{}
                         }
-                        else -> {}
                     }
                 }
 
@@ -380,9 +385,9 @@ class AudioHelper {
         @RequiresApi(Build.VERSION_CODES.O)
         private suspend fun getPlayUrl(media: Media, quality:Any, maxReload:Int, reload:Int = 0):String?{
             if(reload != 0){
-                delay((reload * 1000).toLong())
+                //delay((reload * 1000).toLong())
             }
-            val result = ServiceProxy.getService(media.platform).data?.getPlayUrl(media.id,quality)!!
+            val result = ServiceProxy.get(media.platform).data?.getPlayUrl(media.id,quality)!!
             if(result.exception != null){
                 if(reload == maxReload){
                     return null
@@ -391,19 +396,46 @@ class AudioHelper {
                     return getPlayUrl(media,quality,maxReload,reload+1)
                 }
             }
+            if(!result.success)
+                return null
             return result.data
         }
         @RequiresApi(Build.VERSION_CODES.O)
-        private suspend fun getSimilarMedia(platform: Platform, name:String, artist:String,):Media?{
-            val key = "${name} ${artist}"
-            val result = ServiceProxy.getService(platform).data?.search(key,1,10)!!
-            if(result.exception != null)
-                return null
-            result.data!!.forEach {
-                if(it.name.contains(name) && it.artists.toName().contains(artist))
-                    return it
+        private suspend fun getSimilarMediaList(platform: Platform, media:Media,maxSize:Int = 3):List<Media>{
+            var key = "${media.name} ${media.artists.first().name}"
+            var name2 = media.name
+            if(media.name.contains('(')){
+                val arr = media.name.split('(')
+                name2 = arr.first().trim()
+                key = "$name2 ${media.artists.first().name}"
             }
-            return null
+            val service = ServiceProxy.get(platform).data ?: return listOf()
+            val result = service.search(key,1,10)
+            if(result.exception != null)
+                return listOf()
+            val list = mutableListOf<Media>()
+            val spareList = mutableListOf<Media>()
+            result.data!!.forEach {
+                if(it.name.contains(name2,ignoreCase = true)){
+                    if(media.artists.compare(it.artists)){
+                        list.add(it)
+                    }
+                    if(media.artists.exist(it.artists)){
+                        spareList.add(it)
+                    }
+                }
+            }
+            list.addAll(spareList)
+            // 限制三条记录
+            if(list.count() > maxSize){
+                for(i in list.count()-1 downTo 0){
+                    list.removeAt(i)
+                    if(i == maxSize){
+                        break
+                    }
+                }
+            }
+            return list
         }
     }
     class PositionListener : Runnable {

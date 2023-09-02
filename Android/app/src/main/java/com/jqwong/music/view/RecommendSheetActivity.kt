@@ -7,23 +7,14 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.annotation.RequiresApi
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.bottomsheets.BottomSheet
-import com.afollestad.materialdialogs.customview.customView
-import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R
-import com.jqwong.music.adapter.SongSheetAdapter
 import com.jqwong.music.app.App
-import com.jqwong.music.event.CollectOrCancelMediaEvent
 import com.jqwong.music.helper.*
 import com.jqwong.music.model.*
 import com.jqwong.music.service.ServiceProxy
 import kotlinx.coroutines.*
-import org.greenrobot.eventbus.EventBus
 
 /**
  * @author: Jq
@@ -163,7 +154,7 @@ class RecommendSheetActivity:Template() {
                 }
             }
             page++
-            val data = ServiceProxy.getService(platform).data?.getRecommendSongSheetData(id,page,pageItemSize,reqParams)!!
+            val data = ServiceProxy.get(platform).data?.getRecommendSongSheetData(id,page,pageItemSize,reqParams)!!
             withContext(Dispatchers.Main){
                 if(data.exception != null){
                     if(reloadNumber == App.config.retry_max_count){
@@ -208,7 +199,7 @@ class RecommendSheetActivity:Template() {
 
                 }
             }
-            val data = ServiceProxy.getService(platform).data?.getRecommendSongSheetList(reqParams)!!
+            val data = ServiceProxy.get(platform).data?.getRecommendSongSheetList(reqParams)!!
             withContext(Dispatchers.Main){
                 if(data.exception != null){
                     if(reloadNumber == App.config.retry_max_count){
@@ -219,8 +210,13 @@ class RecommendSheetActivity:Template() {
                     }
                 }
                 else{
-                    val result = data.data!!
-                    callback(result)
+                    if(!data.success && !data.support){
+                        _binding.includeMain.stateLayout.empty(data.message)
+                    }
+                    else{
+                        val result = data.data!!
+                        callback(result)
+                    }
                 }
             }
         }

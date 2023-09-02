@@ -22,9 +22,9 @@ import com.jqwong.music.app.Constant
 import com.jqwong.music.databinding.ActivityMainBinding
 import com.jqwong.music.event.*
 import com.jqwong.music.helper.AudioHelper
+import com.jqwong.music.helper.CacheHelper
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.helper.content
-import com.jqwong.music.helper.startAnimation
 import com.jqwong.music.model.*
 import com.jqwong.music.service.NetEaseCloudService
 import com.jqwong.music.service.ServiceProxy
@@ -86,6 +86,9 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         _binding.dlContent.linkSetting.setOnClickListener {
             startActivity(Intent(this,SettingActivity::class.java))
         }
+        _binding.dlContent.linkAbout.setOnClickListener {
+            startActivity(Intent(this,AboutActivity::class.java))
+        }
         _binding.layoutPlayBar.clPlayBar.setOnClickListener {
             startActivity(Intent(this,LyricActivity::class.java))
         }
@@ -137,6 +140,8 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
     }
     override fun onStop() {
         App.config.save(this)
+        if(App.config.exit_clear_cache)
+            CacheHelper.clear(this)
         super.onStop()
     }
 
@@ -193,7 +198,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                 return
             }
             CoroutineScope(Dispatchers.IO).launch {
-                val service = ServiceProxy.getService(Platform.NetEaseCloud).data as NetEaseCloudService
+                val service = ServiceProxy.get(Platform.NetEaseCloud).data as NetEaseCloudService
                 val result = service.getUserSheet(reqParams)
                 withContext(Dispatchers.Main) {
                     if (result.exception == null && result.support && result.data != null) {

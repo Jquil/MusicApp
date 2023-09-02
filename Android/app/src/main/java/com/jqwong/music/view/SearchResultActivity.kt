@@ -117,7 +117,7 @@ class SearchResultActivity:Template() {
                 delay(1000)
             }
             page++
-            val data = ServiceProxy.getService(_platform).data?.search(key,page,pageItemSize)!!
+            val data = ServiceProxy.get(_platform).data?.search(key,page,pageItemSize)!!
             withContext(Dispatchers.Main){
                 if(data.exception != null){
                     if(reloadNumber == App.config.retry_max_count){
