@@ -3,6 +3,7 @@ package com.jqwong.music.view
 import android.os.Build
 import android.os.Bundle
 import android.view.ContextMenu
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.annotation.RequiresApi
@@ -109,6 +110,21 @@ class UserSongSheetActivity:Template() {
                 }
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_sheet_user,menu)
+        return true
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onOptionsItemSelected(item: MenuItem): Boolean{
+        when(item.itemId){
+            R.id.action_lyric->{
+                gotoLyricActivity()
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onCreateContextMenu(

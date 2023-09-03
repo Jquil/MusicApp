@@ -158,9 +158,11 @@ class AudioHelper {
                 _player.seekToPrevious()
             }
         }
+        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
         fun next(){
             if(this::_player.isInitialized){
                 _player.seekToNext()
+                prepare()
             }
         }
         fun playOrPause(){
