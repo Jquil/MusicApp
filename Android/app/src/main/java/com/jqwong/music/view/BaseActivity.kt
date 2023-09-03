@@ -73,12 +73,14 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
             view.setTitleDefaultStyle(this@BaseActivity)
             val layout = view.contentLayout.findViewById<LinearLayout>(R.id.ll_wrapper)
             list.forEach {
-                val name = it.name
+                val name = it.toString()
+                val tag = it.name
                 val child = View.inflate(this@BaseActivity,R.layout.item_platform,null)
                 child.findViewById<TextView>(R.id.tv_name).let {
                     it.text = name
+                    it.tag = tag
                     it.setOnClickListener {
-                        call.invoke(Platform.valueOf((it as TextView).text.toString()))
+                        call.invoke(Platform.valueOf((it as TextView).tag.toString()))
                     }
                 }
                 layout.addView(child)
@@ -111,7 +113,7 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
     }
     protected fun selectUserSheet(platform: Platform, call: (sheet: SongSheet) -> Unit){
         if(!App.userSheets.containsKey(platform)){
-            toast("Sorry, you did not synchronize the '${platform.name}' platform data")
+            toast("骚瑞, 您没有同步'${platform.toString()}'平台数据")
             return
         }
         selectSheet(App.userSheets.get(platform)!!,call)
@@ -254,8 +256,7 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
         }
     }
     override fun onDestroy() {
-        if(useEventBus)
-        {
+        if(useEventBus) {
             EventBus.getDefault().unregister(this)
         }
         super.onDestroy()

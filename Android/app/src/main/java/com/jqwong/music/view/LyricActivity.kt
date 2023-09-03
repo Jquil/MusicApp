@@ -24,11 +24,12 @@ import com.jqwong.music.view.layoutManager.CenterLayoutManager
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-@UnstableApi
+
 /**
  * @author: Jq
  * @date: 7/24/2023
  */
+@UnstableApi
 class LyricActivity:BaseActivity<ActivityLyricBinding>() {
     private lateinit var adapter:LyricAdapter
     override fun initData(savedInstanceState: Bundle?) {

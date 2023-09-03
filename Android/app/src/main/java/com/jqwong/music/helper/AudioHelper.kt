@@ -40,7 +40,6 @@ class AudioHelper {
                 .build()
             _session = MediaSession.Builder(ctx, _player)
                 .setCallback(object:MediaSession.Callback{
-
                     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
                     override fun onPlayerCommandRequest(
                         session: MediaSession,
@@ -130,6 +129,7 @@ class AudioHelper {
                 return
             _player.stop()
             _player.clearMediaItems()
+            _player.playWhenReady = true
             val current = App.playList.data.get(App.playList.index)
             EventBus.getDefault().post(MediaChangeEvent(current))
             EventBus.getDefault().post(MediaLoadingEvent(false))
@@ -151,7 +151,6 @@ class AudioHelper {
                     _player.prepare()
                     EventBus.getDefault().post(MediaLoadingEvent(finish = true))
                 }
-                EventBus.getDefault().post(MediaLoadingEvent(true))
             }
         }
         fun prev(){

@@ -74,10 +74,10 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                 setDropdownDefaultBackground(it)
                 val list = mutableListOf<String>()
                 for(item in Platform.values()){
-                    list.add(item.name)
+                    list.add(item.toString())
                 }
                 it.setAdapter(ArrayAdapter(this,R.layout.item_drop_down_text, list))
-                it.hint = App.config.default_search_platform.name
+                it.hint = App.config.default_search_platform.toString()
             }
         }
         _binding.tvConfigAutoChangePlatform.setOnClickListener {
@@ -424,7 +424,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
             it.allow_use_ffmpeg_parse = _binding.smUseFfmpeg.isChecked
             _binding.menuDefaultSearchPlatform.editText.let {
                 if(!it?.text.isNullOrEmpty()){
-                    App.config.default_search_platform = Platform.valueOf(it?.text.toString())
+                    App.config.default_search_platform = Platform.get(it?.text.toString())
                 }
             }
         }

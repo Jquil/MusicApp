@@ -29,7 +29,7 @@ class PlatformPriorityAdapter: BaseQuickAdapter<ChangePlatformItem, QuickViewHol
         val tv = holder.getView<TextView>(R.id.tv_name)
         val switch = holder.getView<SwitchMaterial>(R.id.sm_enable)
         val menu = holder.getView<TextInputLayout>(R.id.menu_mode)
-        tv.text = item?.platform?.name
+        tv.text = item?.platform?.toString()
         switch.isChecked = item!!.enable
         val list = mutableListOf<String>()
         ChangePlatformMode.values().forEach {

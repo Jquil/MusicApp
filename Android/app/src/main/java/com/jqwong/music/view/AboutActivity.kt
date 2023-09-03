@@ -42,10 +42,10 @@ class AboutActivity:BaseActivity<ActivityAboutBinding>() {
             val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clipData = ClipData.newPlainText("Label", (it as AppCompatButton).text)
             clipboardManager.setPrimaryClip(clipData)
-            toast("已复制邮箱地址到剪贴板咯")
+            toast("已复制到剪贴板咯")
         }
         _binding.btnUpgrade.setOnClickListener {
-            //
+            toast("还没开放该功能噢")
         }
     }
 

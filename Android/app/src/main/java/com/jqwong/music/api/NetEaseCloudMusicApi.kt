@@ -66,4 +66,7 @@ interface NetEaseCloudMusicApi {
 
     @POST("/weapi/login/cellphone")
     fun loginByPhone(@Body content: RequestBody):Call<UserResponse>
+
+    @POST("/weapi/login/token/refresh")
+    fun refreshToken(@Body content: RequestBody):Call<BaseResponseB>
 }

@@ -342,12 +342,14 @@ class KuWOService:IService {
         else{
             val list = mutableListOf<Lyric>()
             result.data!!.data.lrclist.forEach {
-                list.add(
-                    Lyric(
-                        time = it.time.toKwTime(),
-                        text = it.lineLyric
+                if(it.lineLyric.trim().isNotEmpty()){
+                    list.add(
+                        Lyric(
+                            time = it.time.toKwTime(),
+                            text = it.lineLyric
+                        )
                     )
-                )
+                }
             }
             Response(
                 title=title,

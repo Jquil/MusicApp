@@ -471,12 +471,14 @@ class NetEaseCloudService:IService {
                         if(i == arr2.size - 1){
                             lyric = arr2Item.replace(arr2Str,"").replace("]","")
                         }
-                        list.add(
-                            Lyric(
-                                text = lyric.trim(),
-                                time = arr2Str.toNetEaseCloudTime()
+                        if(lyric.trim().isNotEmpty()){
+                            list.add(
+                                Lyric(
+                                    text = lyric.trim(),
+                                    time = arr2Str.toNetEaseCloudTime()
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
@@ -686,6 +688,30 @@ class NetEaseCloudService:IService {
                 exception = null,
                 message = if(result.data.message.isNullOrEmpty()) "" else result.data.message,
                 data = config
+            )
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    suspend fun refreshToken(token:String):Response<Boolean>{
+        val title = this::refreshToken.name
+        val map = mapOf(
+            "csrf_token" to token
+        )
+        val _text = EncryptHelper.weApi(map.toJson())
+        val params = "params=${_text.first}&encSecKey=${_text.second}"
+        val result = service.refreshToken(params.toRam()).awaitResult()
+        return if(result.e != null){
+            error(title,result.e)
+        }
+        else{
+            return Response(
+                title = title,
+                success = result.data!!.code == 200,
+                support = true,
+                data = result.data.code == 200,
+                exception = null,
+                message = ""
             )
         }
     }

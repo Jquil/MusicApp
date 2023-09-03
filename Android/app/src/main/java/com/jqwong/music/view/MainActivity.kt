@@ -29,10 +29,7 @@ import com.jqwong.music.model.*
 import com.jqwong.music.service.NetEaseCloudService
 import com.jqwong.music.service.ServiceProxy
 import com.jqwong.music.view.web.KuWoWebViewClient
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
@@ -73,11 +70,15 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         _binding.wvView.webViewClient = KuWoWebViewClient()
         _binding.wvView.loadUrl("http://kuwo.cn")
 
+        // 同步歌单
         onSyncUserSheetEvent(SyncUserSheetEvent(Platform.NetEaseCloud,App.config.netEaseCloudConfig.sync_user_sheet){success, message ->
             if(!success)
                 toast(message)
             _binding.stateLayout.content()
         })
+
+        // 刷新token
+        refreshToken(Platform.NetEaseCloud)
     }
     override fun intView() {
         _binding.btnDrawer.setOnClickListener {
@@ -88,6 +89,21 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         }
         _binding.dlContent.linkAbout.setOnClickListener {
             startActivity(Intent(this,AboutActivity::class.java))
+        }
+        _binding.dlContent.linkBgTask.setOnClickListener {
+            toast("还没开放该功能噢")
+        }
+        _binding.dlContent.linkPc.setOnClickListener {
+            toast("还没开放该功能噢")
+        }
+        _binding.dlContent.linkCarplay.setOnClickListener {
+            toast("还没开放该功能噢")
+        }
+        _binding.dlContent.linkException.setOnClickListener {
+            toast("还没开放该功能噢")
+        }
+        _binding.btnFavoriteMedia.setOnClickListener {
+            toast("还没开放该功能噢")
         }
         _binding.layoutPlayBar.clPlayBar.setOnClickListener {
             startActivity(Intent(this,LyricActivity::class.java))
@@ -101,7 +117,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             if(i == EditorInfo.IME_ACTION_SEARCH){
                 val key = textView.text.toString()
                 if(key == ""){
-                    toast("please input key about your want to search")
+                    toast("请输入搜索关键字")
                 }
                 else{
                     _binding.etSearch.clearFocus()
@@ -126,9 +142,12 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                 putExtra(ExtraKey.Platform.name,App.config.default_search_platform.name)
             })
         }
-
         if(App.playListIsInitialized() && !(App.playList.data.isNullOrEmpty())){
             onMediaChangeEvent(MediaChangeEvent(App.playList.data.get(App.playList.index)))
+        }
+        else{
+            _binding.nsvMain.setPadding(0,0,0,0)
+            _binding.clWrapperPlayBar.visibility = View.GONE
         }
         onPlayerStatusChangeEvent(PlayerStatusChangeEvent(AudioHelper.getPlayerIsPlaying()))
     }
@@ -144,7 +163,25 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             CacheHelper.clear(this)
         super.onStop()
     }
-
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun refreshToken(platform: Platform){
+        when(platform){
+            Platform.NetEaseCloud  -> {
+                App.config.netEaseCloudConfig.let {
+                    if(it.csrf_token.isNotEmpty()){
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val service = ServiceProxy.get(platform).data as NetEaseCloudService
+                            val result = service.refreshToken(it.csrf_token)
+                            if(result.exception == null && result.success){
+                                // refresh success
+                            }
+                        }
+                    }
+                }
+            }
+            else->{}
+        }
+    }
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSyncUserSheetEvent(event: SyncUserSheetEvent) {
@@ -155,7 +192,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             view.tag = platform.name
             val rv = view.findViewById<RecyclerView>(R.id.rv_list)
             val tv = view.findViewById<TextView>(R.id.tv_name)
-            tv.text = platform.name
+            tv.text = platform.toString()
             rv.isNestedScrollingEnabled = false
             rv.layoutManager = LinearLayoutManager(this@MainActivity)
             rv.adapter = adapter
@@ -176,15 +213,15 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             _binding.llSheet.addView(view)
         }
         val platform = event.platform
+        val child = _binding.llSheet.findViewWithTag<View>(platform.name)
         if (!event.sync) {
-            val child = _binding.llSheet.findViewWithTag<View>(platform.name)
             if(child != null){
                 _binding.llSheet.removeView(child)
             }
             event.callback(true,"")
             return
         }
-        if(App.userSheets.containsKey(platform)){
+        if(App.userSheets.containsKey(platform) && child != null){
             event.callback(true,"")
             return
         }
@@ -224,6 +261,17 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             .apply(RequestOptions.bitmapTransform(RoundedCorners(10)))
             .into(_binding.layoutPlayBar.ivPic)
         _binding.layoutPlayBar.lpiPlay.progress = 0
+        if(_binding.clWrapperPlayBar.visibility == View.GONE){
+            _binding.clWrapperPlayBar.visibility = View.VISIBLE
+            CoroutineScope(Dispatchers.IO).launch {
+                while (_binding.clWrapperPlayBar.height == 0){
+                    // wait
+                }
+                withContext(Dispatchers.Main){
+                    _binding.nsvMain.setPadding(0,0,0,_binding.clWrapperPlayBar.height)
+                }
+            }
+        }
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaPositionChangeEvent(event:MediaPositionChangeEvent){
