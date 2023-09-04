@@ -13,7 +13,8 @@ class ServiceProxy {
     companion object{
         private val services = mapOf(
             Platform.KuWo to KuWOService(),
-            Platform.NetEaseCloud to NetEaseCloudService()
+            Platform.NetEaseCloud to NetEaseCloudService(),
+            Platform.QQ to QQMusicService()
         )
         @RequiresApi(Build.VERSION_CODES.O)
         fun get(platform: Platform):Response<IService>{

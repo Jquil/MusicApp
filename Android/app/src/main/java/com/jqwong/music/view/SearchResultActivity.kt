@@ -26,6 +26,7 @@ import kotlinx.coroutines.withContext
  */
 class SearchResultActivity:Template() {
     private lateinit var key:String
+    private val enableList = listOf(Platform.NetEaseCloud,Platform.KuWo,Platform.QQ)
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
@@ -45,6 +46,10 @@ class SearchResultActivity:Template() {
                 finish()
             }
             _platform = Platform.valueOf(it!!)
+        }
+        if(!enableList.contains(_platform)){
+            _binding.includeMain.stateLayout.empty("不支持'${_platform.toString()}'搜索")
+            return
         }
         _binding.includeMain.stateLayout.showLoading()
         loadData()
@@ -79,7 +84,7 @@ class SearchResultActivity:Template() {
                 gotoLyricActivity()
             }
             R.id.action_change_platform -> {
-                changePlatform(listOf(Platform.KuWo,Platform.NetEaseCloud)){
+                changePlatform(enableList){
                     if(it == _platform)
                         return@changePlatform
                     _platform = it
