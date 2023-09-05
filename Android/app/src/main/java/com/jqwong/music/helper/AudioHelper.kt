@@ -220,7 +220,7 @@ class AudioHelper {
             return when(platform){
                 Platform.KuWo-> "flac"
                 Platform.NetEaseCloud-> App.config.netEaseCloudConfig.quality
-                Platform.QQ -> "qq"
+                Platform.QQ -> App.config.qqConfig.quality
             }
         }
         @RequiresApi(Build.VERSION_CODES.O)
@@ -388,7 +388,11 @@ class AudioHelper {
             if(reload != 0){
                 //delay((reload * 1000).toLong())
             }
-            val result = ServiceProxy.get(media.platform).data?.getPlayUrl(media.id,quality)!!
+            var id = media.id
+            if(media.platform == Platform.QQ && media.data.containsKey("mid")){
+                id = media.data["mid"].toString()
+            }
+            val result = ServiceProxy.get(media.platform).data?.getPlayUrl(id,quality)!!
             if(result.exception != null){
                 if(reload == maxReload){
                     return null

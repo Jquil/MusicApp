@@ -128,7 +128,7 @@ class LeaderboardActivity:Template() {
                     }
                 }
                 R.id.action_change_platform -> {
-                    changePlatform(listOf(Platform.KuWo,Platform.NetEaseCloud)) {
+                    changePlatform(listOf(Platform.QQ)) {
                         if(it == _platform)
                             return@changePlatform
                         page = 0
@@ -182,6 +182,9 @@ class LeaderboardActivity:Template() {
             R.id.action_change_platform -> {
                 val media = adapter.getSelectMediaByLongClick() ?: return false
                 changePlatform(_platform,media.name)
+            }
+            R.id.action_artist -> {
+                gotoArtistActivity(adapter.getSelectMediaByLongClick())
             }
         }
         return super.onContextItemSelected(item)

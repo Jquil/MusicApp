@@ -17,6 +17,7 @@ class Config(
     var only_wifi_use_ffmpeg_parse:Boolean,
     var netEaseCloudConfig: NetEaseCloudConfig,
     var kuWoConfig: KuWoConfig,
+    var qqConfig:QQConfig
 ) {
     fun save(ctx:Context){
         val moshi = Moshi.Builder()
@@ -63,6 +64,18 @@ class Config(
             )
         }
     }
+    class QQConfig(
+        var quality: String
+    ){
+        companion object{
+            val qualities = mapOf(
+                "sq" to "sq",
+                "hr" to "hr",
+                "hq" to "hq",
+                "mp3" to "mp3"
+            )
+        }
+    }
 
     companion object{
         fun default():Config{
@@ -91,6 +104,9 @@ class Config(
                 kuWoConfig = KuWoConfig(
                     cookies = mutableMapOf(),
                     quality = KuWoConfig.qualities["flac"]!!
+                ),
+                qqConfig = QQConfig(
+                    quality = QQConfig.qualities["mp3"]!!
                 )
             )
         }

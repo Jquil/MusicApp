@@ -36,7 +36,8 @@ data class Song2(
                     pic = "https://star.kuwo.cn/star/starheads/${web_artistpic_short}",
                     description = "",
                     platform = Platform.KuWo,
-                    alias = listOf()
+                    alias = listOf(),
+                    data = mutableMapOf()
                 ))
             }
             else{
@@ -47,7 +48,8 @@ data class Song2(
                         pic = "https://star.kuwo.cn/star/starheads/${web_artistpic_short}",
                         description = "",
                         platform = Platform.KuWo,
-                        alias = listOf()
+                        alias = listOf(),
+                        data = mutableMapOf()
                     ))
                 }
             }
@@ -59,7 +61,8 @@ data class Song2(
                 pic = "https://star.kuwo.cn/star/starheads/${web_artistpic_short}",
                 description = "",
                 platform = Platform.KuWo,
-                alias = listOf()
+                alias = listOf(),
+                data = mutableMapOf()
             ))
         }
         return Media(
@@ -75,7 +78,8 @@ data class Song2(
             mv_id = id,
             mv_url = "",
             is_local = false,
-            enable_media = null
+            enable_media = null,
+            data = mutableMapOf()
         )
     }
 }

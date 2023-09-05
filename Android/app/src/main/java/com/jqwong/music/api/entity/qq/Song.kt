@@ -24,7 +24,7 @@ data class Song(
         }
         return Media(
             Platform.QQ,
-            id = mid,
+            id = id.toString(),
             name = name,
             album = album.name,
             album_id = album.id.toString(),
@@ -35,7 +35,10 @@ data class Song(
             mv_id = mv.id.toString(),
             mv_url = "",
             is_local = false,
-            enable_media = null
+            enable_media = null,
+            data = mutableMapOf(
+                "mid" to mid
+            )
         )
     }
 }

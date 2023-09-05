@@ -23,10 +23,11 @@ data class Song(
             artists.add(com.jqwong.music.model.Artist(
                 id = it.id.toString(),
                 name = it.name,
-                pic = null,
-                description = null,
+                pic = "",
+                description = "",
                 platform = Platform.NetEaseCloud,
-                alias = alias
+                alias = alias,
+                data = mutableMapOf()
             ))
         }
         return Media(
@@ -37,12 +38,13 @@ data class Song(
             album_id = al.id.toString(),
             pic = al.picUrl,
             artists = artists,
-            time = null,
-            play_url = null,
-            mv_url = null,
+            time = 0,
+            play_url = "",
+            mv_url = "",
             mv_id = mv.toString(),
             is_local = false,
             enable_media = null,
+            data = mutableMapOf()
         )
     }
 }

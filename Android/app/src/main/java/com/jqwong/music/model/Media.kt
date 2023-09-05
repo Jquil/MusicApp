@@ -19,12 +19,13 @@ data class Media(
     var album_id:String,
     var artists:List<Artist>,
     var pic:String,
-    var time:Long?,
-    var play_url:String?,
-    var mv_id:String?,
-    var mv_url:String?,
+    var time:Long,
+    var play_url:String,
+    var mv_id:String,
+    var mv_url:String,
     var is_local:Boolean,
     var enable_media:Media?,
+    var data:MutableMap<String,Any>
 )
 {
     companion object{

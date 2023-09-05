@@ -752,7 +752,7 @@ class NetEaseCloudService:IService {
             title = title,
             message = "骚瑞,您没有认证用户无法使用该功能",
             success = false,
-            support = false,
+            support = true,
             data = null,
             exception = null
         )

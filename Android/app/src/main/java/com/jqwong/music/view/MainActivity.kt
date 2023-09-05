@@ -64,11 +64,14 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                 App.config = Config.default()
             }
         }
-        // 加载酷我平台Headers
+        // 抓取酷我平台Cookie
         _binding.wvView.settings.javaScriptEnabled = true
         _binding.wvView.settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188"
         _binding.wvView.webViewClient = KuWoWebViewClient()
         _binding.wvView.loadUrl("http://kuwo.cn")
+
+        // 抓取QQ平台签名
+
 
         // 同步歌单
         onSyncUserSheetEvent(SyncUserSheetEvent(Platform.NetEaseCloud,App.config.netEaseCloudConfig.sync_user_sheet){success, message ->

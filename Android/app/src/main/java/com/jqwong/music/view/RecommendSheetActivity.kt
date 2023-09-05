@@ -65,46 +65,49 @@ class RecommendSheetActivity:Template() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onOptionsItemSelected(item: MenuItem): Boolean{
-        if(_binding.includeMain.stateLayout.loaded) {
-            when (item.itemId) {
-                R.id.action_lyric -> {
-                    gotoLyricActivity()
-                }
-                R.id.action_refresh -> {
+        when (item.itemId) {
+            R.id.action_lyric -> {
+                gotoLyricActivity()
+            }
+            R.id.action_refresh -> {
+                if(sheets.get(_platform).isNullOrEmpty())
+                    return true
+                _binding.includeMain.stateLayout.showLoading()
+                page = 0
+                loadMediaList(_platform,currentSheet.id)
+            }
+            R.id.action_change_platform -> {
+                changePlatform(listOf()) {
                     _binding.includeMain.stateLayout.showLoading()
-                    page = 0
-                    loadMediaList(_platform,currentSheet.id)
-                }
-                R.id.action_change_platform -> {
-                    changePlatform(listOf(Platform.KuWo,Platform.NetEaseCloud)) {
-                        _binding.includeMain.stateLayout.showLoading()
-                        _platform = it
-                        if(sheets.containsKey(it)){
-                            val item = sheets.get(it)!!.first()
-                            page = 0
-                            currentSheet = item
-                            supportActionBar?.subtitle = item.name
-                            loadMediaList(_platform,item.id,0)
-                        }
-                        else{
-                            getRecommendSheets(it, callback = {
-                                sheets.put(_platform,it)
-                                currentSheet = it.first()
-                                page = 0
-                                supportActionBar?.subtitle = currentSheet.name
-                                loadMediaList(_platform,currentSheet.id)
-                            })
-                        }
-                    }
-                }
-                R.id.action_sheet -> {
-                    selectSheet(sheets.get(_platform)!!){
+                    _platform = it
+                    if(sheets.containsKey(it)){
+                        val item = sheets.get(it)!!.first()
                         page = 0
-                        currentSheet = it
-                        supportActionBar?.subtitle = it.name
-                        _binding.includeMain.stateLayout.showLoading()
-                        loadMediaList(_platform,it.id,0)
+                        currentSheet = item
+                        supportActionBar?.subtitle = item.name
+                        loadMediaList(_platform,item.id,0)
                     }
+                    else{
+                        getRecommendSheets(it, callback = {
+                            sheets.put(_platform,it)
+                            currentSheet = it.first()
+                            page = 0
+                            supportActionBar?.subtitle = currentSheet.name
+                            loadMediaList(_platform,currentSheet.id)
+                        })
+                    }
+                }
+            }
+            R.id.action_sheet -> {
+                if(!sheets.containsKey(_platform)) {
+                    return true
+                }
+                selectSheet(sheets.get(_platform)!!){
+                    page = 0
+                    currentSheet = it
+                    supportActionBar?.subtitle = it.name
+                    _binding.includeMain.stateLayout.showLoading()
+                    loadMediaList(_platform,it.id,0)
                 }
             }
         }
@@ -167,6 +170,14 @@ class RecommendSheetActivity:Template() {
                     }
                 }
                 else{
+                    if(!data.support){
+                        _binding.includeMain.stateLayout.empty("暂不支持'${platform.toString()}'获取每日推荐歌单噢")
+                        return@withContext
+                    }
+                    if(!data.success){
+                        _binding.includeMain.stateLayout.empty(data.message)
+                        return@withContext
+                    }
                     if(page == 1){
                         adapter.submitList(data.data)
                         _binding.includeMain.stateLayout.content()
@@ -210,8 +221,13 @@ class RecommendSheetActivity:Template() {
                     }
                 }
                 else{
-                    if(!data.success && !data.support){
+                    if(!data.support){
+                        _binding.includeMain.stateLayout.empty("暂不支持'${platform.toString()}'获取每日推荐歌单噢")
+                        return@withContext
+                    }
+                    if(!data.success){
                         _binding.includeMain.stateLayout.empty(data.message)
+                        return@withContext
                     }
                     else{
                         val result = data.data!!

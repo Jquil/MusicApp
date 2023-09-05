@@ -44,17 +44,19 @@ data class Song(
                     platform = Platform.KuWo,
                     name = artist,
                     id = artistid.toString(),
-                    description = null,
-                    pic = null,
-                    alias = listOf()
+                    description = "",
+                    pic = "",
+                    alias = listOf(),
+                    data = mutableMapOf()
                 )
             ),
-            time = null,
-            play_url = null,
-            mv_url = null,
+            time = 0,
+            play_url = "",
+            mv_url = "",
             mv_id = rid.toString(),
             is_local = false,
             enable_media = null,
+            data = mutableMapOf()
         )
     }
 }

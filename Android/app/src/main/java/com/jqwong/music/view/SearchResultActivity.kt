@@ -26,7 +26,6 @@ import kotlinx.coroutines.withContext
  */
 class SearchResultActivity:Template() {
     private lateinit var key:String
-    private val enableList = listOf(Platform.NetEaseCloud,Platform.KuWo,Platform.QQ)
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
@@ -46,10 +45,6 @@ class SearchResultActivity:Template() {
                 finish()
             }
             _platform = Platform.valueOf(it!!)
-        }
-        if(!enableList.contains(_platform)){
-            _binding.includeMain.stateLayout.empty("不支持'${_platform.toString()}'搜索")
-            return
         }
         _binding.includeMain.stateLayout.showLoading()
         loadData()
@@ -84,7 +79,7 @@ class SearchResultActivity:Template() {
                 gotoLyricActivity()
             }
             R.id.action_change_platform -> {
-                changePlatform(enableList){
+                changePlatform(listOf()){
                     if(it == _platform)
                         return@changePlatform
                     _platform = it
@@ -103,7 +98,7 @@ class SearchResultActivity:Template() {
         menuInfo: ContextMenu.ContextMenuInfo?
     ) {
         super.onCreateContextMenu(menu, v, menuInfo)
-        menuInflater.inflate(R.menu.menu_sheet_item,menu)
+        menuInflater.inflate(R.menu.menu_search_item,menu)
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
@@ -135,6 +130,15 @@ class SearchResultActivity:Template() {
                     }
                 }
                 else{
+                    if(!data.support){
+                        _binding.includeMain.stateLayout.empty("暂不支持'${_platform.toString()}'搜索噢")
+                        return@withContext
+                    }
+                    if(!data.success){
+                        _binding.includeMain.stateLayout.empty(data.message)
+                        return@withContext
+                    }
+
                     if(page == 1){
                         adapter.submitList(data.data)
                         _binding.includeMain.stateLayout.content()

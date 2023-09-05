@@ -24,11 +24,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class RecommendDailyActivity:Template() {
-
-    private val implPlatforms = setOf(
-        Platform.NetEaseCloud
-    )
-
     @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
@@ -63,7 +58,7 @@ class RecommendDailyActivity:Template() {
                 gotoLyricActivity()
             }
             R.id.action_change_platform -> {
-                changePlatform(implPlatforms.toList()) {
+                changePlatform(listOf()) {
                     if (it == _platform)
                         return@changePlatform
                     _binding.includeMain.stateLayout.showLoading()
@@ -77,10 +72,6 @@ class RecommendDailyActivity:Template() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun loadMediaList(platform: Platform,reloadNumber: Int = 0){
-        if(!implPlatforms.contains(platform)){
-            _binding.includeMain.stateLayout.empty("${_platform.name} not support query daily media list!")
-            return
-        }
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){
                 delay((1000 * reloadNumber).toLong())
@@ -104,8 +95,13 @@ class RecommendDailyActivity:Template() {
                     }
                 }
                 else{
-                    if(!data.success && !data.support){
+                    if(!data.support){
+                        _binding.includeMain.stateLayout.empty("暂不支持'${platform.toString()}'获取每日推荐歌曲噢")
+                        return@withContext
+                    }
+                    if(!data.success){
                         _binding.includeMain.stateLayout.empty(data.message)
+                        return@withContext
                     }
                     else{
                         if(page == 1){

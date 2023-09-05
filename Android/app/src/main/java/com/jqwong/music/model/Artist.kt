@@ -10,10 +10,11 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 class Artist(
     val id:String,
     val name:String,
-    val pic:String?,
+    val pic:String,
     val alias:List<String>,
-    val description:String?,
-    val platform: Platform
+    val description:String,
+    val platform: Platform,
+    val data:MutableMap<String,Any>
 ){
     companion object{
         fun fromJson(json:String):Artist{

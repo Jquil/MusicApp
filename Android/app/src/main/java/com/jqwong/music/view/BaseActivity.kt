@@ -64,7 +64,13 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
     protected fun toast(message:String){
         Toast.makeText(this,message,Toast.LENGTH_SHORT).show()
     }
-    protected fun changePlatform(list:List<Platform>,call:(platform:Platform)->Unit){
+    protected fun changePlatform(ignoreList:List<Platform>,call:(platform:Platform)->Unit){
+        val list = mutableListOf<Platform>()
+        Platform.values().forEach {
+            if(!ignoreList.contains(it)){
+                list.add(it)
+            }
+        }
         MaterialDialog(this, BottomSheet()).show {
             customView(R.layout.dialog_select_common)
             cornerRadius(20f)
@@ -142,7 +148,6 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
             })
         }
     }
-
     protected fun gotoArtistActivity(media: Media?){
         fun go(artist: Artist){
             startActivity(Intent(this,ArtistActivity::class.java).apply {

@@ -162,7 +162,8 @@ class KuWOService:IService {
                 pic = data.pic,
                 description = data.info,
                 platform = Platform.KuWo,
-                alias = listOf()
+                alias = listOf(),
+                data = mutableMapOf()
             )
             Response(
                 title = title,

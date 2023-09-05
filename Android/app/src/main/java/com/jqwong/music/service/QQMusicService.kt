@@ -10,6 +10,7 @@ import com.jqwong.music.helper.awaitResult
 import com.jqwong.music.helper.toRam
 import com.jqwong.music.model.Artist
 import com.jqwong.music.model.Leaderboard
+import com.jqwong.music.model.Lyric
 import com.jqwong.music.model.Lyrics
 import com.jqwong.music.model.Media
 import com.jqwong.music.model.Platform
@@ -26,6 +27,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.security.MessageDigest
 import java.time.Instant
+import java.util.Base64
 import java.util.concurrent.TimeUnit
 
 class QQMusicService:IService {
@@ -75,12 +77,47 @@ class QQMusicService:IService {
         return notSupport(this::getLeaderboardSongList.name)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getArtistSongList(
-        id: String,
+        mid: String,
         page: Int,
         limit: Int
     ): Response<List<Media>> {
-        return notSupport(this::getArtistSongList.name)
+        val title = this::getArtistSongList.name
+        val text = "{\n" +
+                "\t\"comm\": {\n" +
+                "\t\t\"ct\": 24,\n" +
+                "\t\t\"cv\": 0\n" +
+                "\t},\n" +
+                "\t\"singer\": {\n" +
+                "\t\t\"method\": \"get_singer_detail_info\",\n" +
+                "\t\t\"param\": {\n" +
+                "\t\t\t\"sort\": 5,\n" +
+                "\t\t\t\"singermid\": \"$mid\",\n" +
+                "\t\t\t\"sin\": ${(page-1)*limit},\n" +
+                "\t\t\t\"num\": $limit\n" +
+                "\t\t},\n" +
+                "\t\t\"module\": \"music.web_singer_info_svr\"\n" +
+                "\t}\n" +
+                "}"
+        val result = service.getArtistSongList(text.toRam()).awaitResult()
+        return if(result.e != null){
+            return error(title,result.e)
+        }
+        else{
+            val list = mutableListOf<Media>()
+            result.data!!.singer.data.songlist.forEach {
+                list.add(it.convert())
+            }
+            return Response(
+                title = title,
+                support = true,
+                success = true,
+                data = list,
+                message = "",
+                exception = null
+            )
+        }
     }
 
     override suspend fun getArtistInfo(id: Long): Response<Artist> {
@@ -138,10 +175,9 @@ class QQMusicService:IService {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun getPlayUrl(id: String, quality: Any): Response<String> {
+    override suspend fun getPlayUrl(mid: String, quality: Any): Response<String> {
         // sq hr hq mp3
         val title = this::getPlayUrl.name
-        val mid = id
         val platform = "qq"
         val device = "MI 14 Pro Max"
         val osVersion = "13"
@@ -203,8 +239,84 @@ class QQMusicService:IService {
         return notSupport(this::getMvUrl.name)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getLyrics(id: String): Response<Lyrics> {
-        return notSupport(this::getLyrics.name)
+        val title = this::getLyrics.name
+        val text = "{\n" +
+                "            \"comm\": {\n" +
+                "                \"cv\": 4747474,\n" +
+                "                \"ct\": 24,\n" +
+                "                \"format\": \"json\",\n" +
+                "                \"inCharset\": \"utf-8\",\n" +
+                "                \"outCharset\": \"utf-8\",\n" +
+                "                \"notice\": 0,\n" +
+                "                \"platform\": \"yqq.json\",\n" +
+                "                \"needNewCode\": 1\n" +
+                "            },\n" +
+                "            \"PlayLyricInfo\": {\n" +
+                "                \"module\": \"music.musichallSong.PlayLyricInfo\",\n" +
+                "                \"method\": \"GetPlayLyricInfo\",\n" +
+                "                \"param\": {\n" +
+                "                    \"songID\": ${id.toLong()}\n" +
+                "                }\n" +
+                "            }\n" +
+                "        }"
+        val result = service.getLyrics(text.toRam()).awaitResult()
+        return if(result.e != null){
+            error(title,result.e)
+        }
+        else{
+            val list = mutableListOf<Lyric>()
+            val bytes = Base64.getDecoder().decode(result.data!!.PlayLyricInfo.data.lyric)
+            val content = String(bytes)
+            val array = content.split("\n")
+            for (i in 0 until array.count()){
+                val item = array[i]
+                val infoList = item.split("]")
+                if(infoList.count() != 2)
+                    continue
+                val lyric = infoList[1]
+                if(lyric.isEmpty())
+                    continue
+                var strTime = infoList[0]
+                if(strTime.get(0) != '[')
+                    continue
+                var time:Long = 0
+                strTime = strTime.substring(1)
+                strTime.let {
+                    var index = 0
+                    val builder = StringBuilder()
+                    while (index < strTime.count()){
+                        var char = strTime.get(index)
+                        if(char.equals(':')){
+                            char = strTime.get(++index)
+                            val x = builder.toString().toLong()
+                            time += (x*60*1000)
+                            builder.clear()
+                        }
+                        else if (char.equals('.')){
+                            char = strTime.get(++index)
+                            val x = builder.toString().toLong()
+                            time += (x*1000)
+                            builder.clear()
+                        }
+                        builder.append(char)
+                        index++
+                    }
+                    val x = builder.toString().toLong()
+                    time += x
+                }
+                list.add(Lyric(time,lyric))
+            }
+            return Response(
+                title = title,
+                success = true,
+                support = true,
+                exception = null,
+                message = "",
+                data = Lyrics(Platform.QQ,id,list)
+            )
+        }
     }
 
     override suspend fun getUserSheet(data: Any): Response<List<SongSheet>> {

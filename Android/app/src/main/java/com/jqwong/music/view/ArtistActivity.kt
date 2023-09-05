@@ -10,6 +10,7 @@ import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R
 import com.jqwong.music.app.App
 import com.jqwong.music.helper.content
+import com.jqwong.music.helper.empty
 import com.jqwong.music.helper.error
 import com.jqwong.music.model.Artist
 import com.jqwong.music.model.ExtraKey
@@ -68,7 +69,11 @@ class ArtistActivity:Template() {
             }
             page++
 
-            val result = ServiceProxy.get(_platform).data?.getArtistSongList(artist.id,page,pageItemSize)!!
+            var id = artist.id
+            if(_platform == Platform.QQ && artist.data.containsKey("mid")){
+                id = artist.data.get("mid").toString()
+            }
+            val result = ServiceProxy.get(_platform).data?.getArtistSongList(id,page,pageItemSize)!!
             withContext(Dispatchers.Main){
                 if(result.exception != null){
                     if(reloadNumber == App.config.retry_max_count){
@@ -81,6 +86,14 @@ class ArtistActivity:Template() {
                     }
                 }
                 else{
+                    if(!result.support){
+                        _binding.includeMain.stateLayout.empty(if(result.message.isNullOrEmpty()) "暂不支持获取'${_platform.toString()}'平台歌手的歌曲列表" else result.message)
+                        return@withContext
+                    }
+                    if(!result.success){
+                        _binding.includeMain.stateLayout.empty("请求失败啦")
+                        return@withContext
+                    }
                     if(page == 1){
                         adapter.submitList(result.data)
                         _binding.includeMain.stateLayout.content()

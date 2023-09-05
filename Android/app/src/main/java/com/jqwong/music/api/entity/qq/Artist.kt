@@ -20,7 +20,10 @@ data class Artist(
             pic = url,
             alias = listOf(),
             description = "",
-            platform = Platform.QQ
+            platform = Platform.QQ,
+            data = mutableMapOf(
+                "mid" to mid
+            )
         )
     }
 }
