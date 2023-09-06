@@ -28,7 +28,6 @@ class UserSongSheetActivity:Template() {
     private lateinit var songSheet:SongSheet
     private lateinit var _params:Any
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
         supportActionBar?.title = "我的歌单"
@@ -60,15 +59,12 @@ class UserSongSheetActivity:Template() {
             override fun onFailRetry() {
 
             }
-
-            @RequiresApi(Build.VERSION_CODES.O)
             override fun onLoad() {
                 loadMediaList()
             }
         })
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun loadMediaList(reloadNumber:Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){
@@ -117,7 +113,6 @@ class UserSongSheetActivity:Template() {
         return true
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onOptionsItemSelected(item: MenuItem): Boolean{
         when(item.itemId){
             R.id.action_lyric->{
@@ -136,7 +131,6 @@ class UserSongSheetActivity:Template() {
         menuInflater.inflate(R.menu.menu_sheet_user_item,menu)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_artist -> {

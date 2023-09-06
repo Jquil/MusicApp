@@ -53,8 +53,6 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun intView() {
         setSupportActionBar(_binding.includeToolbar.toolbar)
         supportActionBar?.title = "设置"
@@ -173,7 +171,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                 customView(R.layout.dialog_config_neteasecloud)
                 cornerRadius(20f)
                 view.setBackgroundResource(R.drawable.bg_dialog)
-                title(text = "网易云配置")
+                title(text = "网易云音乐配置")
                 view.setTitleDefaultStyle(this@SettingActivity)
                 val menuQuality = view.contentLayout.findViewById<TextInputLayout>(R.id.menu_quality)
                 (menuQuality.editText as? AutoCompleteTextView)?.let{
@@ -399,9 +397,52 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                         it.csrf_token = tvToken.text.toString()
                         it.music_a = tvMusicA.text.toString()
                         it.sync_user_sheet = swSync.isChecked
+                        menuQuality.editText.let {
+                            if(!it?.text.isNullOrEmpty()){
+                                val key = it!!.text.toString()
+                                if(Config.NetEaseCloudConfig.qualities.containsKey(key)){
+                                    App.config.netEaseCloudConfig.quality = Config.NetEaseCloudConfig.qualities[key]!!
+                                }
+                            }
+                        }
                     }
                     EventBus.getDefault().post(SyncUserSheetEvent(Platform.NetEaseCloud,App.config.netEaseCloudConfig.sync_user_sheet){success, message ->  })
                     App.config.save(this@SettingActivity)
+                    loadingButtonFinishAnimation(it,true,"保存成功")
+                }
+            }
+        }
+        _binding.linkConfigQq.setOnClickListener {
+            MaterialDialog(this,BottomSheet()).show {
+                customView(R.layout.dialog_config_qq)
+                cornerRadius(20f)
+                view.setBackgroundResource(R.drawable.bg_dialog)
+                title(text = "QQ音乐配置")
+                view.setTitleDefaultStyle(this@SettingActivity)
+                val menuQuality = view.contentLayout.findViewById<TextInputLayout>(R.id.menu_quality)
+                (menuQuality.editText as? AutoCompleteTextView)?.let{
+                    setDropdownDefaultBackground(it)
+                    val list = mutableListOf<String>()
+                    var hint = ""
+                    Config.QQConfig.qualities.forEach {
+                        list.add(it.key)
+                        if(it.value == App.config.qqConfig.quality){
+                            hint = it.key
+                        }
+                    }
+                    it.setAdapter(ArrayAdapter(this@SettingActivity,R.layout.item_drop_down_text,list))
+                    it.hint = hint
+                }
+                view.contentLayout.findViewById<CircularProgressButton>(R.id.btn_save).setOnClickListener {
+                    (it as CircularProgressButton).startAnimation()
+                    menuQuality.editText.let {
+                        if(!it?.text.isNullOrEmpty()){
+                            val key = it!!.text.toString()
+                            if(Config.QQConfig.qualities.containsKey(key)){
+                                App.config.qqConfig.quality = Config.QQConfig.qualities[key]!!
+                            }
+                        }
+                    }
                     loadingButtonFinishAnimation(it,true,"保存成功")
                 }
             }

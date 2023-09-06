@@ -16,7 +16,7 @@ class ServiceProxy {
             Platform.NetEaseCloud to NetEaseCloudService(),
             Platform.QQ to QQMusicService()
         )
-        @RequiresApi(Build.VERSION_CODES.O)
+
         fun get(platform: Platform):Response<IService>{
             val title = this::get.name
             return if(!services.containsKey(platform)){
@@ -33,7 +33,7 @@ class ServiceProxy {
                 )
             }
         }
-        @RequiresApi(Build.VERSION_CODES.O)
+
         private fun <T>notSupportPlatform(title:String, platform: Platform):Response<T>{
             return Response(
                 title = title,

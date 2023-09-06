@@ -72,3 +72,14 @@ fun List<Artist>.exist(artists: List<Artist>):Boolean{
     }
     return false
 }
+
+fun List<Artist>.like(artists: List<Artist>):Boolean{
+    forEach {
+        val name = it.name
+        artists.forEach {
+            if(name.contains(it.name) || it.name.contains(name))
+                return true
+        }
+    }
+    return false
+}

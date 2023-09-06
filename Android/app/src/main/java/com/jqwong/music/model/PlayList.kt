@@ -6,7 +6,7 @@ package com.jqwong.music.model
  */
 class PlayList(
     var index:Int,
-    var lyrics: Lyrics?,
+    var lyricInfo: Pair<LyricStatus,Lyrics?>,
     val data:List<Media>
 ){
     fun current():Media{

@@ -1,10 +1,9 @@
 package com.jqwong.music.service
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.jqwong.music.api.QQMusicApi
 import com.jqwong.music.api.entity.qq.PlayUrl
 import com.jqwong.music.app.App
+import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.helper.ZLibHelper
 import com.jqwong.music.helper.awaitResult
 import com.jqwong.music.helper.toRam
@@ -26,7 +25,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.security.MessageDigest
-import java.time.Instant
 import java.util.Base64
 import java.util.concurrent.TimeUnit
 
@@ -77,7 +75,7 @@ class QQMusicService:IService {
         return notSupport(this::getLeaderboardSongList.name)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun getArtistSongList(
         mid: String,
         page: Int,
@@ -124,7 +122,7 @@ class QQMusicService:IService {
         return notSupport(this::getArtistInfo.name)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun search(key: String, page: Int, limit: Int): Response<List<Media>> {
         val title = this::search.name
         val text = "{\"music.search.SearchCgiService.DoSearchForQQMusicDesktop\": {\n" +
@@ -174,14 +172,14 @@ class QQMusicService:IService {
         return notSupport(this::getRecommendDaily.name)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun getPlayUrl(mid: String, quality: Any): Response<String> {
         // sq hr hq mp3
         val title = this::getPlayUrl.name
         val platform = "qq"
         val device = "MI 14 Pro Max"
         val osVersion = "13"
-        val time = Instant.now().epochSecond
+        val time = TimeHelper.getTime()
         val sign1 = hashMD5("6d849adb2f3e00d413fe48efbb18d9bb${time}6562653262383463363633646364306534333668").lowercase()
         val s6 = "{\\\"method\\\":\\\"GetMusicUrl\\\",\\\"platform\\\":\\\"${platform}\\\",\\\"t1\\\":\\\"${mid}\\\",\\\"t2\\\":\\\"${quality}\\\"}"
         val s7 = "{\\\"uid\\\":\\\"\\\",\\\"token\\\":\\\"\\\",\\\"deviceid\\\":\\\"84ac82836212e869dbeea73f09ebe52b\\\",\\\"appVersion\\\":\\\"4.1.2\\\",\\\"vercode\\\":\\\"4120\\\",\\\"device\\\":\\\"${device}\\\",\\\"osVersion\\\":\\\"${osVersion}\\\"}"
@@ -235,11 +233,57 @@ class QQMusicService:IService {
         }
     }
 
-    override suspend fun getMvUrl(id: String): Response<String> {
-        return notSupport(this::getMvUrl.name)
+    
+    override suspend fun getMvUrl(vid: String): Response<String> {
+        val title = this::getMvUrl.name
+        val text = "{\n" +
+                "\t\"getMvUrl\": {\n" +
+                "\t\t\"module\": \"gosrf.Stream.MvUrlProxy\",\n" +
+                "\t\t\"method\": \"GetMvUrls\",\n" +
+                "\t\t\"param\": {\n" +
+                "\t\t\t\"vids\": [\"$vid\"],\n" +
+                "\t\t\t\"request_typet\": 10001\n" +
+                "\t\t}\n" +
+                "\t}\n" +
+                "}"
+        val result = service.getMvUrl(text.toRam()).awaitResult()
+        return if(result.e != null){
+            error(title,result.e)
+        }
+        else{
+            try {
+                val data = (result.data!!.getMvUrl.data as Map<String, Any>)
+                if(data.containsKey(vid)){
+                    val item = data[vid] as Map<String,Any>
+                    if(item.containsKey("mp4")){
+                        val infoList = item["mp4"] as List<Map<String,Any>>
+                        infoList.forEach {
+                            if(it.containsKey("freeflow_url")){
+                                val list = it["freeflow_url"] as List<String>
+                                if(!list.isNullOrEmpty()){
+                                    return Response(
+                                        title = title,
+                                        message = "",
+                                        success = true,
+                                        support = true,
+                                        data = list.last(),
+                                        exception = null
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                throw Exception("parse error!")
+            }
+            catch (e:Exception){
+                return error(title,e)
+            }
+        }
+
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun getLyrics(id: String): Response<Lyrics> {
         val title = this::getLyrics.name
         val text = "{\n" +

@@ -37,7 +37,8 @@ data class Song(
             is_local = false,
             enable_media = null,
             data = mutableMapOf(
-                "mid" to mid
+                "mid" to mid,
+                "vid" to mv.vid
             )
         )
     }

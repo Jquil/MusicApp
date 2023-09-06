@@ -19,6 +19,7 @@ import com.jqwong.music.event.PlayerStatusChangeEvent
 import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.helper.content
 import com.jqwong.music.helper.empty
+import com.jqwong.music.model.LyricStatus
 import com.jqwong.music.model.current
 import com.jqwong.music.view.layoutManager.CenterLayoutManager
 import org.greenrobot.eventbus.Subscribe
@@ -29,12 +30,13 @@ import org.greenrobot.eventbus.ThreadMode
  * @author: Jq
  * @date: 7/24/2023
  */
-@UnstableApi
+
 class LyricActivity:BaseActivity<ActivityLyricBinding>() {
     private lateinit var adapter:LyricAdapter
     override fun initData(savedInstanceState: Bundle?) {
     }
 
+    @UnstableApi
     override fun intView() {
         _binding.includeToolbar.toolbar.elevation = 0f
         setSupportActionBar(_binding.includeToolbar.toolbar)
@@ -49,7 +51,7 @@ class LyricActivity:BaseActivity<ActivityLyricBinding>() {
             _binding.stateLayout.showLoading()
             val media = App.playList.current()
             onMediaChangeEvent(MediaChangeEvent(media))
-            onLyricsLoadingEvent(LyricsLoadingEvent(App.playList.lyrics != null))
+            onLyricsLoadingEvent(LyricsLoadingEvent(App.playList.lyricInfo))
         }
         _binding.includeToolbar.toolbar.setNavigationOnClickListener {
             finish()
@@ -80,21 +82,27 @@ class LyricActivity:BaseActivity<ActivityLyricBinding>() {
         _binding.tvName.text = media.name
     }
 
+    @UnstableApi
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onLyricsLoadingEvent(event: LyricsLoadingEvent){
-        if(!event.finish){
-            _binding.stateLayout.showLoading()
-        }
-        else{
-            if(App.playList.lyrics == null){
-                _binding.stateLayout.empty("骚瑞, 我没有找到歌词噢...")
+        when(event.info.first){
+            LyricStatus.Loading->{
+                _binding.stateLayout.showLoading()
             }
-            else{
-                val list = App.playList.lyrics
-                adapter.submitList(list!!.lyrics)
-                val current = list.current(AudioHelper.getPosition())
-                _binding.rvList.layoutManager!!.scrollToPosition(adapter.getItemPosition(current))
-                _binding.stateLayout.content()
+            LyricStatus.Error->{
+                _binding.stateLayout.empty("骚瑞, 没有找到歌曲歌词噢...")
+            }
+            LyricStatus.Success->{
+                if(event.info.second == null){
+                    _binding.stateLayout.empty("骚瑞, 没有找到歌曲歌词噢...")
+                }
+                else{
+                    val list = App.playList.lyricInfo.second
+                    adapter.submitList(list!!.lyrics)
+                    val current = list.current(AudioHelper.getPosition())
+                    _binding.rvList.layoutManager!!.scrollToPosition(adapter.getItemPosition(current))
+                    _binding.stateLayout.content()
+                }
             }
         }
     }
@@ -103,7 +111,7 @@ class LyricActivity:BaseActivity<ActivityLyricBinding>() {
         menuInflater.inflate(R.menu.menu_lyric,menu)
         return true
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override fun onOptionsItemSelected(item: MenuItem): Boolean{
         when(item.itemId){
             R.id.action_artist -> {
@@ -128,10 +136,9 @@ class LyricActivity:BaseActivity<ActivityLyricBinding>() {
         return super.onOptionsItemSelected(item)
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaPositionChangeEvent(event:MediaPositionChangeEvent){
-        val current = App.playList.lyrics!!.current(event.position)
+        val current = App.playList.lyricInfo.second!!.current(event.position)
         if(!adapter.currentIsInitialized()){
             adapter.current = current
             adapter.notifyDataSetChanged()

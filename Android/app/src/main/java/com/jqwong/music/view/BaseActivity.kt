@@ -64,7 +64,7 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
     protected fun toast(message:String){
         Toast.makeText(this,message,Toast.LENGTH_SHORT).show()
     }
-    protected fun changePlatform(ignoreList:List<Platform>,call:(platform:Platform)->Unit){
+    protected fun changePlatform(ignoreList:List<Platform> = listOf(), call:(platform:Platform)->Unit){
         val list = mutableListOf<Platform>()
         Platform.values().forEach {
             if(!ignoreList.contains(it)){
@@ -166,13 +166,13 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
         }
     }
     protected fun gotoLyricActivity(){
-        if(!App.playListIsInitialized() || App.playList.lyrics == null){
+        if(!App.playListIsInitialized() || App.playList.data.isEmpty()){
             return
         }
         startActivity(Intent(this,LyricActivity::class.java))
     }
-    protected fun changePlatform(platform: Platform,key:String){
-        changePlatform(listOf(Platform.KuWo,Platform.NetEaseCloud)){
+    protected fun changePlatform(platform: Platform,key:String,ignoreList: List<Platform> = listOf<Platform>()){
+        changePlatform(ignoreList){
             if(platform == it)
                 return@changePlatform
             startActivity(Intent(this,SearchResultActivity::class.java).apply {
@@ -181,7 +181,7 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
             })
         }
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+
     protected fun collectOrCancelMedia(platform: Platform,sheet: SongSheet?,media: Media, collect:Boolean,call:(success:Boolean) -> Unit){
         //if(media.platform != platform){
         //    val msg = "It is not supported to bookmark songs from the '${media.platform.name}' platform to the '${platform.name}' platform"

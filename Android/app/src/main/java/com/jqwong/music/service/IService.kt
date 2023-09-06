@@ -25,7 +25,7 @@ interface IService {
     suspend fun getLyrics(id:String):Response<Lyrics>
     suspend fun getUserSheet(data: Any):Response<List<SongSheet>>
     suspend fun getUserSheetData(page:Int, limit:Int,data:Any):Response<List<Media>>
-    @RequiresApi(Build.VERSION_CODES.O)
+
     fun <T>error(title:String, e:Exception):Response<T>{
         return Response(
             title = title,

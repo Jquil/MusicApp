@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class RecommendDailyActivity:Template() {
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
         _platform = Platform.valueOf(intent.getStringExtra(ExtraKey.Platform.name)!!)
@@ -40,7 +40,7 @@ class RecommendDailyActivity:Template() {
 
             }
 
-            @RequiresApi(Build.VERSION_CODES.O)
+            
             override fun onLoad() {
             }
         })
@@ -51,7 +51,7 @@ class RecommendDailyActivity:Template() {
         return true
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override fun onOptionsItemSelected(item: MenuItem): Boolean{
         when(item.itemId){
             R.id.action_lyric -> {
@@ -70,7 +70,7 @@ class RecommendDailyActivity:Template() {
         return super.onOptionsItemSelected(item)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     private fun loadMediaList(platform: Platform,reloadNumber: Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){
@@ -128,7 +128,7 @@ class RecommendDailyActivity:Template() {
         menuInflater.inflate(R.menu.menu_sheet_item,menu)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_artist -> {

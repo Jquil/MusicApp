@@ -1,3 +1,6 @@
 package com.jqwong.music.event
 
-class LyricsLoadingEvent(val finish:Boolean)
+import com.jqwong.music.model.LyricStatus
+import com.jqwong.music.model.Lyrics
+
+class LyricsLoadingEvent(val info: Pair<LyricStatus, Lyrics?>)

@@ -25,7 +25,7 @@ class RecommendSheetActivity:Template() {
     private val sheets = mutableMapOf<Platform,List<SongSheet>>()
     private lateinit var currentSheet: SongSheet
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
         supportActionBar?.title = "每日推荐歌单"
@@ -52,7 +52,7 @@ class RecommendSheetActivity:Template() {
 
             }
 
-            @RequiresApi(Build.VERSION_CODES.O)
+            
             override fun onLoad() {
                 loadMediaList(_platform,currentSheet.id)
             }
@@ -63,7 +63,7 @@ class RecommendSheetActivity:Template() {
         return true
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override fun onOptionsItemSelected(item: MenuItem): Boolean{
         when (item.itemId) {
             R.id.action_lyric -> {
@@ -123,7 +123,7 @@ class RecommendSheetActivity:Template() {
         menuInflater.inflate(R.menu.menu_sheet_item,menu)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_artist -> {
@@ -141,7 +141,7 @@ class RecommendSheetActivity:Template() {
         return super.onContextItemSelected(item)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     private fun loadMediaList(platform: Platform, id:String, reloadNumber:Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){
@@ -195,7 +195,7 @@ class RecommendSheetActivity:Template() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     private fun getRecommendSheets(platform: Platform, callback:(List<SongSheet>) -> Unit, reloadNumber: Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){

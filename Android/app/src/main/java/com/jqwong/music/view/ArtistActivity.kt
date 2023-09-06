@@ -26,7 +26,6 @@ class ArtistActivity:Template() {
 
     private lateinit var artist: Artist
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
         intent.getStringExtra(ExtraKey.Artist.name).let {
@@ -54,14 +53,14 @@ class ArtistActivity:Template() {
 
             }
 
-            @RequiresApi(Build.VERSION_CODES.O)
+
             override fun onLoad() {
                 loadMediaList()
             }
         })
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
     private fun loadMediaList(reloadNumber:Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){
@@ -116,7 +115,6 @@ class ArtistActivity:Template() {
         return true
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_change_platform->{

@@ -13,6 +13,11 @@ class Lyric(
     val time:Long,
     val text:String
 )
+enum class LyricStatus{
+    Loading,
+    Success,
+    Error
+}
 
 fun Lyrics.current(position:Long):Lyric{
     var start = 0

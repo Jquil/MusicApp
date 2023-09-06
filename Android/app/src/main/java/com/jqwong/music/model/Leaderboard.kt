@@ -6,7 +6,7 @@ package com.jqwong.music.model
  */
 class Leaderboard(
     val platform: Platform,
-    val id:String?,
+    val id:String,
     val name:String,
-    val children:List<Leaderboard>?
+    val children:List<Leaderboard>
 )

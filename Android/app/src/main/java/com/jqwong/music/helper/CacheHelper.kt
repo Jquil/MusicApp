@@ -6,7 +6,7 @@ import com.jqwong.music.app.App
 import java.io.File
 
 class CacheHelper {
-    @UnstableApi companion object{
+    companion object{
         fun getTotalCacheSize(ctx:Context):Long{
             return getFolderSize(ctx.cacheDir)
         }

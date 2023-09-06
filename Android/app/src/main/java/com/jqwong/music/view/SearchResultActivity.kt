@@ -27,7 +27,7 @@ import kotlinx.coroutines.withContext
 class SearchResultActivity:Template() {
     private lateinit var key:String
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
         supportActionBar?.title = "搜索"
@@ -56,7 +56,7 @@ class SearchResultActivity:Template() {
 
             }
 
-            @RequiresApi(Build.VERSION_CODES.O)
+            
             override fun onLoad() {
                 loadData()
             }
@@ -67,7 +67,7 @@ class SearchResultActivity:Template() {
         return true
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_refresh -> {
@@ -79,7 +79,7 @@ class SearchResultActivity:Template() {
                 gotoLyricActivity()
             }
             R.id.action_change_platform -> {
-                changePlatform(listOf()){
+                changePlatform(){
                     if(it == _platform)
                         return@changePlatform
                     _platform = it
@@ -110,7 +110,7 @@ class SearchResultActivity:Template() {
         return super.onContextItemSelected(item)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     private fun loadData(reloadNumber:Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){

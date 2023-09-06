@@ -251,6 +251,7 @@
                             android:clickable="true"
                             android:background="?android:attr/selectableItemBackground"/>
                         <TextView
+                            android:id="@+id/link_config_qq"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="[2] QQ音乐"

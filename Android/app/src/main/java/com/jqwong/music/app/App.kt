@@ -5,7 +5,7 @@ import androidx.media3.common.util.UnstableApi
 import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.model.*
 
-@UnstableApi
+
 /**
  * @author: Jq
  * @date: 7/29/2023
@@ -23,6 +23,7 @@ class App:Application(){
         }
     }
 
+    @UnstableApi
     override fun onCreate() {
         super.onCreate()
         AudioHelper.init(this)

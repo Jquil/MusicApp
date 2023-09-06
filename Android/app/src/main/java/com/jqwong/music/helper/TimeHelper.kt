@@ -12,18 +12,8 @@ class TimeHelper {
 
     companion object
     {
-        @RequiresApi(Build.VERSION_CODES.O)
         fun getTime():Long{
-            return Instant.now().epochSecond
+            return System.currentTimeMillis()/1000
         }
     }
-}
-fun String.toKwTime():Long{
-    return (toDouble()*1000).toLong()
-}
-
-fun String.toNetEaseCloudTime():Long{
-    val arr = split(":")
-    val first = arr[0].toLong() * 60
-    return ((arr[1].toDouble() + first) * 1000).toLong()
 }

@@ -1,6 +1,5 @@
 package com.jqwong.music.view
 
-import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.view.ContextMenu
@@ -8,7 +7,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
-import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
@@ -33,8 +31,6 @@ class LeaderboardActivity:Template() {
     private val leaderboards:MutableMap<Platform,List<Leaderboard>> = mutableMapOf()
     private lateinit var currentLeaderboard:Leaderboard
 
-    @SuppressLint("SuspiciousIndentation")
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
         supportActionBar?.title = "排行榜"
@@ -50,7 +46,7 @@ class LeaderboardActivity:Template() {
             leaderboards.put(_platform,it)
             currentLeaderboard = getFirstLeaderboard(it)
             supportActionBar?.subtitle = currentLeaderboard.name
-            loadMediaList(_platform,currentLeaderboard.id!!)
+            loadMediaList(_platform,currentLeaderboard.id)
         })
     }
     override fun intView() {
@@ -60,7 +56,7 @@ class LeaderboardActivity:Template() {
 
             }
 
-            @RequiresApi(Build.VERSION_CODES.O)
+            
             override fun onLoad() {
                 loadMediaList(_platform,currentLeaderboard.id.toString())
             }
@@ -70,7 +66,7 @@ class LeaderboardActivity:Template() {
         menuInflater.inflate(R.menu.menu_leaderboard,menu)
         return true
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if(_binding.includeMain.stateLayout.loaded){
             when(item.itemId) {
@@ -86,25 +82,23 @@ class LeaderboardActivity:Template() {
                         rvList.layoutManager = LinearLayoutManager(this@LeaderboardActivity)
                         rvList.adapter = adapter
                         adapter.setOnItemClickListener(object:BaseQuickAdapter.OnItemClickListener<Leaderboard>{
-                            @RequiresApi(Build.VERSION_CODES.O)
+                            
                             override fun onClick(
                                 adapter: BaseQuickAdapter<Leaderboard, *>,
                                 view: View,
                                 position: Int
                             ) {
-                                val item = adapter.getItem(position)!!
-                                path.add(item)
-                                if(item.children != null){
-                                    adapter.submitList(item.children)
+                                val _item = adapter.getItem(position)!!
+                                path.add(_item)
+                                if(_item.children.isNotEmpty()){
+                                    adapter.submitList(_item.children)
                                 }
                                 else{
                                     page = 0
-                                    currentLeaderboard = item
+                                    currentLeaderboard = _item
                                     supportActionBar?.subtitle = currentLeaderboard.name
                                     _binding.includeMain.stateLayout.showLoading()
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        loadMediaList(_platform,item.id.toString(),0)
-                                    }
+                                    loadMediaList(_platform,_item.id,0)
                                 }
                             }
 
@@ -128,7 +122,7 @@ class LeaderboardActivity:Template() {
                     }
                 }
                 R.id.action_change_platform -> {
-                    changePlatform(listOf(Platform.QQ)) {
+                    changePlatform() {
                         if(it == _platform)
                             return@changePlatform
                         page = 0
@@ -137,7 +131,7 @@ class LeaderboardActivity:Template() {
                         if(leaderboards.containsKey(_platform)){
                             currentLeaderboard = getFirstLeaderboard(leaderboards.get(_platform)!!)
                             supportActionBar?.subtitle = currentLeaderboard.name
-                            loadMediaList(_platform,currentLeaderboard.id!!)
+                            loadMediaList(_platform,currentLeaderboard.id)
                         }
                         else{
                             supportActionBar?.subtitle = ""
@@ -147,7 +141,7 @@ class LeaderboardActivity:Template() {
                                 leaderboards.put(_platform,it)
                                 currentLeaderboard = getFirstLeaderboard(leaderboards.get(_platform)!!)
                                 supportActionBar?.subtitle = currentLeaderboard.name
-                                loadMediaList(_platform,currentLeaderboard.id!!)
+                                loadMediaList(_platform,currentLeaderboard.id)
                             })
                         }
                     }
@@ -158,7 +152,7 @@ class LeaderboardActivity:Template() {
                 R.id.action_refresh -> {
                     _binding.includeMain.stateLayout.showLoading()
                     page = 0
-                    loadMediaList(_platform,currentLeaderboard.id!!)
+                    loadMediaList(_platform,currentLeaderboard.id)
                 }
             }
         }
@@ -172,7 +166,7 @@ class LeaderboardActivity:Template() {
         super.onCreateContextMenu(menu, v, menuInfo)
         menuInflater.inflate(R.menu.menu_sheet_item,menu)
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_collect -> {
@@ -191,13 +185,13 @@ class LeaderboardActivity:Template() {
     }
     private fun getFirstLeaderboard(data:List<Leaderboard>):Leaderboard{
         val lb = data.first()
-        return if(lb.children != null){
+        return if(lb.children.isNotEmpty()){
             getFirstLeaderboard(lb.children)
         } else{
             lb
         }
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     private fun getLeaderBoards(platform: Platform, callback:(List<Leaderboard>) -> Unit, reloadNumber: Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){
@@ -207,26 +201,31 @@ class LeaderboardActivity:Template() {
             withContext(Dispatchers.Main){
                 if(data.exception != null){
                     if(reloadNumber == App.config.retry_max_count){
-                        _binding.includeMain.stateLayout.apply {
-                            onError {
-                                this@apply.startAnimation()
-                            }
-                            this.showError()
-                            this.error(data.exception)
-                        }
+                        _binding.includeToolbar.cpiLoading.visibility = View.GONE
+                        _binding.includeMain.stateLayout.error(data.exception)
                     }
                     else{
                         getLeaderBoards(platform,callback,reloadNumber+1)
                     }
                 }
                 else{
+                    if(!data.support){
+                        _binding.includeMain.stateLayout.empty("暂不支持'$platform'获取排行榜数据噢")
+                        _binding.includeToolbar.cpiLoading.visibility = View.GONE
+                        return@withContext
+                    }
+                    if(!data.success){
+                        _binding.includeMain.stateLayout.empty(data.message)
+                        _binding.includeToolbar.cpiLoading.visibility = View.GONE
+                        return@withContext
+                    }
                     val result = data.data!!
                     callback(result)
                 }
             }
         }
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     private fun loadMediaList(platform: Platform, id:String, reloadNumber:Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){

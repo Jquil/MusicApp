@@ -62,7 +62,7 @@ class KuWOService:IService {
         return notSupport(this::collectOrCancelSong.name)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun getLeaderboard(): Response<List<Leaderboard>> {
         val title = this::getLeaderboard.name
         val result = service.getLeaderboard().awaitResult()
@@ -79,14 +79,14 @@ class KuWOService:IService {
                             platform = Platform.KuWo,
                             id = it.sourceid,
                             name = it.name,
-                            children = null
+                            children = listOf()
                         )
                     )
                 }
                 list.add(
                     Leaderboard(
                         platform = Platform.KuWo,
-                        id = null,
+                        id = "",
                         name = it.name,
                         children = children
                     )
@@ -103,7 +103,7 @@ class KuWOService:IService {
             )
         }
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun getLeaderboardSongList(id: String, page: Int, limit: Int): Response<List<Media>> {
         val title = this::getLeaderboardSongList.name
         val result = service.getLeaderboardSongList(id.toString(),page,limit).awaitResult()
@@ -125,7 +125,7 @@ class KuWOService:IService {
             )
         }
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun getArtistSongList(id: String, page: Int, limit: Int):Response<List<Media>> {
         val title = this::getArtistSongList.name
         val result = service.getArtistSongList(id,page,limit).awaitResult()
@@ -147,7 +147,7 @@ class KuWOService:IService {
             )
         }
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun getArtistInfo(id: Long): Response<Artist> {
         val title = this::getArtistInfo.name
         val result = service.getArtistInfo(id.toString()).awaitResult()
@@ -175,7 +175,7 @@ class KuWOService:IService {
             )
         }
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun search(key: String, page: Int, limit: Int): Response<List<Media>> {
         return search2(key, page, limit)
         val title = this::search.name
@@ -198,7 +198,7 @@ class KuWOService:IService {
             )
         }
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     suspend fun search2(key: String, page: Int, limit: Int):Response<List<Media>>{
         // 页号从0开始
         val title = this::search2.name
@@ -221,7 +221,7 @@ class KuWOService:IService {
             )
         }
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun getRecommendSongSheetList(data: Any): Response<List<SongSheet>> {
         val title = this::getRecommendSongSheetList.name
         val result = service.getRecommendSongSheet().awaitResult()
@@ -248,7 +248,7 @@ class KuWOService:IService {
             )
         }
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun getRecommendSongSheetData(id:String, page:Int, limit:Int, data:Any): Response<List<Media>> {
         val title = this::getRecommendSongSheetData.name
         val result = service.getRecommendSongSheetData(id,page,limit).awaitResult()
@@ -332,7 +332,7 @@ class KuWOService:IService {
             )
         }
     }
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun getLyrics(id: String) :Response<Lyrics>{
         val title = this::getLyrics.name
         val url = "http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=${id}&httpsStatus=1&reqId=f9204c10-1df1-11ec-8b4f-9f163660962a"
@@ -502,7 +502,7 @@ class KuWOService:IService {
                 return out
             }
 
-            @RequiresApi(Build.VERSION_CODES.O)
+            
             fun encrypt(text:String):String{
                 val buffer = text.toByteArray()
                 var len:ULong = 0u

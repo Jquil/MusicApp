@@ -69,10 +69,10 @@ class Config(
     ){
         companion object{
             val qualities = mapOf(
-                "sq" to "sq",
-                "hr" to "hr",
-                "hq" to "hq",
-                "mp3" to "mp3"
+                "标准" to "mp3",
+                "较高" to "hq",
+                "Hi-Res" to "hr",
+                "无损" to "sq",
             )
         }
     }
@@ -106,7 +106,7 @@ class Config(
                     quality = KuWoConfig.qualities["flac"]!!
                 ),
                 qqConfig = QQConfig(
-                    quality = QQConfig.qualities["mp3"]!!
+                    quality = QQConfig.qualities["标准"]!!
                 )
             )
         }

@@ -40,7 +40,7 @@ import org.greenrobot.eventbus.ThreadMode
  */
 class MainActivity:BaseActivity<ActivityMainBinding>() {
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     override fun initData(savedInstanceState: Bundle?) {
         _binding.stateLayout.showLoading()
         val sp = getSharedPreferences(Constant.CONFIG, MODE_PRIVATE)
@@ -166,7 +166,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             CacheHelper.clear(this)
         super.onStop()
     }
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     private fun refreshToken(platform: Platform){
         when(platform){
             Platform.NetEaseCloud  -> {
@@ -185,7 +185,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             else->{}
         }
     }
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSyncUserSheetEvent(event: SyncUserSheetEvent) {
         fun addView(platform:Platform,list:List<SongSheet>,jumpParams:String){
@@ -278,33 +278,37 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaPositionChangeEvent(event:MediaPositionChangeEvent){
-        if(!App.playListIsInitialized() || App.playList.lyrics == null)
+        if(!App.playListIsInitialized() || App.playList.lyricInfo.second == null)
             return
-        val lyric = App.playList.lyrics!!.current(event.position)
+        val lyric = App.playList.lyricInfo.second!!.current(event.position)
         _binding.layoutPlayBar.tvLyric.text = lyric.text
-        _binding.layoutPlayBar.lpiPlay.progress = (event.position*1.0/App.playList.lyrics!!.lyrics.last().time*100).toInt()
+        _binding.layoutPlayBar.lpiPlay.progress = (event.position*1.0/App.playList.lyricInfo.second!!.lyrics.last().time*100).toInt()
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaLoadingEvent(event:MediaLoadingEvent){
-        // 加载歌词完成后重置状态
-        _binding.layoutPlayBar.tvLyric.text = "loading..."
-        _binding.layoutPlayBar.cpiLoading.visibility = View.VISIBLE
-        _binding.layoutPlayBar.ibPlayStatus.visibility = View.GONE
+        _binding.layoutPlayBar.cpiLoading.visibility = if(event.finish) View.GONE else View.VISIBLE
+        _binding.layoutPlayBar.ibPlayStatus.visibility = if(event.finish) View.VISIBLE else View.GONE
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onLyricsLoadingEvent(event: LyricsLoadingEvent){
-        if(event.finish){
-            _binding.layoutPlayBar.tvLyric.text = ""
-            if(App.playListIsInitialized()){
-                if(App.playList.lyrics != null){
-                    _binding.layoutPlayBar.tvLyric.text = App.playList.lyrics!!.lyrics.first().text
-                }
-                else{
-                    _binding.layoutPlayBar.tvLyric.text = "i'm sorry, but no data was requested"
-                }
+        when(event.info.first){
+            LyricStatus.Loading->{
+                _binding.layoutPlayBar.tvLyric.text = "loading..."
+                _binding.layoutPlayBar.cpiLoading.visibility = View.VISIBLE
+                _binding.layoutPlayBar.ibPlayStatus.visibility = View.GONE
             }
-            _binding.layoutPlayBar.cpiLoading.visibility = View.GONE
-            _binding.layoutPlayBar.ibPlayStatus.visibility = View.VISIBLE
+            LyricStatus.Error->{
+                _binding.layoutPlayBar.tvLyric.text = "很抱歉, 没有找到歌曲歌词.."
+                _binding.layoutPlayBar.cpiLoading.visibility = View.GONE
+                _binding.layoutPlayBar.ibPlayStatus.visibility = View.VISIBLE
+            }
+            LyricStatus.Success->{
+                if(App.playList.lyricInfo.second != null){
+                    _binding.layoutPlayBar.tvLyric.text = App.playList.lyricInfo.second!!.lyrics.first().text
+                }
+                _binding.layoutPlayBar.cpiLoading.visibility = View.GONE
+                _binding.layoutPlayBar.ibPlayStatus.visibility = View.VISIBLE
+            }
         }
     }
     @Subscribe(threadMode = ThreadMode.MAIN)

@@ -5,5 +5,5 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
-    <style name="Theme.Music" parent="Base.Theme.Music" />
+    <style name="Theme.Music" parent="Base.Theme.Music"/>
 </resources>

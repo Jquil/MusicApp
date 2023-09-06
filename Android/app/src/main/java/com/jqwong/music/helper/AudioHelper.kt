@@ -40,7 +40,6 @@ class AudioHelper {
                 .build()
             _session = MediaSession.Builder(ctx, _player)
                 .setCallback(object:MediaSession.Callback{
-                    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
                     override fun onPlayerCommandRequest(
                         session: MediaSession,
                         controller: MediaSession.ControllerInfo,
@@ -72,7 +71,7 @@ class AudioHelper {
                     }
                 }
 
-                @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+
                 override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
                     super.onMediaMetadataChanged(mediaMetadata)
                     // 加载歌词 & 准备下一首歌曲
@@ -83,9 +82,8 @@ class AudioHelper {
                         if(index != -1){
                             App.playList.index = index
                             EventBus.getDefault().post(MediaChangeEvent(App.playList.data.get(index)))
-                            EventBus.getDefault().post(MediaLoadingEvent(finish = false))
-                            EventBus.getDefault().post(LyricsLoadingEvent(false))
-
+                            App.playList.lyricInfo = Pair(LyricStatus.Loading,null)
+                            EventBus.getDefault().post(LyricsLoadingEvent(App.playList.lyricInfo))
                             var platform = media.platform
                             var id = media.id
                             if(media.enable_media != null){
@@ -94,13 +92,12 @@ class AudioHelper {
                             }
                             getLyrics(platform,id,0) { success, lyrics ->
                                 if(success){
-                                    App.playList.lyrics = lyrics
+                                    App.playList.lyricInfo = Pair(LyricStatus.Success,lyrics)
                                 }
                                 else{
-                                    App.playList.lyrics = null
+                                    App.playList.lyricInfo = Pair(LyricStatus.Error,null)
                                 }
-                                EventBus.getDefault().post(MediaLoadingEvent(finish = true))
-                                EventBus.getDefault().post(LyricsLoadingEvent(true))
+                                EventBus.getDefault().post(LyricsLoadingEvent(App.playList.lyricInfo))
                             }
                             prepare()
                         }
@@ -123,7 +120,7 @@ class AudioHelper {
                 }
             })
         }
-        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+
         fun start(){
             if(!App.playListIsInitialized())
                 return
@@ -158,7 +155,7 @@ class AudioHelper {
                 _player.seekToPrevious()
             }
         }
-        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+
         fun next(){
             if(this::_player.isInitialized){
                 _player.seekToNext()
@@ -183,7 +180,7 @@ class AudioHelper {
                 return false
             return _player.isPlaying
         }
-        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+
         private fun prepare(loadIndex:Int = 0){
             if(_player.hasNextMediaItem())
                 return
@@ -223,7 +220,7 @@ class AudioHelper {
                 Platform.QQ -> App.config.qqConfig.quality
             }
         }
-        @RequiresApi(Build.VERSION_CODES.O)
+        
         private fun getLyrics(
             platform: Platform,
             id:String,
@@ -231,9 +228,9 @@ class AudioHelper {
             call: (success:Boolean,lyrics:Lyrics?) -> Unit
         ){
             CoroutineScope(Dispatchers.IO).launch {
-                if(reloadNumber != 0){
+                //if(reloadNumber != 0){
                     //(1500)
-                }
+                //}
                 val result = ServiceProxy.get(platform).data?.getLyrics(id)!!
                 withContext(Dispatchers.Main){
                     if(result.exception != null){
@@ -252,7 +249,7 @@ class AudioHelper {
                 }
             }
         }
-        @RequiresApi(Build.VERSION_CODES.O)
+        
         private fun getMedia(index:Int, call:(success:Boolean, media:Media?) -> Unit){
             // 跟随配置动态请求
             CoroutineScope(Dispatchers.IO).launch{
@@ -262,7 +259,7 @@ class AudioHelper {
                     }
                     return@launch
                 }
-                var media = App.playList.data.get(index)
+                val media = App.playList.data.get(index)
 
                 // 调整切换平台顺序,将当前音乐平台放在首位置
                 val list = mutableListOf<ChangePlatformItem>()
@@ -357,7 +354,11 @@ class AudioHelper {
                                                 }
                                             }
                                         }
-                                        val result = ServiceProxy.get(it.platform).data?.getMvUrl(it.mv_id!!)!!
+                                        var mvid = it.mv_id
+                                        if(it.platform == Platform.QQ && it.data.containsKey("vid")){
+                                            mvid = it.data["vid"].toString()
+                                        }
+                                        val result = ServiceProxy.get(it.platform).data?.getMvUrl(mvid)!!
                                         if(result.exception == null && !result.data.isNullOrEmpty()){
                                             it.mv_url = result.data
                                             val parseResult = FFmPegHelper.getAudio(result.data,path)
@@ -383,7 +384,7 @@ class AudioHelper {
                 }
             }
         }
-        @RequiresApi(Build.VERSION_CODES.O)
+        
         private suspend fun getPlayUrl(media: Media, quality:Any, maxReload:Int, reload:Int = 0):String?{
             if(reload != 0){
                 //delay((reload * 1000).toLong())
@@ -405,7 +406,7 @@ class AudioHelper {
                 return null
             return result.data
         }
-        @RequiresApi(Build.VERSION_CODES.O)
+        
         private suspend fun getSimilarMediaList(platform: Platform, media:Media,maxSize:Int = 3):List<Media>{
             var key = "${media.name} ${media.artists.first().name}"
             var name2 = media.name
@@ -420,6 +421,7 @@ class AudioHelper {
                 return listOf()
             val list = mutableListOf<Media>()
             val spareList = mutableListOf<Media>()
+            val spareList2 = mutableListOf<Media>()
             result.data!!.forEach {
                 if(it.name.contains(name2,ignoreCase = true)){
                     if(media.artists.compare(it.artists)){
@@ -428,9 +430,13 @@ class AudioHelper {
                     if(media.artists.exist(it.artists)){
                         spareList.add(it)
                     }
+                    if(media.artists.like(it.artists)){
+                        spareList2.add(it)
+                    }
                 }
             }
             list.addAll(spareList)
+            list.addAll(spareList2)
             // 限制三条记录
             if(list.count() > maxSize){
                 for(i in list.count()-1 downTo 0){

@@ -3,6 +3,7 @@ package com.jqwong.music.api
 import com.jqwong.music.api.entity.qq.ArtistSongListData
 import com.jqwong.music.api.entity.qq.ArtistSongListResponse
 import com.jqwong.music.api.entity.qq.LyricsResponse
+import com.jqwong.music.api.entity.qq.MvUrlResponse
 import com.jqwong.music.api.entity.qq.PlayUrl
 import com.jqwong.music.api.entity.qq.SearchResponse
 import okhttp3.RequestBody
@@ -21,4 +22,7 @@ interface QQMusicApi {
 
     @POST("/cgi-bin/musicu.fcg")
     fun getArtistSongList(@Body body: RequestBody):Call<ArtistSongListResponse>
+
+    @POST("/cgi-bin/musicu.fcg")
+    fun getMvUrl(@Body body: RequestBody):Call<MvUrlResponse>
 }

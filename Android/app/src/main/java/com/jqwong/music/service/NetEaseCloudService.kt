@@ -64,7 +64,7 @@ class NetEaseCloudService:IService {
         return Platform.NetEaseCloud
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     override suspend fun collectOrCancelSong(collect: Boolean, data: Any): Response<Boolean> {
         val title = this::collectOrCancelSong.name
         val arr = data.toString().split(';')
@@ -103,7 +103,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun getLeaderboard(): Response<List<Leaderboard>> {
         val title = this::getLeaderboard.name
         val result = service.getLeaderboard().awaitResult()
@@ -118,7 +118,7 @@ class NetEaseCloudService:IService {
                         platform = Platform.NetEaseCloud,
                         id = it.id.toString(),
                         name = it.name,
-                        children = null
+                        children = listOf()
                     )
                 )
             }
@@ -133,7 +133,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     override suspend fun getLeaderboardSongList(
         id: String,
         page: Int,
@@ -142,7 +142,7 @@ class NetEaseCloudService:IService {
         return getPlayList(this::getLeaderboardSongList.name,id,page,limit,"")
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     suspend fun getPlayList(title:String, id:String, page: Int, limit: Int, token:String):Response<List<Media>>{
         val detail = service.getPlayListDetail(id.toLong()).awaitResult()
         if(detail.e != null){
@@ -196,7 +196,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     override suspend fun getArtistSongList(id: String, page: Int, limit: Int): Response<List<Media>> {
         val title = this::getArtistSongList.name
         val map = mapOf(
@@ -234,7 +234,7 @@ class NetEaseCloudService:IService {
         TODO("Not yet implemented")
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     override suspend fun search(key: String, page: Int, limit: Int): Response<List<Media>> {
         val title = this::search.name
         val api = "https://interface.music.163.com/eapi/cloudsearch/pc"
@@ -266,7 +266,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     override suspend fun getRecommendSongSheetList(data: Any): Response<List<SongSheet>> {
         val title = this::getRecommendSongSheetList.name
         if(data.toString().isNullOrEmpty())
@@ -295,7 +295,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     override suspend fun getRecommendSongSheetData(
         id: String,
         page: Int,
@@ -305,7 +305,7 @@ class NetEaseCloudService:IService {
         return getPlayList(this::getRecommendSongSheetData.name,id,page,limit,data.toString())
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     override suspend fun getRecommendDaily(data: Any): Response<List<Media>> {
         val title = this::getRecommendDaily.name
         if(data.toString().isEmpty())
@@ -334,7 +334,6 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override suspend fun getUserSheet(data:Any):Response<List<SongSheet>>{
         // uid:String, token:String
         val title = this::getUserSheet.name
@@ -381,7 +380,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     override suspend fun getUserSheetData(page:Int, limit:Int, data: Any): Response<List<Media>> {
         val title = this::getUserSheetData.name
         if(data.toString().isNullOrEmpty())
@@ -396,7 +395,7 @@ class NetEaseCloudService:IService {
         return getPlayList(title,id,page,limit,token)
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     override suspend fun getPlayUrl(id: String, quality: Any): Response<String> {
         val title = this::getPlayUrl.name
         val api = "https://interface.music.163.com/eapi/song/enhance/player/url/v1"
@@ -448,7 +447,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override suspend fun getLyrics(id: String): Response<Lyrics> {
         val title = this::getLyrics.name
         val result = service.getLyrics(id).awaitResult()
@@ -499,7 +498,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     suspend fun getLoginUniKey():Response<String>{
         val title = this::getLoginUniKey.name
         val map = mapOf(
@@ -524,7 +523,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     suspend fun loginCheck(key: String):Response<LoginResponse>{
         val title = this::loginCheck.name
         val map = mapOf(
@@ -585,7 +584,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     suspend fun getUserInfo(token:String):Response<Config.NetEaseCloudConfig>{
         val title = this::getUserInfo.name
         val map = mapOf(
@@ -618,7 +617,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     suspend fun sendCodeByPhone(phone:String):Response<Boolean>{
         val title = this::sendCodeByPhone.name
         val map = mapOf(
@@ -644,7 +643,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     suspend fun loginByPhone(phone: String, code:String):Response<Config.NetEaseCloudConfig>{
         val title = this::loginByPhone.name
         val map = mapOf(
@@ -692,7 +691,7 @@ class NetEaseCloudService:IService {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    
     suspend fun refreshToken(token:String):Response<Boolean>{
         val title = this::refreshToken.name
         val map = mapOf(
@@ -746,7 +745,7 @@ class NetEaseCloudService:IService {
         return Triple(token.isNotEmpty() && musicA.isNotEmpty(),token,musicA)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     private fun <T>noAuthResponse(title:String):Response<T>{
         return Response(
             title = title,
@@ -791,7 +790,8 @@ class NetEaseCloudService:IService {
                     return response.toString().uppercase()
                 }
             }
-            @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+
+
             fun weApi(text:String):Pair<String,String>{
                 var encrypt_text = ""
                 val iv = "0102030405060708"
@@ -809,7 +809,7 @@ class NetEaseCloudService:IService {
                     it.init(Cipher.ENCRYPT_MODE,keySpec, IvParameterSpec(iv.toByteArray(Charsets.UTF_8)))
                     encrypt_text = Base64.getEncoder().encodeToString(it.doFinal(encrypt_text.toByteArray(Charsets.UTF_8)))
                 }
-                encrypt_text = URLEncoder.encode(encrypt_text,Charsets.UTF_8)
+                encrypt_text = URLHelper.encode(encrypt_text,Charsets.UTF_8)
                 return Pair(encrypt_text,encSecKey)
             }
         }
