@@ -57,6 +57,10 @@ class AboutActivity:BaseActivity<ActivityAboutBinding>() {
         }
         _binding.btnCheckUpdate.setOnClickListener {
             fun show(){
+                if(App.newestVersion!!.number == App.version.number){
+                    toast("已经是最新版本咯")
+                    return
+                }
                 MaterialDialog(this, BottomSheet()).show {
                     customView(R.layout.dialog_version_application)
                     cornerRadius(20f)
@@ -91,7 +95,9 @@ class AboutActivity:BaseActivity<ActivityAboutBinding>() {
                             finish = false,
                             client = null
                         ){
-                            UpdateHelper.install(path)
+                            runOnUiThread {
+                                UpdateHelper.install(path)
+                            }
                         }
                         toast("开始下载咯")
                         DownloadHelper.add(task)

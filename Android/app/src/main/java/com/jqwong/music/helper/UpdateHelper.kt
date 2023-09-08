@@ -1,5 +1,6 @@
 package com.jqwong.music.helper
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -45,8 +46,8 @@ class UpdateHelper {
                     }
 
                     override fun onResponse(call: Call, response: Response) {
-                        val content = response.body().toString()
                         try {
+                            val content = response.body()!!.string()
                             val data = Version.fromJson(content)
                             callback(com.jqwong.music.model.Response(
                                 title = title,
@@ -88,7 +89,8 @@ class UpdateHelper {
             else{
                 intent.setDataAndType(Uri.parse("file://$path"),"application/vnd.android.package-archive")
             }
-            App.ctx!!.startActivity(intent)
+            val activity = ActivityHelper.current()
+            activity?.startActivity(intent)
         }
     }
 }

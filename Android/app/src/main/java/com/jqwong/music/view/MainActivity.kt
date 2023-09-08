@@ -24,6 +24,7 @@ import com.jqwong.music.event.*
 import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.helper.CacheHelper
 import com.jqwong.music.helper.TimeHelper
+import com.jqwong.music.helper.UpdateHelper
 import com.jqwong.music.helper.content
 import com.jqwong.music.model.*
 import com.jqwong.music.service.NetEaseCloudService
@@ -70,9 +71,6 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
         _binding.wvView.webViewClient = KuWoWebViewClient()
         _binding.wvView.loadUrl("http://kuwo.cn")
 
-        // 抓取QQ平台签名
-
-
         // 同步歌单
         onSyncUserSheetEvent(SyncUserSheetEvent(Platform.NetEaseCloud,App.config.netEaseCloudConfig.sync_user_sheet){success, message ->
             if(!success)
@@ -82,6 +80,18 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
 
         // 刷新token
         refreshToken(Platform.NetEaseCloud)
+
+        // 检查更新
+        UpdateHelper.newest {
+            runOnUiThread {
+                if(it.data != null){
+                    App.newestVersion = it.data
+                    if(App.newestVersion!!.number > App.version.number){
+                        toast("应用有更新拉, 具体信息去'关于'中查看把")
+                    }
+                }
+            }
+        }
     }
     override fun intView() {
         _binding.btnDrawer.setOnClickListener {

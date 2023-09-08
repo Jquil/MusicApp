@@ -22,9 +22,9 @@ class DownloadHelper {
             taskList.put(task.id,task)
             task.client = OkHttpClient()
             val request = Request.Builder()
-                .url(task.downloadPath)
+                .url("https://www.pgyer.com/app/install/de047ce623dbb5ade2ce5b1119fd0d18")
                 .build()
-            task.client!!.newCall(request).enqueue(object:Callback{
+            OkHttpClient().newCall(request).enqueue(object:Callback{
                 override fun onFailure(call: Call, e: IOException) {
                     EventBus.getDefault().post(DownloadEvent(task.info().apply {
                         this.exception = e
@@ -60,7 +60,6 @@ class DownloadHelper {
                     _is.close()
                     fos.close()
                 }
-
             })
         }
         fun exist(id:String):Boolean{
