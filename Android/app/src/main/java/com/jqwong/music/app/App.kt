@@ -1,6 +1,7 @@
 package com.jqwong.music.app
 
 import android.app.Application
+import android.content.Context
 import androidx.media3.common.util.UnstableApi
 import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.model.*
@@ -12,20 +13,23 @@ import com.jqwong.music.model.*
  */
 class App:Application(){
     companion object{
-        lateinit var config:Config
+        var ctx:Context? = null
+        var config = Config.default()
         val userSheets:MutableMap<Platform,List<SongSheet>> = mutableMapOf()
         var exceptions:MutableList<ExceptionLog> = mutableListOf()
-        val version = Version("1.0.0",1)
+        val version = Version("1.0.0",1,"初始化版本","")
+        var newestVersion:Version? = null
         lateinit var playList:PlayList
-
         fun playListIsInitialized():Boolean{
             return this::playList.isInitialized
         }
+
     }
 
     @UnstableApi
     override fun onCreate() {
         super.onCreate()
-        AudioHelper.init(this)
+        ctx = this
+        AudioHelper.init(ctx!!)
     }
 }

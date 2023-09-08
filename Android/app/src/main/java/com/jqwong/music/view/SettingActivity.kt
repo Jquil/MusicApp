@@ -1,19 +1,15 @@
 package com.jqwong.music.view
 
-import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.*
-import androidx.annotation.RequiresApi
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.children
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -152,7 +148,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                         App.config.kuWoConfig.cookies.clear()
                         App.config.kuWoConfig.cookies.putAll(map)
                         App.config.save(this@SettingActivity)
-                        loadingButtonFinishAnimation(it,true,"保存成功")
+                        it.delayFinish(this@SettingActivity,true,"保存成功")
                     }
                     catch (e:Exception){
                         val log = ExceptionLog(
@@ -161,7 +157,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                             time = TimeHelper.getTime()
                         )
                         App.exceptions.add(log)
-                        loadingButtonFinishAnimation(it,false,"保存失败: ${log.exception.message}")
+                        it.delayFinish(this@SettingActivity,false,"保存失败: ${log.exception.message}")
                     }
                 }
             }
@@ -310,11 +306,11 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                                 }
                                 withContext(Dispatchers.Main){
                                     if (result.exception != null){
-                                        loadingButtonFinishAnimation(it,false,result.exception.exception.message.toString())
+                                        it.delayFinish(this@SettingActivity,false,result.exception.exception.message.toString())
                                     }
                                     else{
                                         if(!result.data!!.success){
-                                            loadingButtonFinishAnimation(it,false,result.data.message)
+                                            it.delayFinish(this@SettingActivity,false,result.data.message)
                                         }
                                         else{
                                             val config = result.data.data as Config.NetEaseCloudConfig
@@ -330,14 +326,14 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                                                         tvName.text = result2.data.name
                                                         tvToken.text = config.csrf_token
                                                         tvMusicA.text = config.music_a
-                                                        loadingButtonFinishAnimation(it,true,"认证成功")
+                                                        it.delayFinish(this@SettingActivity,true,"认证成功")
                                                     }
                                                     else{
                                                         App.config.netEaseCloudConfig.let {
                                                             it.csrf_token = ""
                                                             it.music_a = ""
                                                         }
-                                                        loadingButtonFinishAnimation(it,false,"获取用户信息失败")
+                                                        it.delayFinish(this@SettingActivity,false,"获取用户信息失败")
                                                     }
                                                 }
                                             }
@@ -367,7 +363,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                                 val result = service.loginByPhone(phone,code)
                                 withContext(Dispatchers.Main){
                                     if(result.exception != null){
-                                        loadingButtonFinishAnimation(it,false,result.exception.exception.message.toString())
+                                        it.delayFinish(this@SettingActivity,false,result.exception.exception.message.toString())
                                     }
                                     else{
                                         var msg = "登录成功"
@@ -380,7 +376,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                                             tvToken.text = result.data.csrf_token
                                             tvMusicA.text = result.data.music_a
                                         }
-                                        loadingButtonFinishAnimation(it,result.success,msg)
+                                        it.delayFinish(this@SettingActivity,result.success,msg)
                                     }
                                 }
                             }
@@ -408,7 +404,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                     }
                     EventBus.getDefault().post(SyncUserSheetEvent(Platform.NetEaseCloud,App.config.netEaseCloudConfig.sync_user_sheet){success, message ->  })
                     App.config.save(this@SettingActivity)
-                    loadingButtonFinishAnimation(it,true,"保存成功")
+                    it.delayFinish(this@SettingActivity,true,"保存成功")
                 }
             }
         }
@@ -443,7 +439,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                             }
                         }
                     }
-                    loadingButtonFinishAnimation(it,true,"保存成功")
+                    it.delayFinish(this@SettingActivity,true,"保存成功")
                 }
             }
         }
@@ -472,23 +468,5 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
     }
     private fun setDropdownDefaultBackground(view:AutoCompleteTextView){
         view.setDropDownBackgroundDrawable(ColorDrawable(ContextCompat.getColor(this,R.color.dropdown_menu_background)))
-    }
-    private fun loadingButtonFinishAnimation(btn:CircularProgressButton,success:Boolean,message:String){
-        CoroutineScope(Dispatchers.IO).launch {
-            delay(1500)
-            withContext(Dispatchers.Main){
-                val bitmap = AppCompatResources.getDrawable(this@SettingActivity,if(success) R.drawable.ic_yes else R.drawable.ic_no)!!.toBitmap()
-                btn.doneLoadingAnimation(R.color.white,bitmap)
-                withContext(Dispatchers.IO){
-                    delay(500)
-                    withContext(Dispatchers.Main){
-                        btn.revertAnimation{
-                            btn.background = resources.getDrawable(R.drawable.bg_button)
-                        }
-                        toast(message)
-                    }
-                }
-            }
-        }
     }
 }
