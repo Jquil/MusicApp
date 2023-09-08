@@ -75,7 +75,6 @@ class UpdateHelper {
                 })
             }
         }
-
         fun install(path:String){
             val file = File(path)
             if(!file.exists())

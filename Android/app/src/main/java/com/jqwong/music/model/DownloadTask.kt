@@ -9,7 +9,7 @@ class DownloadTask(
     val savePath:String,
     var finish:Boolean,
     var client:OkHttpClient?,
-    val callback:(id:String) -> Unit,
+    val callback:() -> Unit,
 ){
     fun info():DownloadInfo{
         return DownloadInfo(

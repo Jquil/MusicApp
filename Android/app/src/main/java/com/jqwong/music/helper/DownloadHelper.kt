@@ -55,6 +55,7 @@ class DownloadHelper {
                         this.status = DownloadStatus.Success
                     })
                     task.finish = true
+                    task.callback()
                     fos.flush()
                     _is.close()
                     fos.close()
