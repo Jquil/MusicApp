@@ -1,7 +1,6 @@
 package com.jqwong.music.helper
 
 import android.content.Context
-import androidx.media3.common.util.UnstableApi
 import com.jqwong.music.app.App
 import java.io.File
 
@@ -16,7 +15,7 @@ class CacheHelper {
             if(App.playListIsInitialized() && App.playList.data.isNotEmpty()){
                 val media = App.playList.data[App.playList.index]
                 if(media.is_local){
-                    ignore.add(media.filename())
+                    ignore.add(media.cacheName())
                 }
             }
 

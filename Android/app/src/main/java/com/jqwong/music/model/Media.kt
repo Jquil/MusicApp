@@ -58,7 +58,7 @@ data class Media(
         return builder.build()
     }
 
-    fun filename():String{
+    fun cacheName():String{
         return "${platform.name}-${id}.aac"
     }
 

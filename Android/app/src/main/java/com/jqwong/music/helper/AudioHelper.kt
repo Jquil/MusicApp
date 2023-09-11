@@ -1,11 +1,9 @@
 package com.jqwong.music.helper
 
 import android.content.Context
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -78,28 +76,30 @@ class AudioHelper {
                     if(!(mediaMetadata.extras?.getString(ExtraKey.Media.name).isNullOrEmpty())){
                         val json = mediaMetadata.extras?.getString(ExtraKey.Media.name)!!
                         val media = Media.fromJson(json)
-                        val index = App.playList.data.getIndex(media)
-                        if(index != -1){
-                            App.playList.index = index
-                            EventBus.getDefault().post(MediaChangeEvent(App.playList.data.get(index)))
-                            App.playList.lyricInfo = Pair(LyricStatus.Loading,null)
-                            EventBus.getDefault().post(LyricsLoadingEvent(App.playList.lyricInfo))
-                            var platform = media.platform
-                            var id = media.id
-                            if(media.enable_media != null){
-                                platform = media.enable_media!!.platform
-                                id = media.enable_media!!.id
-                            }
-                            getLyrics(platform,id,0) { success, lyrics ->
-                                if(success){
-                                    App.playList.lyricInfo = Pair(LyricStatus.Success,lyrics)
-                                }
-                                else{
-                                    App.playList.lyricInfo = Pair(LyricStatus.Error,null)
-                                }
+                        if(App.playListIsInitialized()){
+                            val index = App.playList.data.getIndex(media)
+                            if(index != -1){
+                                App.playList.index = index
+                                EventBus.getDefault().post(MediaChangeEvent(App.playList.data.get(index)))
+                                App.playList.lyricInfo = Pair(LyricStatus.Loading,null)
                                 EventBus.getDefault().post(LyricsLoadingEvent(App.playList.lyricInfo))
+                                var platform = media.platform
+                                var id = media.id
+                                if(media.enable_media != null){
+                                    platform = media.enable_media!!.platform
+                                    id = media.enable_media!!.id
+                                }
+                                getLyrics(platform,id,0) { success, lyrics ->
+                                    if(success){
+                                        App.playList.lyricInfo = Pair(LyricStatus.Success,lyrics)
+                                    }
+                                    else{
+                                        App.playList.lyricInfo = Pair(LyricStatus.Error,null)
+                                    }
+                                    EventBus.getDefault().post(LyricsLoadingEvent(App.playList.lyricInfo))
+                                }
+                                prepare()
                             }
-                            prepare()
                         }
                     }
                 }
@@ -175,12 +175,18 @@ class AudioHelper {
         fun getPosition():Long{
             return _player.currentPosition
         }
+        fun testPlay(media: Media){
+            _player.stop()
+            _player.clearMediaItems()
+            _player.playWhenReady = true
+            _player.addMediaItem(media.build())
+            _player.prepare()
+        }
         fun getPlayerIsPlaying():Boolean{
             if(!this::_player.isInitialized)
                 return false
             return _player.isPlaying
         }
-
         private fun prepare(loadIndex:Int = 0){
             if(_player.hasNextMediaItem())
                 return
@@ -220,7 +226,6 @@ class AudioHelper {
                 Platform.QQ -> App.config.qqConfig.quality
             }
         }
-        
         private fun getLyrics(
             platform: Platform,
             id:String,
@@ -333,7 +338,7 @@ class AudioHelper {
                                     }
                                     else{
                                         it.is_local = true
-                                        val file = it.filename()
+                                        val file = it.cacheName()
                                         val dir = "${_ctx.cacheDir.path}/media/"
                                         val path = "${dir}${file}"
                                         val fDir = File(dir)
@@ -361,7 +366,8 @@ class AudioHelper {
                                         val result = ServiceProxy.get(it.platform).data?.getMvUrl(mvid)!!
                                         if(result.exception == null && !result.data.isNullOrEmpty()){
                                             it.mv_url = result.data
-                                            val parseResult = FFmPegHelper.getAudio(result.data,path)
+                                            val parseResult = MediaExtractorHelper.aac(it.mv_url,path)
+                                            //val parseResult = FFmPegHelper.getAudio(result.data,path)
                                             if(parseResult.first){
                                                 it.play_url = path
                                                 withContext(Dispatchers.Main){

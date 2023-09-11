@@ -63,5 +63,4 @@ dependencies {
     def media3_version = "1.0.0-beta03"
     implementation "androidx.media3:media3-session:$media3_version"
     implementation "androidx.media3:media3-exoplayer:$media3_version"
-    implementation 'com.arthenica:mobile-ffmpeg-full:4.4'
 }

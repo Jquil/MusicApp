@@ -1,7 +1,6 @@
 package com.jqwong.music.view
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.View.OnClickListener
@@ -18,18 +17,12 @@ import com.jqwong.music.event.CollectOrCancelMediaEvent
 import com.jqwong.music.event.MediaChangeEvent
 import com.jqwong.music.event.MediaLoadingEvent
 import com.jqwong.music.helper.AudioHelper
-import com.jqwong.music.model.Artist
-import com.jqwong.music.model.ExtraKey
 import com.jqwong.music.model.LyricStatus
 import com.jqwong.music.model.Media
 import com.jqwong.music.model.Platform
 import com.jqwong.music.model.PlayList
 import com.jqwong.music.model.copy
-import com.jqwong.music.service.ServiceProxy
 import com.jqwong.music.view.listener.DoubleClickListener
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
@@ -67,6 +60,7 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
         adapter.setOnItemClickListener(@UnstableApi object: BaseQuickAdapter.OnItemClickListener<Media>{
             @SuppressLint("NewApi")
             override fun onClick(adapter: BaseQuickAdapter<Media, *>, view: View, position: Int) {
+                //val item = adapter.getItem(position)!!
                 App.playList = PlayList(0,
                     Pair(LyricStatus.Loading,null),adapter.items.subList(position,adapter.items.size).copy())
                 adapter.notifyDataSetChanged()
