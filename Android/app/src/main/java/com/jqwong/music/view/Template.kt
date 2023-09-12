@@ -2,6 +2,7 @@ package com.jqwong.music.view
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.view.View.OnClickListener
 import androidx.media3.common.util.UnstableApi
@@ -84,6 +85,25 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
     override fun onDestroy() {
         super.onDestroy()
         unregisterForContextMenu(_binding.includeMain.rvList)
+    }
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.action_artist -> {
+                gotoArtistActivity(adapter.getSelectMediaByLongClick())
+            }
+            R.id.action_collect -> {
+                val media = adapter.getSelectMediaByLongClick() ?: return false
+                collectOrCancelMedia(_platform,null,media,true){}
+            }
+            R.id.action_change_platform -> {
+                val media = adapter.getSelectMediaByLongClick() ?: return false
+                changePlatform(_platform,media.name)
+            }
+            R.id.action_lyric -> {
+                gotoLyricActivity()
+            }
+        }
+        return super.onContextItemSelected(item)
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaChangeEvent(event: MediaChangeEvent){

@@ -124,24 +124,6 @@ class RecommendSheetActivity:Template() {
     }
 
     
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
-            R.id.action_artist -> {
-                gotoArtistActivity(adapter.getSelectMediaByLongClick())
-            }
-            R.id.action_collect -> {
-                val media = adapter.getSelectMediaByLongClick() ?: return false
-                collectOrCancelMedia(_platform,null,media,true){}
-            }
-            R.id.action_change_platform -> {
-                val media = adapter.getSelectMediaByLongClick() ?: return false
-                changePlatform(_platform,media.name)
-            }
-        }
-        return super.onContextItemSelected(item)
-    }
-
-    
     private fun loadMediaList(platform: Platform, id:String, reloadNumber:Int = 0){
         CoroutineScope(Dispatchers.IO).launch {
             if(reloadNumber != 0){

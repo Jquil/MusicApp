@@ -127,22 +127,4 @@ class RecommendDailyActivity:Template() {
         super.onCreateContextMenu(menu, v, menuInfo)
         menuInflater.inflate(R.menu.menu_sheet_item,menu)
     }
-
-    
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
-            R.id.action_artist -> {
-                gotoArtistActivity(adapter.getSelectMediaByLongClick())
-            }
-            R.id.action_collect -> {
-                val media = adapter.getSelectMediaByLongClick() ?: return false
-                collectOrCancelMedia(_platform,null,media,true){}
-            }
-            R.id.action_change_platform -> {
-                val media = adapter.getSelectMediaByLongClick() ?: return false
-                changePlatform(_platform,media.name)
-            }
-        }
-        return super.onContextItemSelected(item)
-    }
 }
