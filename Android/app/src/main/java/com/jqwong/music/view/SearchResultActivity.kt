@@ -106,6 +106,10 @@ class SearchResultActivity:Template() {
             R.id.action_artist -> {
                 gotoArtistActivity(adapter.getSelectMediaByLongClick())
             }
+            R.id.action_collect -> {
+                val media = adapter.getSelectMediaByLongClick() ?: return false
+                collectOrCancelMedia(_platform,null,media,true){}
+            }
         }
         return super.onContextItemSelected(item)
     }

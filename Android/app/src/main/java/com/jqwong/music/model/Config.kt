@@ -13,8 +13,8 @@ class Config(
     var exit_clear_cache:Boolean,
     var allow_auto_change_platform:Boolean,
     var change_platform_priority:MutableList<ChangePlatformItem>,
-    var allow_use_ffmpeg_parse:Boolean,
-    var only_wifi_use_ffmpeg_parse:Boolean,
+    var allow_use_media_extractor_parse:Boolean,
+    var only_wifi_use_media_extractor_parse:Boolean,
     var netEaseCloudConfig: NetEaseCloudConfig,
     var kuWoConfig: KuWoConfig,
     var qqConfig:QQConfig
@@ -90,8 +90,8 @@ class Config(
                     ChangePlatformItem(1,Platform.KuWo,true,ChangePlatformMode.AllOfTheAbove),
                     ChangePlatformItem(2,Platform.QQ,true,ChangePlatformMode.AllOfTheAbove),
                 ),
-                allow_use_ffmpeg_parse = true,
-                only_wifi_use_ffmpeg_parse = true,
+                allow_use_media_extractor_parse = true,
+                only_wifi_use_media_extractor_parse = true,
                 netEaseCloudConfig = NetEaseCloudConfig(
                     sync_user_sheet = true,
                     uid = "",

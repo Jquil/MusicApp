@@ -62,8 +62,8 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
             _binding.inputMaxRetryCount.setText(it.retry_max_count.toString())
             _binding.smExitClearCache.isChecked = it.exit_clear_cache
             _binding.smAutoChangePlatform.isChecked = it.allow_auto_change_platform
-            _binding.smUseFfmpeg.isChecked = it.allow_use_ffmpeg_parse
-            _binding.smUseFfmpegOnlyWifi.isChecked = it.only_wifi_use_ffmpeg_parse
+            _binding.smUseMediaExtractor.isChecked = it.allow_use_media_extractor_parse
+            _binding.smUseMediaExtractorOnlyWifi.isChecked = it.only_wifi_use_media_extractor_parse
             (_binding.menuDefaultSearchPlatform.editText as? AutoCompleteTextView)?.let{
                 setDropdownDefaultBackground(it)
                 val list = mutableListOf<String>()
@@ -457,8 +457,8 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
             it.retry_max_count = _binding.inputMaxRetryCount.text.toString().toInt()
             it.exit_clear_cache = _binding.smExitClearCache.isChecked
             it.allow_auto_change_platform = _binding.smAutoChangePlatform.isChecked
-            it.only_wifi_use_ffmpeg_parse = _binding.smUseFfmpegOnlyWifi.isChecked
-            it.allow_use_ffmpeg_parse = _binding.smUseFfmpeg.isChecked
+            it.only_wifi_use_media_extractor_parse = _binding.smUseMediaExtractorOnlyWifi.isChecked
+            it.allow_use_media_extractor_parse = _binding.smUseMediaExtractor.isChecked
             _binding.menuDefaultSearchPlatform.editText.let {
                 if(!it?.text.isNullOrEmpty()){
                     App.config.default_search_platform = Platform.get(it?.text.toString())

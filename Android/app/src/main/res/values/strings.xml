@@ -1,4 +1,5 @@
 <resources>
+    <string name="app">msc</string>
     <string name="change_platform">切换平台</string>
     <string name="refresh">刷新</string>
     <string name="leaderboard">排行榜</string>

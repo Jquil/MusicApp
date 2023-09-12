@@ -1,11 +1,8 @@
 package com.jqwong.music.view
 
-import android.annotation.SuppressLint
-import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.annotation.RequiresApi
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import com.jqwong.music.R
@@ -17,6 +14,7 @@ import com.jqwong.music.event.MediaChangeEvent
 import com.jqwong.music.event.MediaPositionChangeEvent
 import com.jqwong.music.event.PlayerStatusChangeEvent
 import com.jqwong.music.helper.AudioHelper
+import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.helper.content
 import com.jqwong.music.helper.empty
 import com.jqwong.music.model.LyricStatus
@@ -33,6 +31,7 @@ import org.greenrobot.eventbus.ThreadMode
 
 class LyricActivity:BaseActivity<ActivityLyricBinding>() {
     private lateinit var adapter:LyricAdapter
+    private val notFount = "骚瑞, 没有找到歌曲歌词噢..."
     override fun initData(savedInstanceState: Bundle?) {
     }
 
@@ -53,6 +52,10 @@ class LyricActivity:BaseActivity<ActivityLyricBinding>() {
             onMediaChangeEvent(MediaChangeEvent(media))
             onLyricsLoadingEvent(LyricsLoadingEvent(App.playList.lyricInfo))
         }
+        else{
+            _binding.stateLayout.empty(notFount)
+        }
+
         _binding.includeToolbar.toolbar.setNavigationOnClickListener {
             finish()
         }
@@ -63,7 +66,10 @@ class LyricActivity:BaseActivity<ActivityLyricBinding>() {
             AudioHelper.prev()
         }
         _binding.btnNext.setOnClickListener {
-            AudioHelper.next()
+            val result = AudioHelper.next()
+            if(!result.first){
+                toast(result.second)
+            }
         }
         onPlayerStatusChangeEvent(PlayerStatusChangeEvent(AudioHelper.getPlayerIsPlaying()))
     }
@@ -90,11 +96,11 @@ class LyricActivity:BaseActivity<ActivityLyricBinding>() {
                 _binding.stateLayout.showLoading()
             }
             LyricStatus.Error->{
-                _binding.stateLayout.empty("骚瑞, 没有找到歌曲歌词噢...")
+                _binding.stateLayout.empty(notFount)
             }
             LyricStatus.Success->{
                 if(event.info.second == null){
-                    _binding.stateLayout.empty("骚瑞, 没有找到歌曲歌词噢...")
+                    _binding.stateLayout.empty(notFount)
                 }
                 else{
                     val list = App.playList.lyricInfo.second

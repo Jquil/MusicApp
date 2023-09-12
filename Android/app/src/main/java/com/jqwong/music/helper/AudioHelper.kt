@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -30,6 +31,7 @@ class AudioHelper {
         private lateinit var _session: MediaSession
         private lateinit var _player: Player
         private lateinit var _pListener:PositionListener
+        private var _preparing = false
         private val _h = Handler()
         fun init(ctx:Context){
             _ctx = ctx
@@ -68,7 +70,6 @@ class AudioHelper {
                         }
                     }
                 }
-
 
                 override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
                     super.onMediaMetadataChanged(mediaMetadata)
@@ -118,9 +119,13 @@ class AudioHelper {
                         }
                     }
                 }
+
+                override fun onPlayerError(error: PlaybackException) {
+                    super.onPlayerError(error)
+                    next()
+                }
             })
         }
-
         fun start(){
             if(!App.playListIsInitialized())
                 return
@@ -155,11 +160,23 @@ class AudioHelper {
                 _player.seekToPrevious()
             }
         }
-
-        fun next(){
+        fun next():Pair<Boolean,String>{
             if(this::_player.isInitialized){
+                if(!App.playListIsInitialized())
+                    return Pair(false,"播放列表未初始化")
+                if(App.playList.current().compare(App.playList.data.last()))
+                    return Pair(false,"已经是最后一首啦!")
+                if(_player.playbackState == Player.STATE_BUFFERING  || _player.isLoading || _preparing)
+                    return Pair(false,"在加载中啦")
+                if(!_player.hasNextMediaItem())
+                    return Pair(false,"还没准备好噢")
+
                 _player.seekToNext()
                 prepare()
+                return Pair(true,"")
+            }
+            else{
+                return Pair(false,"播放器未初始化!")
             }
         }
         fun playOrPause(){
@@ -175,13 +192,6 @@ class AudioHelper {
         fun getPosition():Long{
             return _player.currentPosition
         }
-        fun testPlay(media: Media){
-            _player.stop()
-            _player.clearMediaItems()
-            _player.playWhenReady = true
-            _player.addMediaItem(media.build())
-            _player.prepare()
-        }
         fun getPlayerIsPlaying():Boolean{
             if(!this::_player.isInitialized)
                 return false
@@ -192,6 +202,9 @@ class AudioHelper {
                 return
             if(App.playList.index == App.playList.data.count() - 1)
                 return
+            if(_preparing)
+                return
+            _preparing = true
             var index = 0
             if(loadIndex != 0){
                 index = loadIndex
@@ -215,6 +228,19 @@ class AudioHelper {
                     else{
                         next.enable_media = media
                         _player.addMediaItem(next.build())
+                    }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        var ok = false
+                        while (!ok){
+                            delay(500)
+                            withContext(Dispatchers.Main){
+                                if(_player.hasNextMediaItem()){
+                                    ok = true
+                                    return@withContext
+                                }
+                            }
+                        }
+                        _preparing = false
                     }
                 }
             }
@@ -332,8 +358,8 @@ class AudioHelper {
                                 }
                             }
                             ChangePlatformMode.OnlyFromParseMv -> {
-                                if(App.config.allow_use_ffmpeg_parse){
-                                    if(App.config.only_wifi_use_ffmpeg_parse && !WifiHelper.isConnected(_ctx)){
+                                if(App.config.allow_use_media_extractor_parse){
+                                    if(App.config.only_wifi_use_media_extractor_parse && !WifiHelper.isConnected(_ctx)){
                                         // 只允许wifi连接但手机没连接wifi, 不允许使用ffmpeg解析
                                     }
                                     else{
@@ -415,11 +441,11 @@ class AudioHelper {
         
         private suspend fun getSimilarMediaList(platform: Platform, media:Media,maxSize:Int = 3):List<Media>{
             var key = "${media.name} ${media.artists.first().name}"
-            var name2 = media.name
+            var name = media.name
             if(media.name.contains('(')){
                 val arr = media.name.split('(')
-                name2 = arr.first().trim()
-                key = "$name2 ${media.artists.first().name}"
+                name = arr.first().trim()
+                key = "$name ${media.artists.first().name}"
             }
             val service = ServiceProxy.get(platform).data ?: return listOf()
             val result = service.search(key,1,10)
@@ -429,7 +455,7 @@ class AudioHelper {
             val spareList = mutableListOf<Media>()
             val spareList2 = mutableListOf<Media>()
             result.data!!.forEach {
-                if(it.name.contains(name2,ignoreCase = true)){
+                if(it.name.contains(name,ignoreCase = true) || name.contains(it.name,ignoreCase = true)){
                     if(media.artists.compare(it.artists)){
                         list.add(it)
                     }

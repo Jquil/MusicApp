@@ -176,15 +176,16 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:orientation="horizontal">
+
                             <TextView
                                 android:layout_width="0dp"
-                                android:layout_weight="1"
                                 android:layout_height="wrap_content"
+                                android:layout_weight="1"
                                 android:paddingRight="10dp"
-                                android:text="使用ffmpeg提取音频"
-                                android:textColor="@color/white"/>
+                                android:text="使用MediaExtractor提取音频"
+                                android:textColor="@color/white" />
                             <com.google.android.material.switchmaterial.SwitchMaterial
-                                android:id="@+id/sm_use_ffmpeg"
+                                android:id="@+id/sm_use_media_extractor"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"/>
                         </LinearLayout>
@@ -193,15 +194,16 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:orientation="horizontal">
+
                             <TextView
                                 android:layout_width="0dp"
-                                android:layout_weight="1"
                                 android:layout_height="wrap_content"
+                                android:layout_weight="1"
                                 android:paddingRight="10dp"
-                                android:text="仅允许在wifi情况下使用ffmpeg"
-                                android:textColor="@color/white"/>
+                                android:text="仅允许在wifi情况下使用MediaExtractor"
+                                android:textColor="@color/white" />
                             <com.google.android.material.switchmaterial.SwitchMaterial
-                                android:id="@+id/sm_use_ffmpeg_only_wifi"
+                                android:id="@+id/sm_use_media_extractor_only_wifi"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"/>
                         </LinearLayout>

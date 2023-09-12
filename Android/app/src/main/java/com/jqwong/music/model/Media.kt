@@ -62,12 +62,18 @@ data class Media(
         return "${platform.name}-${id}.aac"
     }
 
-    fun toJson():String{
+    private fun toJson():String{
         val moshi = Moshi.Builder()
             .addLast(KotlinJsonAdapterFactory())
             .build()
         val adapter = moshi.adapter(Media::class.java)
         return adapter.toJson(this)
+    }
+
+    fun compare(media: Media):Boolean{
+        if(id == media.id && platform == media.platform)
+            return true
+        return false
     }
 }
 

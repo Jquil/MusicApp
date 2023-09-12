@@ -28,7 +28,12 @@ import com.jqwong.music.model.DownloadTask
  */
 class AboutActivity:BaseActivity<ActivityAboutBinding>() {
     override fun initData(savedInstanceState: Bundle?) {
-
+        _binding.tvContent.text =
+                "1. 本软件为开源项目，数据来源于各官方音乐平台，因此不保证数据准确性 \n\n" +
+                "2. 该项目为本人报以学习为目的研究，不进行任何形式商业用途，若有侵犯到任何人的合法利益，请及时联系我，我将第一时间删库跑路\n\n" +
+                "3. 该项目运行时需要网络访问以及存储文件的权限，为了保证您的正常使用请授予需要的权限\n\n" +
+                "4. 个人隐私问题，您产生的数据只会保存于本地，以及上传至各官方音乐平台\n\n" +
+                "5. 确保后台运行正常播放，需要您手动锁定该应用，并设置后台运行模式为'无限制'"
     }
 
     override fun intView() {
