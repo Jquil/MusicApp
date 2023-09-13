@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="normal">@color/white</color>
-    <color name="normal_reserve">@color/black</color>
-    <color name="hint">#FFD4D5D9</color>
-    <color name="rippleDefaultColor">#FF424242</color>
-</resources>
