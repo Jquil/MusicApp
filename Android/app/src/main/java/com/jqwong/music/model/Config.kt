@@ -15,6 +15,8 @@ class Config(
     var change_platform_priority:MutableList<ChangePlatformItem>,
     var allow_use_media_extractor_parse:Boolean,
     var only_wifi_use_media_extractor_parse:Boolean,
+    var downloadPath:String,
+    val data:MutableMap<String,Any>,
     var netEaseCloudConfig: NetEaseCloudConfig,
     var kuWoConfig: KuWoConfig,
     var qqConfig:QQConfig
@@ -107,7 +109,9 @@ class Config(
                 ),
                 qqConfig = QQConfig(
                     quality = QQConfig.qualities["标准"]!!
-                )
+                ),
+                downloadPath = "",
+                data = mutableMapOf()
             )
         }
         fun fromJson(json:String):Config{

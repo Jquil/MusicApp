@@ -24,7 +24,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class RecommendDailyActivity:Template() {
-    
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
         _platform = Platform.valueOf(intent.getStringExtra(ExtraKey.Platform.name)!!)
@@ -61,6 +60,7 @@ class RecommendDailyActivity:Template() {
                 changePlatform(listOf()) {
                     if (it == _platform)
                         return@changePlatform
+                    page = 0
                     _binding.includeMain.stateLayout.showLoading()
                     _platform = it
                     loadMediaList(_platform)
