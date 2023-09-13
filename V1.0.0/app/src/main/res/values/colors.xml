@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="background">#1c1c1c</color>
+    <color name="theme">#bba8dc</color>
+    <color name="text_hint">#bcbcbc</color>
+    <color name="background_hint">#424242</color>
+    <color name="background_c">#2c2a37</color>
+    <color name="background_x">#191919</color>
+    <color name="dropdown_menu_background">#302d38</color>
+    <color name="dropdown_menu_text_color">#f5f5f7</color>
+</resources>

@@ -1,0 +1,269 @@
+package com.jqwong.music.view
+
+import android.content.Intent
+import android.os.Build
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.LinearLayout
+import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.media3.common.util.UnstableApi
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.bottomsheets.BottomSheet
+import com.afollestad.materialdialogs.customview.customView
+import com.chad.library.adapter.base.BaseQuickAdapter
+import com.jqwong.music.R
+import com.jqwong.music.adapter.SongSheetAdapter
+import com.jqwong.music.app.App
+import com.jqwong.music.event.CollectOrCancelMediaEvent
+import com.jqwong.music.helper.setTitleDefaultStyle
+import com.jqwong.music.model.Artist
+import com.jqwong.music.model.ExtraKey
+import com.jqwong.music.model.Media
+import com.jqwong.music.model.Platform
+import com.jqwong.music.model.SongSheet
+import com.jqwong.music.service.ServiceProxy
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.greenrobot.eventbus.EventBus
+
+/**
+ * @author: Jq
+ * @date: 7/23/2023
+ */
+abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
+    protected lateinit var TAG:String
+    protected lateinit var _binding:T
+    private var useEventBus:Boolean = false
+    protected val pageItemSize = 20
+    abstract fun initData(savedInstanceState: Bundle?)
+    abstract fun intView()
+    abstract fun useEventBus():Boolean
+    abstract fun statusBarColor():Int
+    private fun getBinding():T{
+        val acName = javaClass.simpleName
+        val parent = javaClass.superclass.name
+        var name = acName.substring(0, acName.indexOf("Activity"))
+        if(parent != BaseActivity::class.java.name){
+            val arr = parent.split('.')
+            name = arr.last()
+        }
+        val bindingClass = classLoader.loadClass("${packageName}.databinding.Activity${name}Binding")
+        return bindingClass.getMethod("inflate", LayoutInflater::class.java)
+            .invoke(null, layoutInflater) as T
+    }
+    protected fun toast(message:String){
+        Toast.makeText(this,message,Toast.LENGTH_SHORT).show()
+    }
+    protected fun changePlatform(ignoreList:List<Platform> = listOf(), call:(platform:Platform)->Unit){
+        val list = mutableListOf<Platform>()
+        Platform.values().forEach {
+            if(!ignoreList.contains(it)){
+                list.add(it)
+            }
+        }
+        MaterialDialog(this, BottomSheet()).show {
+            customView(R.layout.dialog_select_common)
+            cornerRadius(20f)
+            setTitle("")
+            view.setBackgroundResource(R.drawable.bg_dialog)
+            view.setTitleDefaultStyle(this@BaseActivity)
+            val layout = view.contentLayout.findViewById<LinearLayout>(R.id.ll_wrapper)
+            list.forEach {
+                val name = it.toString()
+                val tag = it.name
+                val child = View.inflate(this@BaseActivity,R.layout.item_platform,null)
+                child.findViewById<TextView>(R.id.tv_name).let {
+                    it.text = name
+                    it.tag = tag
+                    it.setOnClickListener {
+                        call.invoke(Platform.valueOf((it as TextView).tag.toString()))
+                    }
+                }
+                layout.addView(child)
+            }
+        }
+    }
+    protected fun selectArtist(list:List<Artist>, call:(artist:Artist)->Unit){
+        MaterialDialog(this, BottomSheet()).show {
+            customView(R.layout.dialog_select_common)
+            cornerRadius(20f)
+            setTitle("")
+            view.setBackgroundResource(R.drawable.bg_dialog)
+            view.setTitleDefaultStyle(this@BaseActivity)
+            val layout = view.contentLayout.findViewById<LinearLayout>(R.id.ll_wrapper)
+            var index = 0
+            list.forEach {
+                val name = it.name
+                val child = View.inflate(this@BaseActivity,R.layout.item_select_artist,null)
+                child.findViewById<TextView>(R.id.tv_name).let {
+                    it.text = name
+                    it.tag = index
+                    it.setOnClickListener {
+                        call.invoke(list.get(it.tag as Int))
+                    }
+                }
+                layout.addView(child)
+                index++
+            }
+        }
+    }
+    protected fun selectUserSheet(platform: Platform, call: (sheet: SongSheet) -> Unit){
+        if(!App.userSheets.containsKey(platform)){
+            toast("骚瑞, 您没有同步'${platform.toString()}'平台数据")
+            return
+        }
+        selectSheet(App.userSheets.get(platform)!!,call)
+    }
+    protected fun selectSheet(list:List<SongSheet>, call: (sheet: SongSheet)-> Unit){
+        MaterialDialog(this, BottomSheet()).show {
+            customView(R.layout.dialog_select_common_x)
+            cornerRadius(20f)
+            view.setBackgroundResource(R.drawable.bg_dialog)
+            view.setTitleDefaultStyle(this@BaseActivity)
+            val adapter = SongSheetAdapter()
+            val rvList = view.contentLayout.findViewById<RecyclerView>(R.id.rv_list)
+            rvList.layoutManager = LinearLayoutManager(this@BaseActivity)
+            rvList.adapter = adapter
+            adapter.submitList(list)
+            adapter.setOnItemClickListener(object: BaseQuickAdapter.OnItemClickListener<SongSheet>{
+                @RequiresApi(Build.VERSION_CODES.O)
+                override fun onClick(
+                    adapter: BaseQuickAdapter<SongSheet, *>,
+                    view: View,
+                    position: Int
+                ) {
+                    val item = adapter.getItem(position)!!
+                    call(item)
+                }
+            })
+        }
+    }
+    protected fun gotoArtistActivity(media: Media?){
+        fun go(artist: Artist){
+            startActivity(Intent(this,ArtistActivity::class.java).apply {
+                putExtra(ExtraKey.Artist.name,artist.toJson())
+            })
+        }
+        if(media != null){
+            if(media.artists.count() > 1){
+                selectArtist(media.artists){
+                    go(it)
+                }
+            }
+            else{
+                go(media.artists.first())
+            }
+        }
+    }
+    protected fun gotoLyricActivity(){
+        if(!App.playListIsInitialized() || App.playList.data.isEmpty()){
+            return
+        }
+        startActivity(Intent(this,LyricActivity::class.java))
+    }
+    protected fun changePlatform(platform: Platform,key:String,ignoreList: List<Platform> = listOf<Platform>()){
+        changePlatform(ignoreList){
+            if(platform == it)
+                return@changePlatform
+            startActivity(Intent(this,SearchResultActivity::class.java).apply {
+                putExtra(ExtraKey.Search.name,key)
+                putExtra(ExtraKey.Platform.name,it.name)
+            })
+        }
+    }
+
+    protected fun collectOrCancelMedia(platform: Platform,sheet: SongSheet?,media: Media, collect:Boolean,call:(success:Boolean) -> Unit){
+        //if(media.platform != platform){
+        //    val msg = "It is not supported to bookmark songs from the '${media.platform.name}' platform to the '${platform.name}' platform"
+        //    toast(msg)
+        //    return
+        //}
+        if(collect){
+            selectUserSheet(platform){
+                EventBus.getDefault().post(CollectOrCancelMediaEvent(false))
+                CoroutineScope(Dispatchers.IO).launch {
+                    var reqParams:Any = ""
+                    when(platform){
+                        Platform.NetEaseCloud -> {
+                            reqParams = "${it.id};${media.id};${App.config.netEaseCloudConfig.csrf_token}"
+                        }
+                        else -> {}
+                    }
+                    val result = ServiceProxy.get(platform).data?.collectOrCancelSong(true,reqParams)!!
+                    withContext(Dispatchers.Main){
+                        var msg = ""
+                        if(result.exception != null){
+                            msg = result.exception.exception.message.toString()
+                        }
+                        else{
+                            msg = result.message
+                        }
+                        if(result.success){
+                            call(true)
+                        }
+                        toast(msg)
+                        EventBus.getDefault().post(CollectOrCancelMediaEvent(true))
+                    }
+                }
+            }
+        }
+        else{
+            var reqParams:Any = ""
+            when(platform){
+                Platform.NetEaseCloud -> {
+                    reqParams = "${sheet!!.id};${media.id};${App.config.netEaseCloudConfig.csrf_token}"
+                }
+                else -> {}
+            }
+            EventBus.getDefault().post(CollectOrCancelMediaEvent(false))
+            CoroutineScope(Dispatchers.IO).launch {
+                val result = ServiceProxy.get(platform).data?.collectOrCancelSong(false,reqParams)!!
+                withContext(Dispatchers.Main){
+                    if(result.exception != null){
+                        toast(result.exception.exception.message.toString())
+                    }
+                    else{
+                        toast(result.message)
+                    }
+                    if(result.success){
+                        call(true)
+                    }
+                    EventBus.getDefault().post(CollectOrCancelMediaEvent(true))
+                }
+            }
+        }
+    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        TAG = localClassName
+        window.statusBarColor = getColor(statusBarColor())
+        val wic = ViewCompat.getWindowInsetsController(window.decorView)
+        if(wic != null) {
+            wic.isAppearanceLightStatusBars = false
+        }
+        _binding = getBinding()
+        setContentView(_binding.root)
+        intView()
+        initData(savedInstanceState)
+        useEventBus = useEventBus()
+        if(useEventBus) {
+            EventBus.getDefault().register(this)
+        }
+    }
+    override fun onDestroy() {
+        if(useEventBus) {
+            EventBus.getDefault().unregister(this)
+        }
+        super.onDestroy()
+    }
+}
