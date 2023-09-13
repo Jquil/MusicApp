@@ -1,5 +1,5 @@
-The project in this repository is about the implementation of a music app
+The projects in this repository are about the implementation of music applications
 
-It contains cross-applications based on the Flutter framework, as well as native implementations from Android
+It is based on Android's native implementation
 
 End
