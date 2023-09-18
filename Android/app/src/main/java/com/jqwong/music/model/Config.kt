@@ -1,7 +1,10 @@
 package com.jqwong.music.model
 
 import android.content.Context
+import android.os.Environment
 import androidx.appcompat.app.AppCompatActivity
+import com.jqwong.music.R
+import com.jqwong.music.app.App
 import com.jqwong.music.app.Constant
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -81,7 +84,7 @@ class Config(
 
     companion object{
         fun default():Config{
-            return Config(
+            val config = Config(
                 okhttp_request_timeout = 3000,
                 default_search_platform = Platform.NetEaseCloud,
                 retry_max_count = 3,
@@ -113,6 +116,12 @@ class Config(
                 downloadPath = "",
                 data = mutableMapOf()
             )
+            var directory = "msc"
+            if (App.ctx != null){
+                directory = App.ctx!!.getString(R.string.app)
+            }
+            config.downloadPath = "${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_MUSIC}/${directory}"
+            return config
         }
         fun fromJson(json:String):Config{
             val moshi = Moshi.Builder()

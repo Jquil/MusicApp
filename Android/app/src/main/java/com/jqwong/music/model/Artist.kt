@@ -1,5 +1,6 @@
 package com.jqwong.music.model
 
+import com.jqwong.music.app.App
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
@@ -64,9 +65,13 @@ fun List<Artist>.compare(artist:List<Artist>):Boolean{
 fun List<Artist>.exist(artists: List<Artist>):Boolean{
     forEach {
         val name = it.name
-        val alias = it.alias
+        val set = hashSetOf<String>()
+        set.addAll(it.alias)
+        if(App.globalAlias.containsKey(name)){
+            set.addAll(App.globalAlias[name]!!)
+        }
         artists.forEach {
-            if(name.equals(it.name) || alias.contains(it.name) || it.alias.contains(name))
+            if(name.equals(it.name) || set.contains(it.name) || it.alias.contains(name))
                 return true
         }
     }

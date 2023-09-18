@@ -320,7 +320,7 @@ class QQMusicService:IService {
                 if(infoList.count() != 2)
                     continue
                 val lyric = infoList[1]
-                if(lyric.isEmpty())
+                if(lyric.isEmpty() || lyric == "\r")
                     continue
                 var strTime = infoList[0]
                 if(strTime.get(0) != '[')

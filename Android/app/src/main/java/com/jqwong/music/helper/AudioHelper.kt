@@ -155,10 +155,15 @@ class AudioHelper {
                 }
             }
         }
-        fun prev(){
+        fun prev():Pair<Boolean,String>{
             if(this::_player.isInitialized){
+                if(App.playList.index == 0){
+                    return Pair(false,"已经是第一首啦")
+                }
                 _player.seekToPrevious()
+                return Pair(true,"ok")
             }
+            return Pair(false,"播放器未初始化!")
         }
         fun next():Pair<Boolean,String>{
             if(this::_player.isInitialized){
@@ -170,7 +175,6 @@ class AudioHelper {
                     return Pair(false,"在加载中啦")
                 if(!_player.hasNextMediaItem())
                     return Pair(false,"还没准备好噢")
-
                 _player.seekToNext()
                 prepare()
                 return Pair(true,"")

@@ -1,6 +1,5 @@
 package com.jqwong.music.view
 
-import android.os.Build
 import android.os.Bundle
 import android.view.ContextMenu
 import android.view.Menu

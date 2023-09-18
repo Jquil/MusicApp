@@ -1,12 +1,10 @@
 package com.jqwong.music.view
 
-import android.os.Build
 import android.os.Bundle
 import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import androidx.annotation.RequiresApi
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R

@@ -14,9 +14,10 @@ import com.jqwong.music.model.*
 class App:Application(){
     companion object{
         var ctx:Context? = null
-        var config = Config.default()
+        lateinit var config: Config
         val userSheets:MutableMap<Platform,List<SongSheet>> = mutableMapOf()
         var exceptions:MutableList<ExceptionLog> = mutableListOf()
+        val globalAlias = mutableMapOf<String,List<String>>()
         val version = Version("1.0.0",1,"初始化版本","")
         var newestVersion:Version? = null
         lateinit var playList:PlayList
@@ -31,5 +32,6 @@ class App:Application(){
         super.onCreate()
         ctx = this
         AudioHelper.init(ctx!!)
+        config = Config.default()
     }
 }

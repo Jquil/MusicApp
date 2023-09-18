@@ -3,6 +3,8 @@ package com.jqwong.music.view
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
@@ -23,6 +25,7 @@ import com.jqwong.music.databinding.ActivityMainBinding
 import com.jqwong.music.event.*
 import com.jqwong.music.helper.AudioHelper
 import com.jqwong.music.helper.CacheHelper
+import com.jqwong.music.helper.RequestHelper
 import com.jqwong.music.helper.TimeHelper
 import com.jqwong.music.helper.UpdateHelper
 import com.jqwong.music.helper.content
@@ -92,6 +95,21 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
                 }
             }
         }
+
+        // 获取alias
+        RequestHelper.getAlias {
+            if(it.success){
+                it.data?.forEach {
+                    App.globalAlias.put(it.name,it.alias)
+                }
+            }
+            else{
+                if(it.exception != null)
+                    toast(it.exception.exception.message.toString())
+                else
+                    toast(it.message)
+            }
+        }
     }
     override fun intView() {
         _binding.btnDrawer.setOnClickListener {
@@ -104,7 +122,7 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             startActivity(Intent(this,AboutActivity::class.java))
         }
         _binding.dlContent.linkBgTask.setOnClickListener {
-            toast("还没开放该功能噢")
+            startActivity(Intent(this,DownloadActivity::class.java))
         }
         _binding.dlContent.linkPc.setOnClickListener {
             toast("还没开放该功能噢")

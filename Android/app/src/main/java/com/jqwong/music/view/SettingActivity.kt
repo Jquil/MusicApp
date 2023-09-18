@@ -4,6 +4,8 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.text.TextUtils
+import android.text.method.ScrollingMovementMethod
 import android.view.View
 import android.widget.*
 import androidx.appcompat.widget.AppCompatButton
@@ -64,6 +66,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
             _binding.smAutoChangePlatform.isChecked = it.allow_auto_change_platform
             _binding.smUseMediaExtractor.isChecked = it.allow_use_media_extractor_parse
             _binding.smUseMediaExtractorOnlyWifi.isChecked = it.only_wifi_use_media_extractor_parse
+            _binding.tvDownloadPath.setText(it.downloadPath)
             (_binding.menuDefaultSearchPlatform.editText as? AutoCompleteTextView)?.let{
                 setDropdownDefaultBackground(it)
                 val list = mutableListOf<String>()
@@ -443,6 +446,9 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
                 }
             }
         }
+
+        _binding.tvDownloadPath.movementMethod = ScrollingMovementMethod.getInstance()
+
     }
     override fun useEventBus(): Boolean {
         return false

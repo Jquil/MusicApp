@@ -35,6 +35,7 @@
         <activity android:name=".view.RecommendDailyActivity"/>
         <activity android:name=".view.ArtistActivity"/>
         <activity android:name=".view.AboutActivity"/>
+        <activity android:name=".view.DownloadActivity"/>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.jqwong.music.fileprovider"
