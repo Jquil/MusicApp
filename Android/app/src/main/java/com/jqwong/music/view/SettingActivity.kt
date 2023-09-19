@@ -448,7 +448,7 @@ class SettingActivity:BaseActivity<ActivitySettingBinding>() {
         }
 
         _binding.tvDownloadPath.movementMethod = ScrollingMovementMethod.getInstance()
-
+        _binding.tvDownloadPath.isSelected = true
     }
     override fun useEventBus(): Boolean {
         return false

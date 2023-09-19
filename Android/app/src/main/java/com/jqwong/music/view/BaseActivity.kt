@@ -173,8 +173,8 @@ abstract class BaseActivity<T: ViewBinding>: AppCompatActivity(){
     }
     protected fun changePlatform(platform: Platform,key:String,ignoreList: List<Platform> = listOf<Platform>()){
         changePlatform(ignoreList){
-            if(platform == it)
-                return@changePlatform
+            //if(platform == it)
+            //   return@changePlatform
             startActivity(Intent(this,SearchResultActivity::class.java).apply {
                 putExtra(ExtraKey.Search.name,key)
                 putExtra(ExtraKey.Platform.name,it.name)

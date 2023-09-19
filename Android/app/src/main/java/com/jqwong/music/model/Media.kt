@@ -6,6 +6,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import java.io.File
 
 /**
  * @author: Jq
@@ -57,9 +58,21 @@ data class Media(
             .build())
         return builder.build()
     }
-
     fun cacheName():String{
         return "${platform.name}-${id}.aac"
+    }
+    fun path(dir:String,number:Int = 0):String{
+        var arr = play_url.split('.')
+        var ext = arr.last()
+        arr = ext.split('?')
+        ext = arr.first()
+        var name = "${dir}/${name}.${ext}"
+        if(number != 0)
+            name = "${dir}/${name}($number).${ext}"
+        val file = File(name)
+        if(file.exists())
+            return path(dir,number+1)
+        return name
     }
 
     private fun toJson():String{

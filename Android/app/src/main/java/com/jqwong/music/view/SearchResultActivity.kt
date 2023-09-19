@@ -1,12 +1,11 @@
 package com.jqwong.music.view
 
-import android.os.Build
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import androidx.annotation.RequiresApi
 import com.chad.library.adapter.base.loadState.LoadState
 import com.chad.library.adapter.base.loadState.trailing.TrailingLoadStateAdapter
 import com.jqwong.music.R
@@ -26,7 +25,6 @@ import kotlinx.coroutines.withContext
  */
 class SearchResultActivity:Template() {
     private lateinit var key:String
-
     
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
@@ -91,6 +89,7 @@ class SearchResultActivity:Template() {
         }
         return super.onOptionsItemSelected(item)
     }
+
 
     override fun onCreateContextMenu(
         menu: ContextMenu?,

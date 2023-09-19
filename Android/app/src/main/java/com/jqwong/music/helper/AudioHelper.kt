@@ -135,7 +135,7 @@ class AudioHelper {
             val current = App.playList.data.get(App.playList.index)
             EventBus.getDefault().post(MediaChangeEvent(current))
             EventBus.getDefault().post(MediaLoadingEvent(false))
-            getMedia(App.playList.index){success, media ->
+            getMedia(current){success, media ->
                 if(!success || media == null){
                     App.playList.index++
                     start()
@@ -217,7 +217,7 @@ class AudioHelper {
                 index = App.playList.index+1
             }
             val next = App.playList.data.get(index)
-            getMedia(index){success, media ->
+            getMedia(next){success, media ->
                 if(!success || media == null){
                     prepare(index+1)
                 }
@@ -285,17 +285,9 @@ class AudioHelper {
             }
         }
         
-        private fun getMedia(index:Int, call:(success:Boolean, media:Media?) -> Unit){
+        fun getMedia(media:Media, call:(success:Boolean, media:Media?) -> Unit){
             // 跟随配置动态请求
             CoroutineScope(Dispatchers.IO).launch{
-                if(index < 0 || index >= App.playList.data.count()){
-                    withContext(Dispatchers.Main){
-                        call(false,null)
-                    }
-                    return@launch
-                }
-                val media = App.playList.data.get(index)
-
                 // 调整切换平台顺序,将当前音乐平台放在首位置
                 val list = mutableListOf<ChangePlatformItem>()
                 list.addAll(App.config.change_platform_priority)

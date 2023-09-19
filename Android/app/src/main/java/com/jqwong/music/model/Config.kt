@@ -120,7 +120,7 @@ class Config(
             if (App.ctx != null){
                 directory = App.ctx!!.getString(R.string.app)
             }
-            config.downloadPath = "${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_MUSIC}/${directory}"
+            config.downloadPath = "${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_DOWNLOADS}/${directory}"
             return config
         }
         fun fromJson(json:String):Config{

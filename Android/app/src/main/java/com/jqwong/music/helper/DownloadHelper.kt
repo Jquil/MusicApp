@@ -22,7 +22,7 @@ class DownloadHelper {
             taskList.put(task.id,task)
             task.client = OkHttpClient()
             val request = Request.Builder()
-                .url("https://www.pgyer.com/app/install/de047ce623dbb5ade2ce5b1119fd0d18")
+                .url(task.downloadPath)
                 .build()
             OkHttpClient().newCall(request).enqueue(object:Callback{
                 override fun onFailure(call: Call, e: IOException) {

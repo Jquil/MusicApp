@@ -122,7 +122,8 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             startActivity(Intent(this,AboutActivity::class.java))
         }
         _binding.dlContent.linkBgTask.setOnClickListener {
-            startActivity(Intent(this,DownloadActivity::class.java))
+            //startActivity(Intent(this,DownloadActivity::class.java))
+            toast("还没开放该功能噢")
         }
         _binding.dlContent.linkPc.setOnClickListener {
             toast("还没开放该功能噢")

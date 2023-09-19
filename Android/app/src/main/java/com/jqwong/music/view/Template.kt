@@ -1,6 +1,9 @@
 package com.jqwong.music.view
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -18,6 +21,10 @@ import com.jqwong.music.event.CollectOrCancelMediaEvent
 import com.jqwong.music.event.MediaChangeEvent
 import com.jqwong.music.event.MediaLoadingEvent
 import com.jqwong.music.helper.AudioHelper
+import com.jqwong.music.helper.DownloadHelper
+import com.jqwong.music.helper.PermissionHelper
+import com.jqwong.music.helper.UpdateHelper
+import com.jqwong.music.model.DownloadTask
 import com.jqwong.music.model.LyricStatus
 import com.jqwong.music.model.Media
 import com.jqwong.music.model.Platform
@@ -26,6 +33,8 @@ import com.jqwong.music.model.copy
 import com.jqwong.music.view.listener.DoubleClickListener
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.io.File
+import java.util.UUID
 
 /**
  * @author: Jq
@@ -86,6 +95,7 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
         super.onDestroy()
         unregisterForContextMenu(_binding.includeMain.rvList)
     }
+    @UnstableApi
     override fun onContextItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.action_artist -> {
@@ -102,8 +112,73 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
             R.id.action_lyric -> {
                 gotoLyricActivity()
             }
+            R.id.action_download -> {
+                val permission = android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                if(!PermissionHelper.check(this, permission)){
+                    toast("没有权限下载阿, 授权成功再来下载吧")
+                    PermissionHelper.request(this,permission)
+                }
+                else{
+                    // download
+                    val m = adapter.getSelectMediaByLongClick() ?: return false
+                    AudioHelper.getMedia(m){ success, media ->
+                        if (!success || media == null || media.play_url.isEmpty()){
+                            toast("获取歌曲url失败了..")
+                        }
+                        else{
+                            toast("开始下载咯")
+                            if(media.is_local){
+                                // 文件拷贝
+                            }
+                            else{
+                                val fDir = File(App.config.downloadPath)
+                                if(!fDir.exists())
+                                    fDir.mkdir()
+                                val path = media.path(App.config.downloadPath)
+                                val tsk = DownloadTask(
+                                    id = UUID.randomUUID().toString(),
+                                    name = File(path).name,
+                                    downloadPath = media.play_url,
+                                    savePath = path,
+                                    finish = false,
+                                    client = null
+                                ){
+                                    runOnUiThread {
+                                        val uri = Uri.fromFile(File(path))
+                                        val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,uri)
+                                        sendBroadcast(intent)
+                                        toast("ok啦")
+                                    }
+                                }
+                                DownloadHelper.add(tsk)
+                            }
+                        }
+                    }
+                }
+            }
         }
         return super.onContextItemSelected(item)
+    }
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(requestCode == 100){
+            for(i in 0 until permissions.count()){
+                val permission = permissions[i]
+                val result = grantResults[i]
+                if(permission.equals(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+                    if (result == PackageManager.PERMISSION_GRANTED){
+                        toast("success")
+                    }
+                    else{
+                        toast("error")
+                    }
+                }
+            }
+        }
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMediaChangeEvent(event: MediaChangeEvent){
