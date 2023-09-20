@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/background">
+
+
+    <include
+        android:id="@+id/include_toolbar"
+        layout="@layout/component_toolbar"/>
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="36dp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:layout_marginLeft="20dp"
+        android:paddingBottom="20dp"
+        app:layout_constraintTop_toBottomOf="@id/include_toolbar"/>
+
+    <com.drake.statelayout.StateLayout
+        android:id="@+id/state_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:loading_layout="@layout/component_state_loading"
+        app:empty_layout="@layout/component_state_empty"
+        app:error_layout="@layout/component_state_error"
+        app:layout_constraintTop_toBottomOf="@id/tv_name"
+        app:layout_constraintBottom_toTopOf="@id/cl_tool_bar">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fadingEdge="vertical"
+            android:requiresFadingEdge="vertical"
+            android:fadingEdgeLength="150dp"/>
+    </com.drake.statelayout.StateLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_tool_bar"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageButton
+            android:id="@+id/btn_prev"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_play_pre"
+            android:layout_marginRight="45dp"
+            android:padding="5dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/btn_play"/>
+
+        <ImageButton
+            android:id="@+id/btn_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_play"
+            android:scaleX="2"
+            android:scaleY="2"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageButton
+            android:id="@+id/btn_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_play_next"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_marginLeft="45dp"
+            android:padding="5dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/btn_play"/>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
