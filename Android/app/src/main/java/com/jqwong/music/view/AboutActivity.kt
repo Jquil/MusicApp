@@ -62,7 +62,8 @@ class AboutActivity:BaseActivity<ActivityAboutBinding>() {
         }
         _binding.btnCheckUpdate.setOnClickListener {
             fun show(){
-                if(App.newestVersion!!.number == App.version.number){
+                val number = packageManager.getPackageInfo(packageName,0).versionCode
+                if(App.newestVersion!!.number == number){
                     toast("已经是最新版本咯")
                     return
                 }
@@ -80,7 +81,7 @@ class AboutActivity:BaseActivity<ActivityAboutBinding>() {
                         tvLog.text = it.log
                     }
                     btnUpdate.setOnClickListener {
-                        if(App.newestVersion!!.number == App.version.number){
+                        if(App.newestVersion!!.number == number){
                             toast("已经是最新版本咯")
                             return@setOnClickListener
                         }

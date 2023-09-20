@@ -92,8 +92,8 @@ class Config(
                 allow_auto_change_platform = true,
                 change_platform_priority = mutableListOf(
                     ChangePlatformItem(0,Platform.NetEaseCloud,true,ChangePlatformMode.AllOfTheAbove),
-                    ChangePlatformItem(1,Platform.KuWo,true,ChangePlatformMode.AllOfTheAbove),
-                    ChangePlatformItem(2,Platform.QQ,true,ChangePlatformMode.AllOfTheAbove),
+                    ChangePlatformItem(1,Platform.QQ,true,ChangePlatformMode.AllOfTheAbove),
+                    ChangePlatformItem(2,Platform.KuWo,true,ChangePlatformMode.AllOfTheAbove),
                 ),
                 allow_use_media_extractor_parse = true,
                 only_wifi_use_media_extractor_parse = true,

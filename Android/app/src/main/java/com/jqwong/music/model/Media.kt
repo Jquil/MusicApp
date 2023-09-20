@@ -66,6 +66,8 @@ data class Media(
         var ext = arr.last()
         arr = ext.split('?')
         ext = arr.first()
+        arr = ext.split('&')
+        ext = arr.first()
         var name = "${dir}/${name}.${ext}"
         if(number != 0)
             name = "${dir}/${name}($number).${ext}"

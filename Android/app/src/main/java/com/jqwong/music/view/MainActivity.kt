@@ -89,7 +89,8 @@ class MainActivity:BaseActivity<ActivityMainBinding>() {
             runOnUiThread {
                 if(it.data != null){
                     App.newestVersion = it.data
-                    if(App.newestVersion!!.number > App.version.number){
+                    val number = packageManager.getPackageInfo(packageName,0).versionCode
+                    if(App.newestVersion!!.number > number){
                         toast("应用有更新拉, 具体信息去'关于'中查看把")
                     }
                 }

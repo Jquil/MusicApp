@@ -18,7 +18,6 @@ class App:Application(){
         val userSheets:MutableMap<Platform,List<SongSheet>> = mutableMapOf()
         var exceptions:MutableList<ExceptionLog> = mutableListOf()
         val globalAlias = mutableMapOf<String,List<String>>()
-        val version = Version("1.0.0",1,"初始化版本","")
         var newestVersion:Version? = null
         lateinit var playList:PlayList
         fun playListIsInitialized():Boolean{
