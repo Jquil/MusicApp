@@ -171,7 +171,7 @@ class AudioHelper {
                     return Pair(false,"播放列表未初始化")
                 if(App.playList.current().compare(App.playList.data.last()))
                     return Pair(false,"已经是最后一首啦!")
-                if(_player.playbackState == Player.STATE_BUFFERING  || _player.isLoading || _preparing)
+                if(_preparing /*|| _player.playbackState == Player.STATE_BUFFERING  || _player.isLoading*/)
                     return Pair(false,"在加载中啦")
                 if(!_player.hasNextMediaItem())
                     return Pair(false,"还没准备好噢")
@@ -235,11 +235,19 @@ class AudioHelper {
                     }
                     CoroutineScope(Dispatchers.IO).launch {
                         var ok = false
+                        var count = 0
                         while (!ok){
+                            count++
                             delay(500)
                             withContext(Dispatchers.Main){
                                 if(_player.hasNextMediaItem()){
                                     ok = true
+                                    return@withContext
+                                }
+                                // 允许等待三次1500ms,如果还没有加载进缓存就跳过;
+                                if(count == 3){
+                                    _preparing = false
+                                    prepare(index+1)
                                     return@withContext
                                 }
                             }

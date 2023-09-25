@@ -50,6 +50,8 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
     override fun initData(savedInstanceState: Bundle?) {
 
     }
+
+    @UnstableApi
     override fun intView() {
         setSupportActionBar(_binding.includeToolbar.toolbar)
         _binding.includeToolbar.toolbar.setOnLongClickListener {
@@ -67,16 +69,15 @@ abstract class Template:BaseActivity<ActivityTemplateBinding>() {
         })
         _binding.includeMain.rvList.layoutManager = LinearLayoutManager(this)
         adapter = MediaAdapter()
-        adapter.setOnItemClickListener(@UnstableApi object: BaseQuickAdapter.OnItemClickListener<Media>{
-            @SuppressLint("NewApi")
-            override fun onClick(adapter: BaseQuickAdapter<Media, *>, view: View, position: Int) {
-                //val item = adapter.getItem(position)!!
-                App.playList = PlayList(0,
-                    Pair(LyricStatus.Loading,null),adapter.items.subList(position,adapter.items.size).copy())
-                adapter.notifyDataSetChanged()
-                AudioHelper.start()
-            }
-        })
+        adapter.setOnItemClickListener((BaseQuickAdapter.OnItemClickListener<Media> { adapter, view, position -> //val item = adapter.getItem(position)!!
+            val item = adapter.getItem(position)
+            if(App.playListIsInitialized() && App.playList.data.isNotEmpty() && App.playList.data[App.playList.index].compare(item!!))
+                return@OnItemClickListener
+            App.playList = PlayList(0,
+                Pair(LyricStatus.Loading,null),adapter.items.subList(position,adapter.items.size).copy())
+            adapter.notifyDataSetChanged()
+            AudioHelper.start()
+        }))
 
         val loadMoreAdapter = CustomLoadMoreAdapter()
         adapterHelper = QuickAdapterHelper.Builder(adapter)
